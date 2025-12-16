@@ -6,16 +6,13 @@ import $ from "jquery";
 import "./css/index.css";
 import Home from "./pages/Home.tsx";
 import Titlebar from "./components/Titlebar.tsx";
-import {ThemeProvider} from "./providers/ThemeProvider.tsx";
 import {HeroUIProvider, ToastProvider} from "@heroui/react";
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <ThemeProvider>
-                <MainContentRenderer/>
-            </ThemeProvider>
+            <MainContentRenderer/>
         </BrowserRouter>
     </React.StrictMode>
 );
@@ -26,7 +23,7 @@ export function MainContentRenderer()
     $(window).on("contextmenu", e => e.preventDefault());
     return (
         <HeroUIProvider navigate={navigate}>
-            
+
             <ToastProvider
                 placement={"bottom-right"}
                 toastProps={{
@@ -35,10 +32,10 @@ export function MainContentRenderer()
                     variant: "flat"
                 }}
             />
-            
+
             <main className={"flex flex-col p-0 m-0"}>
                 <Titlebar/>
-                
+
                 <div className={"flex flex-row w-full max-h-[calc(100vh-2.5rem)] h-screen overflow-y-hidden p-0 m-0"}>
                     <Routes>
                         <Route>
@@ -46,7 +43,7 @@ export function MainContentRenderer()
                         </Route>
                     </Routes>
                 </div>
-                
+
             </main>
         </HeroUIProvider>
     );
