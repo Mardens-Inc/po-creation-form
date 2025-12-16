@@ -1,4 +1,5 @@
-use tauri::Manager;
+use tauri::{Manager, WindowEvent};
+use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -9,13 +10,32 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd|{
-            if let Some(window) = app.get_webview_window("main"){
-                if let Err(e) = window.set_focus(){
+        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                if let Err(e) = window.set_focus() {
                     eprintln!("Failed to set focus: {}", e);
                 }
             }
         }))
+        .setup(|app| {
+            if let Some(window) = app.get_webview_window("main") {
+                window
+                    .restore_state(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
+                    .expect("Failed to restore window state");
+            }
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { .. } = event {
+//                api.prevent_close();
+                window
+                    .app_handle()
+                    .save_window_state(StateFlags::all())
+                    .expect("Failed to save window state");
+//                window.close().expect("Failed to close window");
+            }
+        })
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())

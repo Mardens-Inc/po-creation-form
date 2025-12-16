@@ -2,10 +2,19 @@
 import {Button, ButtonGroup} from "@heroui/react";
 import {getCurrentWindow} from "@tauri-apps/api/window";
 import {Icon} from "@iconify-icon/react";
+import {useEffect} from "react";
 
 export default function Titlebar()
 {
     const appWindow = getCurrentWindow();
+    useEffect(() => {
+        // Once React has rendered, switch to custom titlebar
+        const initWindow = async () => {
+            await appWindow.setDecorations(false);
+            await appWindow.show();
+        };
+        initWindow();
+    }, [appWindow]);
     return (
         <div className={"flex flex-row h-fit backdrop-blur-sm sticky top-0 w-full z-[9999] backdrop-saturate-150 select-none bg-primary text-white"} data-tauri-drag-region="">
             <div className={"flex flex-row"}>
