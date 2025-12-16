@@ -1,0 +1,152 @@
+/* Dunbar Tall Hairline */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Hairline.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Hairline Italic.ttf') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Extra Light */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Extra Light.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Extra Light Italic.ttf') format('truetype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Light */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Light Italic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Regular */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Book */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Book.ttf') format('truetype');
+  font-weight: 450;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Book Italic.ttf') format('truetype');
+  font-weight: 450;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Medium */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Medium Italic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Bold */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Bold Italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Extra Bold */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Extra Bold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Extra Bold Italic.ttf') format('truetype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Tall Ultra */
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Ultra.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-tall';
+  src: url('./Dunbar Tall/Dunbar Tall Ultra Italic.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
