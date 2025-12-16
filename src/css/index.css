@@ -84,15 +84,3 @@ input:focus-visible, textarea:focus-visible {
         background-image: url("/src/images/spike-horizontal-secondary.svg");
     }
 }
-
-#hero {
-    background-image: url("../images/mardens-home-2.jpg");
-}
-
-@media (max-width: 768px) {
-    #hero {
-        background-image: none;
-        background-color: #fed326;
-    }
-}
-
