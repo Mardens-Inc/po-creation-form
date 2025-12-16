@@ -29,7 +29,7 @@ fn main() {
     println!("[FFNodes Update Version] New version: {}", new_version);
 
     let cargo_tomls = ["./src-tauri/Cargo.toml"];
-    let package_json = [ "./package.json"];
+    let package_json = ["./package.json"];
     let tauri_config = "./src-tauri/tauri.conf.json";
 
     // Update Cargo.toml files
@@ -95,16 +95,16 @@ fn main() {
         Command::new("cargo").arg("check").output().expect("failed to execute process");
 
         // Create tag
-//        let mut files = Vec::with_capacity(cargo_tomls.len() + package_json.len() + 1);
-//        files.push(tauri_config);
-//        files.extend(cargo_tomls);
-//        files.extend(package_json);
-//        files.push("Cargo.lock");
-//        Command::new("git").arg("add").args(files).output().expect("failed to execute process");
-//        Command::new("git").arg("commit").arg("-m").arg(format!("Updated version to v{}", new_version)).output().expect("failed to execute process");
-//        Command::new("git").arg("push").output().expect("failed to execute process");
-//        Command::new("git").arg("tag").arg(format!("v{}", new_version)).output().expect("failed to execute process");
-//        Command::new("git").arg("push").arg("--tags").output().expect("failed to execute process");
-//        println!("Pushed to git!")
+        let mut files = Vec::with_capacity(cargo_tomls.len() + package_json.len() + 1);
+        files.push(tauri_config);
+        files.extend(cargo_tomls);
+        files.extend(package_json);
+        files.push("Cargo.lock");
+        Command::new("git").arg("add").args(files).output().expect("failed to execute process");
+        Command::new("git").arg("commit").arg("-m").arg(format!("Updated version to v{}", new_version)).output().expect("failed to execute process");
+        Command::new("git").arg("push").output().expect("failed to execute process");
+        Command::new("git").arg("tag").arg(format!("v{}", new_version)).output().expect("failed to execute process");
+        Command::new("git").arg("push").arg("--tags").output().expect("failed to execute process");
+        println!("Pushed to git!")
     }
 }
