@@ -12,6 +12,8 @@
     "window-state:default",
     "core:window:allow-set-decorations",
     "core:window:allow-show",
+    "core:event:default",
+    "core:webview:allow-webview-position",
     "dialog:allow-ask",
     "dialog:allow-confirm",
     "dialog:allow-message",

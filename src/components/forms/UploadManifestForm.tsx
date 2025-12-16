@@ -1,11 +1,11 @@
 import {Button, Chip, cn, Select, SelectItem} from "@heroui/react";
 import {useFormDataStore} from "../../stores/useFormDataStore.ts";
 import {ErrorBoundary} from "../ErrorBoundry.tsx";
-import {Dispatch, useCallback, useEffect, useRef, useState} from "react";
+import {Dispatch, useCallback, useRef} from "react";
 import {InfoCard} from "../InfoCard.tsx";
 import {Icon} from "@iconify-icon/react";
 import {open} from "@tauri-apps/plugin-dialog";
-import $ from "jquery";
+import {useTauriDragDropZone} from "../../hooks/useTauriDragDropZone.ts";
 
 export type UploadManifestFormData = {
     files: UploadFileItem[];
@@ -13,8 +13,8 @@ export type UploadManifestFormData = {
 
 export enum UploadFileType
 {
-    Asset,
-    Manifest,
+    Asset = "Asset",
+    Manifest = "Manifest",
 }
 
 export type UploadFileItem = {
@@ -28,7 +28,6 @@ const manifestExtensions = ["xlsx", "csv", "pdf"];
 
 export function UploadManifestForm()
 {
-    const [isDraggingOver, setIsDraggingOver] = useState(false);
     const {uploadForm, setUploadForm} = useFormDataStore();
     const dragDropAreaRef = useRef<HTMLDivElement | null>(null);
 
@@ -58,11 +57,12 @@ export function UploadManifestForm()
 
     const handleFiles = useCallback((selected: string | string[]) =>
     {
-
         const paths = Array.isArray(selected) ? selected : [selected];
+        console.log("Selected Files: ", paths);
         const files: UploadFileItem[] = paths.map(path =>
         {
-            const filename = path.split("/").pop()!;
+            // Handle both forward and back slashes for cross-platform compatibility
+            const filename = path.split(/[/\\]/).pop()!;
             const extension = filename.split(".").pop() ?? "";
             const asset_type = manifestExtensions.includes(extension)
                 ? UploadFileType.Manifest
@@ -70,48 +70,13 @@ export function UploadManifestForm()
 
             return {key: path, filename, path, asset_type};
         });
-        uploadForm.files = [...uploadForm.files, ...files];
-    }, [uploadForm]);
+        setUploadForm({...uploadForm, files: [...uploadForm.files, ...files]});
+    }, [uploadForm, setUploadForm]);
 
-    useEffect(() =>
-    {
-        if (!dragDropAreaRef.current)
-        {
-            console.error("Drag drop area ref is null.");
-            return;
-        }
-        console.log("Setting up drag drop area event listeners.");
-        $(dragDropAreaRef.current)
-            .on("dragenter", (event) =>
-            {
-                event.preventDefault();
-                setIsDraggingOver(true);
-            })
-            .on("dragend", (event) =>
-            {
-                event.preventDefault();
-                setIsDraggingOver(false);
-            })
-            .on("drop", (event) =>
-            {
-                event.preventDefault();
-                setIsDraggingOver(false);
-                console.log("Drop event: ", event);
-                // handleFiles();
-            });
+    // Use Tauri drag-drop hook for the specific drop zone
+    const {isDraggingOver} = useTauriDragDropZone(dragDropAreaRef, handleFiles);
 
-        return () =>
-        {
-            console.log("Cleaning up drag drop area event listeners.");
-            $(dragDropAreaRef)
-                .off("dragover")
-                .off("drop")
-                .off("dragleave")
-                .off("dragenter")
-                .off("dragend");
-        };
-    }, [dragDropAreaRef]);
-
+    console.log("UploadManifestForm render - isDraggingOver:", isDraggingOver);
 
     return (
         <ErrorBoundary>
@@ -139,7 +104,7 @@ export function UploadManifestForm()
                 </InfoCard>
                 {uploadForm.files.length > 0 ? (
                     <InfoCard>
-                        <InfoCard.Header>Items</InfoCard.Header>
+                        <InfoCard.Header>Uploaded Items</InfoCard.Header>
                         <InfoCard.Body>
                             {
                                 uploadForm.files.map(
@@ -154,7 +119,7 @@ export function UploadManifestForm()
                     </InfoCard>
                 ) : null}
 
-                <div className={"fixed bottom-2 right-2 flex flex-row gap-2"}>
+                <div className={"fixed bottom-2 right-5 flex flex-row gap-2"}>
                     <Button radius={"none"} color={"primary"} size={"lg"} endContent={<Icon icon={"charm:chevron-right"}/>}>{uploadForm.files.length > 0 ? "Continue" : "Skip"}</Button>
                 </div>
             </div>
@@ -173,16 +138,30 @@ function UploadItem(props: UploadItemProps)
     return (
         <ErrorBoundary>
             <div className={"flex flex-row bg-primary/20 rounded-lg p-4 items-center justify-between"}>
-                <p></p>
+                <p className={"font-bold"}>{item.filename}</p>
                 <div className={"flex flex-row gap-4"}>
                     <Select
                         value={item.key}
+                        selectedKeys={item.asset_type ? [item.asset_type] : [UploadFileType.Asset]}
                         onSelectionChange={keys => onChange({...item, asset_type: [...keys][0] as UploadFileType})}
                         selectionMode={"single"}
-
+                        className={"w-32"}
+                        size={"sm"}
+                        radius={"none"}
+                        label={"Asset Type"}
+                        listboxProps={{
+                            itemClasses: {
+                                base: "rounded-none"
+                            }
+                        }}
+                        popoverProps={{
+                            classNames: {content: "p-0"},
+                            radius: "none",
+                            itemProp: "rounded-none"
+                        }}
                     >
-                        {Object.values(UploadFileType).filter(v => typeof v === "number").map((type) => (
-                            <SelectItem key={type as number}>{type}</SelectItem>
+                        {Object.values(UploadFileType).map((type) => (
+                            <SelectItem key={type as string}>{type}</SelectItem>
                         ))}
                     </Select>
                 </div>
