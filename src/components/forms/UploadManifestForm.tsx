@@ -76,12 +76,14 @@ export function UploadManifestForm()
             return {key: path, filename, path, asset_type};
         });
 
-        if (files.length > 0) {
+        if (files.length > 0)
+        {
             setUploadForm({...uploadForm, files: [...uploadForm.files, ...files]});
         }
     }, [uploadForm, setUploadForm]);
 
-    const handleRemove = useCallback((item: UploadFileItem) => {
+    const handleRemove = useCallback((item: UploadFileItem) =>
+    {
         setUploadForm({
             ...uploadForm,
             files: uploadForm.files.filter(f => f.path !== item.path)
@@ -118,7 +120,7 @@ export function UploadManifestForm()
                 {uploadForm.files.length > 0 ? (
                     <InfoCard>
                         <InfoCard.Header>Uploaded Items</InfoCard.Header>
-                        <InfoCard.Body>
+                        <InfoCard.Body className={"max-h-96 overflow-y-auto"}>
                             <AnimatePresence mode="popLayout">
                                 {
                                     uploadForm.files.map(
@@ -168,9 +170,12 @@ function UploadItem(props: UploadItemProps)
                     damping: 30,
                     delay: index * 0.05
                 }}
-                className={"flex flex-row bg-primary/20 rounded-lg p-4 items-center justify-between gap-4"}
+                className={"flex flex-row hover:bg-primary/20 border-b-2 border-primary rounded-none p-4 items-center justify-between gap-4 transition-background"}
             >
-                <p className={"font-bold truncate flex-1"}>{item.filename}</p>
+                <div className={"flex flex-col"}>
+                    <p className={"font-bold truncate flex-1"}>{item.filename}</p>
+                    <p className={"italic truncate flex-1 text-tiny"}>{item.path}</p>
+                </div>
                 <div className={"flex flex-row gap-2 items-center"}>
                     <Select
                         value={item.key}
@@ -205,7 +210,7 @@ function UploadItem(props: UploadItemProps)
                         onPress={onRemove}
                         aria-label="Remove file"
                     >
-                        <Icon icon="tabler:x" width={20} height={20} />
+                        <Icon icon="tabler:x" width={20} height={20}/>
                     </Button>
                 </div>
             </motion.div>
