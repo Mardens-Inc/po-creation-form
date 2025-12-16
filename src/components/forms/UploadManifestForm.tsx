@@ -59,7 +59,12 @@ export function UploadManifestForm()
     const handleFiles = useCallback((selected: string | string[]) =>
     {
         const paths = Array.isArray(selected) ? selected : [selected];
-        const files: UploadFileItem[] = paths.map(path =>
+
+        // Filter out paths that already exist
+        const existingPaths = new Set(uploadForm.files.map(f => f.path));
+        const newPaths = paths.filter(path => !existingPaths.has(path));
+
+        const files: UploadFileItem[] = newPaths.map(path =>
         {
             // Handle both forward and back slashes for cross-platform compatibility
             const filename = path.split(/[/\\]/).pop()!;
@@ -70,7 +75,17 @@ export function UploadManifestForm()
 
             return {key: path, filename, path, asset_type};
         });
-        setUploadForm({...uploadForm, files: [...uploadForm.files, ...files]});
+
+        if (files.length > 0) {
+            setUploadForm({...uploadForm, files: [...uploadForm.files, ...files]});
+        }
+    }, [uploadForm, setUploadForm]);
+
+    const handleRemove = useCallback((item: UploadFileItem) => {
+        setUploadForm({
+            ...uploadForm,
+            files: uploadForm.files.filter(f => f.path !== item.path)
+        });
     }, [uploadForm, setUploadForm]);
 
     // Use Tauri drag-drop hook for the specific drop zone
@@ -113,6 +128,7 @@ export function UploadManifestForm()
                                                 item={file}
                                                 index={index}
                                                 onChange={value => setUploadForm({...uploadForm, files: uploadForm.files.map(f => f === file ? value : f)})}
+                                                onRemove={() => handleRemove(file)}
                                             />
                                     )
                                 }
@@ -132,12 +148,13 @@ export function UploadManifestForm()
 type UploadItemProps = {
     item: UploadFileItem,
     index: number,
-    onChange: Dispatch<UploadFileItem>
+    onChange: Dispatch<UploadFileItem>,
+    onRemove: () => void
 }
 
 function UploadItem(props: UploadItemProps)
 {
-    const {item, index, onChange} = props;
+    const {item, index, onChange, onRemove} = props;
     return (
         <ErrorBoundary>
             <motion.div
@@ -151,10 +168,10 @@ function UploadItem(props: UploadItemProps)
                     damping: 30,
                     delay: index * 0.05
                 }}
-                className={"flex flex-row bg-primary/20 rounded-lg p-4 items-center justify-between"}
+                className={"flex flex-row bg-primary/20 rounded-lg p-4 items-center justify-between gap-4"}
             >
-                <p className={"font-bold"}>{item.filename}</p>
-                <div className={"flex flex-row gap-4"}>
+                <p className={"font-bold truncate flex-1"}>{item.filename}</p>
+                <div className={"flex flex-row gap-2 items-center"}>
                     <Select
                         value={item.key}
                         selectedKeys={item.asset_type ? [item.asset_type] : [UploadFileType.Asset]}
@@ -179,6 +196,17 @@ function UploadItem(props: UploadItemProps)
                             <SelectItem key={type as string}>{type}</SelectItem>
                         ))}
                     </Select>
+                    <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        color="danger"
+                        radius="none"
+                        onPress={onRemove}
+                        aria-label="Remove file"
+                    >
+                        <Icon icon="tabler:x" width={20} height={20} />
+                    </Button>
                 </div>
             </motion.div>
         </ErrorBoundary>
