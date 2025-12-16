@@ -43,7 +43,7 @@ export function Sidebar(props: SidebarProps)
     }, [width]);
     return (
         <>            {/* Desktop Sidebar Tabs */}
-            <div className={"hidden lg:flex flex-col items-start justify-start py-16 gap-8 bg-primary border-primary text-center w-full lg:w-[400px] relative text-white p-4 min-h-[400px] lg:min-h-[703px] bg-cover bg-center"} style={{backgroundImage: `url("${Stars}")`}}>
+            <div className={"hidden lg:flex flex-col items-start justify-start py-16 gap-8 bg-primary border-primary text-center w-[500px] relative text-white p-4 bg-cover bg-center"} style={{backgroundImage: `url("${Stars}")`}}>
                 <div className={"absolute w-4 -right-4 top-0 bottom-0 bg-repeat-y bg-contain"} style={{backgroundImage: `url("${Spike}")`}}/>
                 <h2 className={"font-accent text-4xl font-bold"}>Steps</h2>
                 <Tabs
@@ -57,9 +57,9 @@ export function Sidebar(props: SidebarProps)
                     size={"lg"}
                     defaultSelectedKey={"hr"}
                     classNames={{
-                        base: "h-full",
-                        tabWrapper: "h-full",
-                        tabList: "h-full",
+                        base: "h-full w-full",
+                        tabWrapper: "h-full w-full",
+                        tabList: "h-full w-full",
                         tab: "uppercase justify-start text-2xl h-24",
                         tabContent: "text-secondary group-data-[selected=true]:text-primary group-data-[selected=true]:font-black"
                     }}
