@@ -5,10 +5,8 @@
   "identifier": "com.mardens.pocreationform",
   "build": {
     "devUrl": "http://localhost:1420",
-
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
-
     "frontendDist": "../dist"
   },
   "app": {
@@ -17,10 +15,10 @@
         "title": "PO Creation Form",
         "width": 1280,
         "height": 720,
-        "minWidth": 800,
+        "minWidth": 1050,
         "minHeight": 600,
-        "decorations": true
-        
+        "decorations": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {

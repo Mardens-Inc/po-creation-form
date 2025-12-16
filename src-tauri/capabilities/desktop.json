@@ -11,6 +11,12 @@
   "permissions": [
     "window-state:default",
     "core:window:allow-set-decorations",
-    "core:window:allow-show"
+    "core:window:allow-show",
+    "dialog:allow-ask",
+    "dialog:allow-confirm",
+    "dialog:allow-message",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:default"
   ]
 }
