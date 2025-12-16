@@ -6,6 +6,7 @@ import {InfoCard} from "../InfoCard.tsx";
 import {Icon} from "@iconify-icon/react";
 import {open} from "@tauri-apps/plugin-dialog";
 import {useTauriDragDropZone} from "../../hooks/useTauriDragDropZone.ts";
+import {AnimatePresence, motion} from "framer-motion";
 
 export type UploadManifestFormData = {
     files: UploadFileItem[];
@@ -58,7 +59,6 @@ export function UploadManifestForm()
     const handleFiles = useCallback((selected: string | string[]) =>
     {
         const paths = Array.isArray(selected) ? selected : [selected];
-        console.log("Selected Files: ", paths);
         const files: UploadFileItem[] = paths.map(path =>
         {
             // Handle both forward and back slashes for cross-platform compatibility
@@ -75,8 +75,6 @@ export function UploadManifestForm()
 
     // Use Tauri drag-drop hook for the specific drop zone
     const {isDraggingOver} = useTauriDragDropZone(dragDropAreaRef, handleFiles);
-
-    console.log("UploadManifestForm render - isDraggingOver:", isDraggingOver);
 
     return (
         <ErrorBoundary>
@@ -106,15 +104,19 @@ export function UploadManifestForm()
                     <InfoCard>
                         <InfoCard.Header>Uploaded Items</InfoCard.Header>
                         <InfoCard.Body>
-                            {
-                                uploadForm.files.map(
-                                    (file: UploadFileItem) =>
-                                        <UploadItem
-                                            item={file}
-                                            onChange={value => setUploadForm({...uploadForm, files: uploadForm.files.map(f => f === file ? value : f)})}
-                                        />
-                                )
-                            }
+                            <AnimatePresence mode="popLayout">
+                                {
+                                    uploadForm.files.map(
+                                        (file: UploadFileItem, index: number) =>
+                                            <UploadItem
+                                                key={file.key}
+                                                item={file}
+                                                index={index}
+                                                onChange={value => setUploadForm({...uploadForm, files: uploadForm.files.map(f => f === file ? value : f)})}
+                                            />
+                                    )
+                                }
+                            </AnimatePresence>
                         </InfoCard.Body>
                     </InfoCard>
                 ) : null}
@@ -129,15 +131,28 @@ export function UploadManifestForm()
 
 type UploadItemProps = {
     item: UploadFileItem,
+    index: number,
     onChange: Dispatch<UploadFileItem>
 }
 
 function UploadItem(props: UploadItemProps)
 {
-    const {item, onChange} = props;
+    const {item, index, onChange} = props;
     return (
         <ErrorBoundary>
-            <div className={"flex flex-row bg-primary/20 rounded-lg p-4 items-center justify-between"}>
+            <motion.div
+                layout
+                initial={{opacity: 0, y: -20, scale: 0.95}}
+                animate={{opacity: 1, y: 0, scale: 1}}
+                exit={{opacity: 0, x: -100, scale: 0.95}}
+                transition={{
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 30,
+                    delay: index * 0.05
+                }}
+                className={"flex flex-row bg-primary/20 rounded-lg p-4 items-center justify-between"}
+            >
                 <p className={"font-bold"}>{item.filename}</p>
                 <div className={"flex flex-row gap-4"}>
                     <Select
@@ -165,7 +180,7 @@ function UploadItem(props: UploadItemProps)
                         ))}
                     </Select>
                 </div>
-            </div>
+            </motion.div>
         </ErrorBoundary>
     );
 }
