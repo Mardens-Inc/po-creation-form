@@ -4,7 +4,7 @@ import {ErrorBoundary} from "../components/ErrorBoundry.tsx";
 
 export function Home()
 {
-    const [selectedTab, setSelectedTab] = useState<TabConfig>(SidebarTabs.upload);
+    const [selectedTab, setSelectedTab] = useState<TabConfig>(SidebarTabs.po_number);
     return (
         <div className={"flex flex-col lg:flex-row w-full"}>
             <ErrorBoundary><Sidebar selectedTab={selectedTab} onSelectionChange={setSelectedTab}/></ErrorBoundary>
