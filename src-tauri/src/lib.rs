@@ -1,5 +1,5 @@
 use tauri::{Manager, WindowEvent};
-use tauri_plugin_window_state::{AppHandleExt, StateFlags, WindowExt};
+use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -13,7 +13,7 @@ pub fn run() {
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
-                .build()
+                .build(),
         )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
@@ -26,7 +26,9 @@ pub fn run() {
             if let WindowEvent::CloseRequested { .. } = event {
                 window
                     .app_handle()
-                    .save_window_state(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
+                    .save_window_state(
+                        StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE,
+                    )
                     .expect("Failed to save window state");
             }
         })
