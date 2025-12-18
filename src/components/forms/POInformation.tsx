@@ -150,9 +150,11 @@ export function POInformation()
                                 <Input
                                     radius={"none"}
                                     size={"lg"}
+                                    maxLength={2}
+                                    minLength={2}
                                     placeholder="Enter buyer ID"
                                     value={buyerId}
-                                    onChange={(e) => setBuyerId(e.target.value)}
+                                    onValueChange={setBuyerId}
                                     classNames={{
                                         input: "font-text text-lg",
                                         inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
@@ -170,7 +172,7 @@ export function POInformation()
                                     size={"lg"}
                                     placeholder="Enter vendor name"
                                     value={vendorName}
-                                    onChange={(e) => setVendorName(e.target.value)}
+                                    onValueChange={setVendorName}
                                     classNames={{
                                         input: "font-text text-lg",
                                         inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
