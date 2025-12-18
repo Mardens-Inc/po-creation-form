@@ -3,7 +3,6 @@ import Stars from "../images/badge-exclamation-background.svg";
 import Spike from "../images/spike-horizontal.svg";
 import {Dispatch, ReactNode, useCallback, useEffect} from "react";
 import {useScreenSize} from "../providers/ScreenSizeProvider.tsx";
-import {UploadManifestForm} from "./forms/UploadManifestForm.tsx";
 import {HistoryForm} from "./forms/HistoryForm.tsx";
 import {PONumberForm} from "./forms/PONumberForm.tsx";
 
@@ -25,14 +24,9 @@ export const SidebarTabs = {
         component: <HistoryForm/>
     },
     po_number: {
-        title: "PO Number",
-        description: "Generate or create a PO number here.",
+        title: "Purchase Order",
+        description: "Add information about the current PO here.",
         component: <PONumberForm/>
-    },
-    upload: {
-        title: "Upload Manifest",
-        description: "If you have any manifests from a vendor, upload them here.",
-        component: <UploadManifestForm/>
     }
 } as const satisfies Record<string, TabConfig>;
 
