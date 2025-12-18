@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import {UploadManifestFormData} from "../components/forms/PONumberForm.tsx";
+import {UploadManifestFormData} from "../components/forms/POInformation.tsx";
 import {addToast} from "@heroui/react";
 
 export type FormDataStore = {

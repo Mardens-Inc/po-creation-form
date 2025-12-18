@@ -4,7 +4,7 @@ import Spike from "../images/spike-horizontal.svg";
 import {Dispatch, ReactNode, useCallback, useEffect} from "react";
 import {useScreenSize} from "../providers/ScreenSizeProvider.tsx";
 import {HistoryForm} from "./forms/HistoryForm.tsx";
-import {PONumberForm} from "./forms/PONumberForm.tsx";
+import {POInformation} from "./forms/POInformation.tsx";
 
 type SidebarProps = {
     selectedTab: TabConfig;
@@ -26,7 +26,7 @@ export const SidebarTabs = {
     po_number: {
         title: "Purchase Order",
         description: "Add information about the current PO here.",
-        component: <PONumberForm/>
+        component: <POInformation/>
     }
 } as const satisfies Record<string, TabConfig>;
 

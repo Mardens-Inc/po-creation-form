@@ -28,7 +28,7 @@ export type UploadFileItem = {
 
 const manifestExtensions = ["xlsx", "csv", "pdf"];
 
-export function PONumberForm()
+export function POInformation()
 {
     const [buyerId, setBuyerId] = useState("01");
     const [poNumber, setPoNumber] = useState(96);
