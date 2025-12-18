@@ -1,4 +1,4 @@
-import {Button, Chip, cn, DateInput, Input, Select, SelectItem} from "@heroui/react";
+import {Button, Chip, cn, DatePicker, Input, Select, SelectItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {Dispatch, useCallback, useRef, useState} from "react";
 import {InfoCard} from "../InfoCard.tsx";
@@ -8,9 +8,11 @@ import {ErrorBoundary} from "../ErrorBoundry.tsx";
 import {open} from "@tauri-apps/plugin-dialog";
 import {useTauriDragDropZone} from "../../hooks/useTauriDragDropZone.ts";
 import {AnimatePresence, motion} from "framer-motion";
+
 export type UploadManifestFormData = {
     files: UploadFileItem[];
 }
+
 export enum UploadFileType
 {
     Asset = "Asset",
@@ -184,14 +186,36 @@ export function PONumberForm()
                                 <label className={"font-headers font-bold text-lg uppercase"}>
                                     Creation Date
                                 </label>
-                                <DateInput
+                                <DatePicker
                                     radius={"none"}
                                     size={"lg"}
                                     value={creationDate as any}
                                     onChange={setCreationDate as any}
+                                    showMonthAndYearPickers
                                     classNames={{
                                         input: "font-text text-lg",
                                         inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
+                                    }}
+                                    calendarProps={{
+                                        classNames: {
+                                            base: "rounded-none",
+                                            title: "!text-white",
+                                            pickerHighlight: "rounded-none bg-primary/30"
+
+                                        },
+                                        buttonPickerProps: {
+                                            radius: "none",
+                                            className: "relative select-none order-2 h-8",
+                                            color: "primary",
+                                            variant: "solid"
+                                        },
+                                        navButtonProps: {
+                                            radius: "none",
+                                            className: "relative select-none text-white data-[hover=true]:opacity-hover flex items-center justify-center gap-2 z-10 order-2 h-8",
+                                            color: "primary",
+                                            variant: "solid"
+                                        }
+
                                     }}
                                 />
                             </div>
@@ -201,15 +225,38 @@ export function PONumberForm()
                                 <label className={"font-headers font-bold text-lg uppercase"}>
                                     Estimated Date of Arrival
                                 </label>
-                                <DateInput
+                                <DatePicker
                                     radius={"none"}
                                     size={"lg"}
                                     placeholderValue={today(getLocalTimeZone()) as any}
                                     value={estimatedArrival as any}
                                     onChange={setEstimatedArrival as any}
+                                    showMonthAndYearPickers
+                                    minValue={today(getLocalTimeZone()) as any}
                                     classNames={{
                                         input: "font-text text-lg",
                                         inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
+                                    }}
+                                    calendarProps={{
+                                        classNames: {
+                                            base: "rounded-none",
+                                            title: "!text-white",
+                                            pickerHighlight: "rounded-none bg-primary/30"
+
+                                        },
+                                        buttonPickerProps: {
+                                            radius: "none",
+                                            className: "relative select-none order-2 h-8",
+                                            color: "primary",
+                                            variant: "solid"
+                                        },
+                                        navButtonProps: {
+                                            radius: "none",
+                                            className: "relative select-none text-white data-[hover=true]:opacity-hover flex items-center justify-center gap-2 z-10 order-2 h-8",
+                                            color: "primary",
+                                            variant: "solid"
+                                        }
+
                                     }}
                                 />
                             </div>
