@@ -1,4 +1,4 @@
-import {addToast, Button, Chip} from "@heroui/react";
+import {addToast, Button, Chip, Modal, ModalBody, ModalContent, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {useNavigate} from "react-router-dom";
 import {open} from "@tauri-apps/plugin-dialog";
@@ -8,7 +8,7 @@ import {InfoCard} from "../InfoCard.tsx";
 
 export function HistoryForm()
 {
-    const {history, loadFromFile, removeFromHistory, clearHistory, loadHistoryFromLocalStorage} = useFormDataStore();
+    const {history, loadFromFile, removeFromHistory, clearHistory, loadHistoryFromLocalStorage, isLoading} = useFormDataStore();
     const navigate = useNavigate();
 
     // Load history from localStorage on mount
@@ -93,30 +93,58 @@ export function HistoryForm()
     if (history.length === 0)
     {
         return (
-            <div className="flex flex-col items-center justify-center h-full gap-6">
-                <InfoCard className="max-w-2xl w-full">
-                    <InfoCard.Body>
-                        <div className="flex flex-col items-center justify-center gap-6 py-12">
-                            <Icon icon="mdi:history" className="text-8xl text-primary/30"/>
-                            <div className="flex flex-col items-center gap-2">
-                                <h3 className="font-headers font-bold text-2xl uppercase">No History</h3>
-                                <p className="font-text text-lg text-gray-600 text-center">
-                                    You haven't saved any purchase orders yet.
-                                </p>
+            <>
+                <div className="flex flex-col items-center justify-center h-full gap-6">
+                    <InfoCard className="max-w-2xl w-full">
+                        <InfoCard.Body>
+                            <div className="flex flex-col items-center justify-center gap-6 py-12">
+                                <Icon icon="mdi:history" className="text-8xl text-primary/30"/>
+                                <div className="flex flex-col items-center gap-2">
+                                    <h3 className="font-headers font-bold text-2xl uppercase">No History</h3>
+                                    <p className="font-text text-lg text-gray-600 text-center">
+                                        You haven't saved any purchase orders yet.
+                                    </p>
+                                </div>
+                                <Button
+                                    radius="none"
+                                    color="primary"
+                                    size="lg"
+                                    startContent={<Icon icon="mdi:folder-open"/>}
+                                    onPress={handleOpenFile}
+                                    isDisabled={isLoading}
+                                >
+                                    Open Purchase Order File
+                                </Button>
                             </div>
-                            <Button
-                                radius="none"
-                                color="primary"
-                                size="lg"
-                                startContent={<Icon icon="mdi:folder-open"/>}
-                                onPress={handleOpenFile}
-                            >
-                                Open Purchase Order File
-                            </Button>
-                        </div>
-                    </InfoCard.Body>
-                </InfoCard>
-            </div>
+                        </InfoCard.Body>
+                    </InfoCard>
+                </div>
+
+                {/* Loading Progress Modal */}
+                <Modal
+                    isOpen={isLoading}
+                    isDismissable={false}
+                    hideCloseButton
+                    radius="none"
+                    classNames={{
+                        base: "bg-white border-2 border-primary"
+                    }}
+                >
+                    <ModalContent>
+                        <ModalBody>
+                            <div className="flex flex-col items-center justify-center gap-6 py-8">
+                                <Spinner size="lg" color="primary"/>
+                                <div className="flex flex-col items-center gap-2">
+                                    <h3 className="font-headers font-bold text-xl uppercase">Loading Purchase Order</h3>
+                                    <p className="font-text text-sm text-gray-600 text-center">
+                                        Extracting and reading files...
+                                    </p>
+                                </div>
+                            </div>
+                        </ModalBody>
+                    </ModalContent>
+                </Modal>
+            </>
         );
     }
 
@@ -138,6 +166,7 @@ export function HistoryForm()
                         size="md"
                         startContent={<Icon icon="mdi:folder-open"/>}
                         onPress={handleOpenFile}
+                        isDisabled={isLoading}
                     >
                         Open File
                     </Button>
@@ -148,6 +177,7 @@ export function HistoryForm()
                         variant="bordered"
                         startContent={<Icon icon="mdi:delete"/>}
                         onPress={handleClearHistory}
+                        isDisabled={isLoading}
                     >
                         Clear All
                     </Button>
@@ -189,6 +219,7 @@ export function HistoryForm()
                                         size="md"
                                         startContent={<Icon icon="mdi:folder-open"/>}
                                         onPress={() => handleLoad(item.filePath)}
+                                        isDisabled={isLoading}
                                     >
                                         Load
                                     </Button>
@@ -198,6 +229,7 @@ export function HistoryForm()
                                         size="md"
                                         variant="flat"
                                         isIconOnly
+                                        isDisabled={isLoading}
                                         onPress={() =>
                                         {
                                             if (confirm(`Remove "${item.filePath}" from history?`))
@@ -219,6 +251,31 @@ export function HistoryForm()
                     </InfoCard>
                 ))}
             </div>
+
+            {/* Loading Progress Modal */}
+            <Modal
+                isOpen={isLoading}
+                isDismissable={false}
+                hideCloseButton
+                radius="none"
+                classNames={{
+                    base: "bg-white border-2 border-primary"
+                }}
+            >
+                <ModalContent>
+                    <ModalBody>
+                        <div className="flex flex-col items-center justify-center gap-6 py-8">
+                            <Spinner size="lg" color="primary"/>
+                            <div className="flex flex-col items-center gap-2">
+                                <h3 className="font-headers font-bold text-xl uppercase">Loading Purchase Order</h3>
+                                <p className="font-text text-sm text-gray-600 text-center">
+                                    Extracting and reading files...
+                                </p>
+                            </div>
+                        </div>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

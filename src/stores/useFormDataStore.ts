@@ -45,6 +45,8 @@ export type FormDataStore = {
     uploadForm: POInformationFormData;
     manifestMappings: ManifestMapping[];
     history: HistoryItem[];
+    isSaving: boolean;
+    isLoading: boolean;
 }
 
 type FormDataActions = {
@@ -73,79 +75,93 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
     },
     manifestMappings: [],
     history: [],
+    isSaving: false,
+    isLoading: false,
     setUploadForm: (data: POInformationFormData) => set(() => ({uploadForm: data})),
     saveToFile: async (filePath: string) => {
-        const state = get();
+        set({isSaving: true});
 
-        // Prepare SaveItem data
-        const saveData: SaveItemData = {
-            version: "1.0",
-            po_number: state.uploadForm.po_number,
-            buyer_id: state.uploadForm.buyer_id,
-            vendor: state.uploadForm.vendor_name,
-            creation_date: state.uploadForm.creation_date.toString(),
-            expected_delivery_date: state.uploadForm.estimated_arrival?.toString() || null,
-            manifests: state.manifestMappings.map(m => ({
-                filename: m.filename,
-                path: m.path,
-                mappings: m.mappings
-            })),
-            assets: state.uploadForm.files.map(f => ({
-                filename: f.filename,
-                path: f.path,
-                file_type: f.asset_type
-            }))
-        };
+        try {
+            const state = get();
 
-        // Invoke save command
-        await invoke('save', {path: filePath, item: saveData});
+            // Prepare SaveItem data
+            const saveData: SaveItemData = {
+                version: "1.0",
+                po_number: state.uploadForm.po_number,
+                buyer_id: state.uploadForm.buyer_id,
+                vendor: state.uploadForm.vendor_name,
+                creation_date: state.uploadForm.creation_date.toString(),
+                expected_delivery_date: state.uploadForm.estimated_arrival?.toString() || null,
+                manifests: state.manifestMappings.map(m => ({
+                    filename: m.filename,
+                    path: m.path,
+                    mappings: m.mappings
+                })),
+                assets: state.uploadForm.files.map(f => ({
+                    filename: f.filename,
+                    path: f.path,
+                    file_type: f.asset_type
+                }))
+            };
 
-        // Add to history
-        const historyItem: HistoryItem = {
-            filePath,
-            poNumber: state.uploadForm.po_number,
-            vendor: state.uploadForm.vendor_name,
-            buyerId: state.uploadForm.buyer_id,
-            savedAt: new Date().toISOString()
-        };
+            // Invoke save command
+            await invoke('save', {path: filePath, item: saveData});
 
-        set(state => ({
-            history: [...state.history, historyItem]
-        }));
+            // Add to history
+            const historyItem: HistoryItem = {
+                filePath,
+                poNumber: state.uploadForm.po_number,
+                vendor: state.uploadForm.vendor_name,
+                buyerId: state.uploadForm.buyer_id,
+                savedAt: new Date().toISOString()
+            };
 
-        // Persist history to localStorage
-        localStorage.setItem('pocf_history', JSON.stringify(get().history));
+            set(state => ({
+                history: [...state.history, historyItem]
+            }));
+
+            // Persist history to localStorage
+            localStorage.setItem('pocf_history', JSON.stringify(get().history));
+        } finally {
+            set({isSaving: false});
+        }
     },
     loadFromFile: async (filePath: string) => {
-        // Invoke load command
-        const saveData = await invoke<SaveItemData>('load', {path: filePath});
+        set({isLoading: true});
 
-        // Convert and populate store
-        set({
-            uploadForm: {
-                po_number: saveData.po_number,
-                buyer_id: saveData.buyer_id,
-                vendor_name: saveData.vendor,
-                creation_date: parseDate(saveData.creation_date),
-                estimated_arrival: saveData.expected_delivery_date
-                    ? parseDate(saveData.expected_delivery_date)
-                    : null,
-                files: saveData.assets.map(a => ({
-                    key: a.path, // Use path as unique key
-                    filename: a.filename,
-                    path: a.path,
-                    asset_type: a.file_type as UploadFileType
-                }))
-            }
-        });
+        try {
+            // Invoke load command
+            const saveData = await invoke<SaveItemData>('load', {path: filePath});
 
-        // Re-initialize manifest mappings
-        get().initializeManifestMappings(get().uploadForm.files);
+            // Convert and populate store
+            set({
+                uploadForm: {
+                    po_number: saveData.po_number,
+                    buyer_id: saveData.buyer_id,
+                    vendor_name: saveData.vendor,
+                    creation_date: parseDate(saveData.creation_date),
+                    estimated_arrival: saveData.expected_delivery_date
+                        ? parseDate(saveData.expected_delivery_date)
+                        : null,
+                    files: saveData.assets.map(a => ({
+                        key: a.path, // Use path as unique key
+                        filename: a.filename,
+                        path: a.path,
+                        asset_type: a.file_type as UploadFileType
+                    }))
+                }
+            });
 
-        // Set mappings from saved data
-        saveData.manifests.forEach(m => {
-            get().setManifestMapping(m.path, m.mappings);
-        });
+            // Re-initialize manifest mappings
+            get().initializeManifestMappings(get().uploadForm.files);
+
+            // Set mappings from saved data
+            saveData.manifests.forEach(m => {
+                get().setManifestMapping(m.path, m.mappings);
+            });
+        } finally {
+            set({isLoading: false});
+        }
     },
     setManifestMapping: (path: string, mapping: Record<string, string>) => set((state) => ({
         manifestMappings: state.manifestMappings.map(m =>

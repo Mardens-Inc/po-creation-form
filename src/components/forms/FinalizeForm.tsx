@@ -1,4 +1,4 @@
-import {addToast, Button, Chip} from "@heroui/react";
+import {addToast, Button, Chip, Modal, ModalBody, ModalContent, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {useNavigate} from "react-router-dom";
 import {save} from "@tauri-apps/plugin-dialog";
@@ -9,7 +9,7 @@ import {UploadFileType} from "./POInformationForm.tsx";
 
 export function FinalizeForm()
 {
-    const {uploadForm, manifestMappings, saveToFile} = useFormDataStore();
+    const {uploadForm, manifestMappings, saveToFile, isSaving} = useFormDataStore();
     const navigate = useNavigate();
 
     // Validate that all required manifest fields are mapped
@@ -204,13 +204,39 @@ export function FinalizeForm()
                     radius="none"
                     color="primary"
                     size="lg"
-                    endContent={<Icon icon="mdi:content-save"/>}
+                    endContent={isSaving ? <Spinner size="sm" color="white"/> : <Icon icon="mdi:content-save"/>}
                     onPress={handleSave}
-                    isDisabled={!allMapped}
+                    isDisabled={!allMapped || isSaving}
+                    isLoading={isSaving}
                 >
-                    Save Purchase Order
+                    {isSaving ? "Saving..." : "Save Purchase Order"}
                 </Button>
             </div>
+
+            {/* Saving Progress Modal */}
+            <Modal
+                isOpen={isSaving}
+                isDismissable={false}
+                hideCloseButton
+                radius="none"
+                classNames={{
+                    base: "bg-white border-2 border-primary"
+                }}
+            >
+                <ModalContent>
+                    <ModalBody>
+                        <div className="flex flex-col items-center justify-center gap-6 py-8">
+                            <Spinner size="lg" color="primary"/>
+                            <div className="flex flex-col items-center gap-2">
+                                <h3 className="font-headers font-bold text-xl uppercase">Saving Purchase Order</h3>
+                                <p className="font-text text-sm text-gray-600 text-center">
+                                    Compressing and archiving files...
+                                </p>
+                            </div>
+                        </div>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </div>
     );
 }
