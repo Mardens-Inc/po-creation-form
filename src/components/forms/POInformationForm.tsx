@@ -1,4 +1,4 @@
-import {Button, Chip, cn, DatePicker, Input, Select, SelectItem} from "@heroui/react";
+import {Button, Chip, cn, DatePicker, Input, Link, Select, SelectItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {Dispatch, useCallback, useRef, useState} from "react";
 import {InfoCard} from "../InfoCard.tsx";
@@ -334,8 +334,10 @@ export function POInformationForm()
                     color={"primary"}
                     size={"lg"}
                     endContent={<Icon icon={"charm:chevron-right"}/>}
+                    as={Link}
+                    href={"/items"}
                 >
-                    {uploadForm.files.length > 0 ? "Continue" : "Skip"}
+                    Continue
                 </Button>
             </div>
         </div>

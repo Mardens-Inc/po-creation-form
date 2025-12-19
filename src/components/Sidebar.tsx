@@ -1,21 +1,18 @@
 import {Tab, Tabs} from "@heroui/react";
 import Stars from "../images/badge-exclamation-background.svg";
 import Spike from "../images/spike-horizontal.svg";
-import {Dispatch, ReactNode, useCallback, useEffect} from "react";
+import {ReactNode, useCallback, useEffect} from "react";
+import {useNavigate, useLocation} from "react-router-dom";
 import {useScreenSize} from "../providers/ScreenSizeProvider.tsx";
 import {HistoryForm} from "./forms/HistoryForm.tsx";
 import {POInformationForm} from "./forms/POInformationForm.tsx";
 import {InventoryItemsForm} from "./forms/InventoryItemsForm.tsx";
 import {FinalizeForm} from "./forms/FinalizeForm.tsx";
 
-type SidebarProps = {
-    selectedTab: TabConfig;
-    onSelectionChange: Dispatch<TabConfig>
-};
-
 export type TabConfig = {
     title: string;
     description: string;
+    path: string;
     component: ReactNode;
 };
 
@@ -23,21 +20,25 @@ export const SidebarTabs = {
     history: {
         title: "History",
         description: "If you want have any unsubmitted PO's you can submit them here.",
+        path: "/history",
         component: <HistoryForm/>
     },
     po_number: {
         title: "Purchase Order",
         description: "Add information about the current PO here.",
+        path: "/po-number",
         component: <POInformationForm/>
     },
     items: {
         title: "Inventory Items",
         description: "Reconcile the items in the PO with the inventory.",
+        path: "/items",
         component: <InventoryItemsForm/>
     },
     finalize: {
         title: "Finalize",
         description: "Here you can either upload or save the PO.",
+        path: "/finalize",
         component: <FinalizeForm/>
     }
 } as const satisfies Record<string, TabConfig>;
@@ -45,12 +46,20 @@ export const SidebarTabs = {
 // Create a type for valid tab keys
 export type SidebarTabKey = keyof typeof SidebarTabs;
 
-export function Sidebar(props: SidebarProps)
+export function Sidebar()
 {
-    const {selectedTab, onSelectionChange} = props;
+    const navigate = useNavigate();
+    const location = useLocation();
     const {width} = useScreenSize();
 
-    const refreshSelectedTab = useCallback(() => onSelectionChange(selectedTab), [selectedTab]);
+    const handleSelectionChange = (key: string) => {
+        const tab = SidebarTabs[key as SidebarTabKey];
+        navigate(tab.path);
+    };
+
+    const refreshSelectedTab = useCallback(() => {
+        // Trigger re-render on width change if needed
+    }, [location.pathname, width]);
 
     useEffect(() =>
     {
@@ -63,8 +72,8 @@ export function Sidebar(props: SidebarProps)
                 <h2 className={"font-accent text-4xl font-bold"}>PO Creation Form</h2>
                 <Tabs
                     isVertical
-                    onSelectionChange={key => onSelectionChange(SidebarTabs[key as SidebarTabKey])}
-                    selectedKey={Object.keys(SidebarTabs).find(key => SidebarTabs[key as SidebarTabKey] === selectedTab)}
+                    onSelectionChange={key => handleSelectionChange(key as string)}
+                    selectedKey={Object.keys(SidebarTabs).find(key => SidebarTabs[key as SidebarTabKey].path === location.pathname)}
                     variant={"light"}
                     color={"secondary"}
                     radius={"none"}
