@@ -98,7 +98,7 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
         };
 
         // Invoke save command
-        await invoke('plugin:save_system|save', {path: filePath, item: saveData});
+        await invoke('save', {path: filePath, item: saveData});
 
         // Add to history
         const historyItem: HistoryItem = {
@@ -118,7 +118,7 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
     },
     loadFromFile: async (filePath: string) => {
         // Invoke load command
-        const saveData = await invoke<SaveItemData>('plugin:save_system|load', {path: filePath});
+        const saveData = await invoke<SaveItemData>('load', {path: filePath});
 
         // Convert and populate store
         set({

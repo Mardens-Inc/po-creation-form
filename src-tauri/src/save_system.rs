@@ -1,11 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
-use tauri::plugin::{Builder, TauriPlugin};
-use tauri::{generate_handler, Runtime};
 
 #[derive(Deserialize, Serialize, Debug)]
-struct SaveItem {
+pub struct SaveItem {
     pub version: String,
     pub po_number: i32,
     pub buyer_id: String,
@@ -17,27 +15,21 @@ struct SaveItem {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-struct ManifestItem {
+pub struct ManifestItem {
     path: String,
     filename: String,
     mappings: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-struct AssetFile {
+pub struct AssetFile {
     filename: String,
     path: String,
     file_type: String,
 }
 
-pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::<R>::new("save_system")
-        .invoke_handler(generate_handler![save, load])
-        .build()
-}
-
 #[tauri::command]
-async fn save(path: String, item: SaveItem) -> Result<(), String> {
+pub async fn save(path: String, item: SaveItem) -> Result<(), String> {
     tokio::task::spawn_blocking(move || {
         // 1. Create temp directory for staging
         let temp_dir = std::env::temp_dir().join(format!("pocf_{}", uuid::Uuid::new_v4()));
@@ -80,7 +72,7 @@ async fn save(path: String, item: SaveItem) -> Result<(), String> {
     .map_err(|e| format!("Task join error: {}", e))?
 }
 #[tauri::command]
-async fn load(path: String) -> Result<SaveItem, String> {
+pub async fn load(path: String) -> Result<SaveItem, String> {
     tokio::task::spawn_blocking(move || {
         // 1. Extract to persistent directory (not temp, so files remain accessible)
         // Use a subdirectory of temp with a predictable name structure
