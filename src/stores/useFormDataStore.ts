@@ -1,6 +1,7 @@
 import {create} from "zustand";
 import {POInformationFormData} from "../components/forms/POInformationForm.tsx";
 import {addToast} from "@heroui/react";
+import {getLocalTimeZone, today} from "@internationalized/date";
 
 export type FormDataStore = {
     uploadForm: POInformationFormData;
@@ -14,6 +15,11 @@ type FormDataActions = {
 
 export const useFormDataStore = create<FormDataStore & FormDataActions>((set) => ({
     uploadForm: {
+        po_number: 1,
+        buyer_id: "01",
+        vendor_name: "",
+        creation_date: today(getLocalTimeZone()),
+        estimated_arrival: null,
         files: []
     },
     setUploadForm: (data: POInformationFormData) => set(() => ({uploadForm: data})),

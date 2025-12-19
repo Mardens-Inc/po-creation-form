@@ -1,6 +1,6 @@
 import {Button, Chip, cn, DatePicker, Input, Link, Select, SelectItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {Dispatch, useCallback, useRef, useState} from "react";
+import {Dispatch, useCallback, useEffect, useRef, useState} from "react";
 import {InfoCard} from "../InfoCard.tsx";
 import {CalendarDate, getLocalTimeZone, today} from "@internationalized/date";
 import {useFormDataStore} from "../../stores/useFormDataStore.ts";
@@ -33,16 +33,51 @@ export type UploadFileItem = {
 
 const manifestExtensions = ["xlsx", "csv", "pdf"];
 
+const getPoNumberFromLocalStorage = (buyerId: string): number => {
+    const key = `po_last_number_${buyerId}`;
+    const stored = localStorage.getItem(key);
+    return stored ? parseInt(stored, 10) : 1;
+};
+
+const savePoNumberToLocalStorage = (buyerId: string, poNumber: number) => {
+    const key = `po_last_number_${buyerId}`;
+    localStorage.setItem(key, poNumber.toString());
+};
+
 export function POInformationForm()
 {
-    const [buyerId, setBuyerId] = useState("01");
-    const [poNumber, setPoNumber] = useState(96);
-    const [vendorName, setVendorName] = useState("");
-    const [creationDate, setCreationDate] = useState<CalendarDate | null>(today(getLocalTimeZone()));
-    const [estimatedArrival, setEstimatedArrival] = useState<CalendarDate | null>(null);
-
     const {uploadForm, setUploadForm} = useFormDataStore();
+
+    const [buyerId, setBuyerId] = useState(uploadForm.buyer_id);
+    const [poNumber, setPoNumber] = useState(() => getPoNumberFromLocalStorage(uploadForm.buyer_id));
+    const [vendorName, setVendorName] = useState(uploadForm.vendor_name);
+    const [creationDate, setCreationDate] = useState<CalendarDate | null>(uploadForm.creation_date);
+    const [estimatedArrival, setEstimatedArrival] = useState<CalendarDate | null>(uploadForm.estimated_arrival);
+
     const dragDropAreaRef = useRef<HTMLDivElement | null>(null);
+
+    // Load PO number from local storage when buyer ID changes
+    useEffect(() => {
+        const storedPoNumber = getPoNumberFromLocalStorage(buyerId);
+        setPoNumber(storedPoNumber);
+    }, [buyerId]);
+
+    // Save PO number to local storage whenever it changes
+    useEffect(() => {
+        savePoNumberToLocalStorage(buyerId, poNumber);
+    }, [buyerId, poNumber]);
+
+    // Auto-save all form data to the store whenever any field changes
+    useEffect(() => {
+        setUploadForm({
+            po_number: poNumber,
+            buyer_id: buyerId,
+            vendor_name: vendorName,
+            creation_date: creationDate || today(getLocalTimeZone()),
+            estimated_arrival: estimatedArrival,
+            files: uploadForm.files
+        });
+    }, [poNumber, buyerId, vendorName, creationDate, estimatedArrival, uploadForm.files, setUploadForm]);
 
     const incrementPO = () => setPoNumber(prev => prev + 1);
     const decrementPO = () => setPoNumber(prev => Math.max(1, prev - 1));
