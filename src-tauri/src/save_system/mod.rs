@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{generate_handler, Runtime};
 
@@ -18,23 +19,8 @@ struct SaveItem {
 #[derive(Deserialize, Serialize, Debug)]
 struct ManifestItem {
     path: String,
-    mappings: TemplateItemStructure,
-}
-#[derive(Deserialize, Serialize, Debug)]
-struct TemplateItemStructure {
-    item_number: String,
-    upc: String,
-    description: String,
-    case_pack: String,
-    cases: String,
-    mardens_cost: String,
-    mardens_price: String,
-    comp_retail: String,
-    department: String,
-    category: String,
-    sub_category: String,
-    season: String,
-    notes: String,
+    filename: String,
+    mappings: HashMap<String, String>,
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -44,8 +30,8 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 }
 
 #[tauri::command]
-async fn save(path: String, item: SaveItem) {
-    
+async fn save(_path: String, _item: SaveItem) {
+
 }
 #[tauri::command]
 async fn load() -> Option<SaveItem> {
