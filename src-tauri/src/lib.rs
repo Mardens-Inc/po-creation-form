@@ -1,4 +1,5 @@
 mod save_system;
+mod manifest_parser;
 
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
@@ -14,6 +15,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(save_system::init())
+        .plugin(manifest_parser::init())
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
