@@ -1,4 +1,4 @@
-import {Button, Link, addToast} from "@heroui/react";
+import {addToast, Button, Link} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {useEffect, useMemo, useState} from "react";
 import {Swiper, SwiperSlide} from "swiper/react";
@@ -11,7 +11,8 @@ import {ManifestPreviewTable} from "./ManifestPreviewTable.tsx";
 import {EmptyManifestState} from "./EmptyManifestState.tsx";
 import {ManifestData, REQUIRED_FIELDS} from "../../types/manifest.ts";
 
-export function InventoryItemsForm() {
+export function InventoryItemsForm()
+{
     const {
         uploadForm,
         manifestMappings,
@@ -30,30 +31,37 @@ export function InventoryItemsForm() {
     );
 
     // Initialize manifest mappings on mount
-    useEffect(() => {
-        if (manifestFiles.length > 0) {
+    useEffect(() =>
+    {
+        if (manifestFiles.length > 0)
+        {
             initializeManifestMappings(manifestFiles);
         }
     }, [manifestFiles.length]);
 
     // Parse active manifest file when it changes
-    useEffect(() => {
+    useEffect(() =>
+    {
         const activeMapping = manifestMappings[activeManifestIndex];
         if (!activeMapping) return;
 
         // Only parse if not already parsed
-        if (!activeMapping.parsedData && !activeMapping.isLoading && !activeMapping.error) {
+        if (!activeMapping.parsedData && !activeMapping.isLoading && !activeMapping.error)
+        {
             parseManifestFile(activeMapping.path);
         }
     }, [activeManifestIndex, manifestMappings]);
 
-    const parseManifestFile = async (path: string) => {
+    const parseManifestFile = async (path: string) =>
+    {
         setManifestLoading(path, true);
 
-        try {
+        try
+        {
             const data = await invoke<ManifestData>("parse_manifest_file", {path});
             setManifestParsedData(path, data);
-        } catch (error) {
+        } catch (error)
+        {
             const errorMessage = error instanceof Error ? error.message : String(error);
             setManifestError(path, errorMessage);
             addToast({
@@ -64,15 +72,18 @@ export function InventoryItemsForm() {
         }
     };
 
-    const validateMappings = (): boolean => {
+    const validateMappings = (): boolean =>
+    {
         let hasErrors = false;
 
-        for (const mapping of manifestMappings) {
+        for (const mapping of manifestMappings)
+        {
             const missingRequired = REQUIRED_FIELDS.filter(
                 field => !mapping.mappings[field] || mapping.mappings[field] === ""
             );
 
-            if (missingRequired.length > 0) {
+            if (missingRequired.length > 0)
+            {
                 hasErrors = true;
                 addToast({
                     title: `Validation Error: ${mapping.filename}`,
@@ -85,8 +96,10 @@ export function InventoryItemsForm() {
         return !hasErrors;
     };
 
-    const handleContinue = () => {
-        if (validateMappings()) {
+    const handleContinue = () =>
+    {
+        if (validateMappings())
+        {
             addToast({
                 title: "Success",
                 description: "All manifests are properly mapped!",
@@ -96,30 +109,34 @@ export function InventoryItemsForm() {
     };
 
     // Show empty state if no manifest files
-    if (manifestFiles.length === 0) {
+    if (manifestFiles.length === 0)
+    {
         return <EmptyManifestState/>;
     }
 
     const activeMapping = manifestMappings[activeManifestIndex];
 
     return (
-        <div className="flex flex-col h-full gap-8 mb-16">
+        <div className="flex flex-col h-full gap-8 mb-16 overflow-visible">
             {/* Swiper Carousel */}
-            <Swiper
-                modules={[Navigation, Pagination]}
-                navigation
-                pagination={{clickable: true}}
-                spaceBetween={30}
-                slidesPerView={1}
-                onSlideChange={(swiper) => setActiveManifestIndex(swiper.activeIndex)}
-                className="w-full"
-            >
-                {manifestMappings.map((mapping) => (
-                    <SwiperSlide key={mapping.path}>
-                        <ColumnMappingCard mappingData={mapping}/>
-                    </SwiperSlide>
-                ))}
-            </Swiper>
+            <div className="w-full min-h-[500px] max-h-[700px] h-[60vh] px-20 overflow-visible relative">
+                <Swiper
+                    modules={[Navigation, Pagination]}
+                    navigation
+                    pagination={{clickable: true}}
+                    spaceBetween={30}
+                    slidesPerView={1}
+                    onSlideChange={(swiper) => setActiveManifestIndex(swiper.activeIndex)}
+                    className="w-full h-full overflow-visible"
+                    style={{overflow: "visible"}}
+                >
+                    {manifestMappings.map((mapping) => (
+                        <SwiperSlide key={mapping.path} className="h-full overflow-visible">
+                            <ColumnMappingCard mappingData={mapping}/>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            </div>
 
             {/* Preview Table */}
             {activeMapping && (
@@ -131,16 +148,6 @@ export function InventoryItemsForm() {
 
             {/* Navigation Buttons */}
             <div className="fixed bottom-2 right-5 flex flex-row gap-2">
-                <Button
-                    radius="none"
-                    color="default"
-                    size="lg"
-                    startContent={<Icon icon="tabler:arrow-left"/>}
-                    as={Link}
-                    href="/po-number"
-                >
-                    Back
-                </Button>
                 <Button
                     radius="none"
                     color="primary"

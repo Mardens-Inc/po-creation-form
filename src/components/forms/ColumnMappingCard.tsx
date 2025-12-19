@@ -66,10 +66,10 @@ export function ColumnMappingCard({mappingData}: ColumnMappingCardProps) {
     const availableColumns = mappingData.parsedData.columns;
 
     return (
-        <InfoCard>
+        <InfoCard className="h-full flex flex-col">
             <InfoCard.Header>{mappingData.filename}</InfoCard.Header>
-            <InfoCard.Body>
-                <div className="flex flex-col gap-6 py-6">
+            <InfoCard.Body className="flex-1 overflow-y-auto min-h-[400px] max-h-[600px]">
+                <div className="flex flex-col gap-6 py-6 px-2">
                     <div className="flex items-center justify-between">
                         <p className="font-headers font-bold text-xl uppercase">Column Mapping</p>
                         <Chip color="secondary" size="sm">
@@ -81,7 +81,7 @@ export function ColumnMappingCard({mappingData}: ColumnMappingCardProps) {
                         Required fields are marked with a red indicator.
                     </p>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-4">
                         {TEMPLATE_FIELDS.map((field) => {
                             const selectedColumn = mappingData.mappings[field] || "";
                             const required = isRequired(field);
