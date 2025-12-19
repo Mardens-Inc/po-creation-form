@@ -3,6 +3,7 @@
 .swiper {
   padding-bottom: 80px !important; // Increased space for pagination
 
+
   // Navigation buttons
   .swiper-button-prev,
   .swiper-button-next {
@@ -34,6 +35,9 @@
       opacity: 0.15;
       cursor: not-allowed;
       pointer-events: none;
+    }
+    .swiper-navigation-icon{
+      width: 8px;
     }
   }
 
