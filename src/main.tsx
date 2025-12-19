@@ -17,6 +17,7 @@ import {HistoryForm} from "./components/forms/HistoryForm.tsx";
 import {POInformationForm} from "./components/forms/POInformationForm.tsx";
 import {InventoryItemsForm} from "./components/forms/InventoryItemsForm.tsx";
 import {FinalizeForm} from "./components/forms/FinalizeForm.tsx";
+import {UpdateModal} from "./components/UpdateModal.tsx";
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
@@ -44,6 +45,8 @@ export function MainContentRenderer()
                     variant: "flat"
                 }}
             />
+
+            <UpdateModal />
 
             <main className={"flex flex-col p-0 m-0"}>
                 <Titlebar/>
