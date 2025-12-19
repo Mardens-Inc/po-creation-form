@@ -64,7 +64,7 @@ fn parse_excel(path: String) -> Result<ManifestData, String> {
     let mut rows: Vec<Vec<String>> = Vec::new();
     let total_rows = range.height() - 1; // Subtract header row
 
-    for row in rows_iter.take(10) {
+    for row in rows_iter.take(3) {
         let row_data: Vec<String> = row
             .iter()
             .map(cell_to_string)

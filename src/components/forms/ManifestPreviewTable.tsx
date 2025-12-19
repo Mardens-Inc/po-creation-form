@@ -1,24 +1,22 @@
 import {useMemo} from "react";
-import {
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    useReactTable
-} from "@tanstack/react-table";
-import {ManifestData, TEMPLATE_FIELDS, TEMPLATE_FIELD_LABELS} from "../../types/manifest.ts";
+import {createColumnHelper, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
+import {ManifestData, TEMPLATE_FIELD_LABELS, TEMPLATE_FIELDS} from "../../types/manifest.ts";
 
 type ManifestPreviewTableProps = {
     manifestData: ManifestData | null;
     mappings: Record<string, string>;
 }
 
-export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTableProps) {
+export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTableProps)
+{
     const columnHelper = createColumnHelper<string[]>();
 
-    const columns = useMemo(() => {
+    const columns = useMemo(() =>
+    {
         return TEMPLATE_FIELDS.map((field) =>
             columnHelper.accessor(
-                (row) => {
+                (row) =>
+                {
                     const mappedColumn = mappings[field];
                     if (!mappedColumn || !manifestData) return "";
 
@@ -30,9 +28,11 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
                 {
                     id: field,
                     header: TEMPLATE_FIELD_LABELS[field],
-                    cell: (info) => {
+                    cell: (info) =>
+                    {
                         const value = info.getValue();
-                        if (!value) {
+                        if (!value)
+                        {
                             return (
                                 <span className="text-gray-400 italic text-sm">Not Mapped</span>
                             );
@@ -44,7 +44,8 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
         );
     }, [mappings, manifestData, columnHelper]);
 
-    const data = useMemo(() => {
+    const data = useMemo(() =>
+    {
         return manifestData?.rows || [];
     }, [manifestData]);
 
@@ -54,7 +55,8 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
         getCoreRowModel: getCoreRowModel()
     });
 
-    if (!manifestData) {
+    if (!manifestData)
+    {
         return (
             <div className="flex items-center justify-center py-8 bg-secondary/20 border-2 border-primary/20">
                 <p className="font-text text-lg text-gray-500">
@@ -64,7 +66,8 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
         );
     }
 
-    if (data.length === 0) {
+    if (data.length === 0)
+    {
         return (
             <div className="flex items-center justify-center py-8 bg-secondary/20 border-2 border-primary/20">
                 <p className="font-text text-lg text-gray-500">
@@ -77,9 +80,9 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <h3 className="font-headers font-bold text-xl uppercase">Preview (First 10 Rows)</h3>
+                <h3 className="font-headers font-bold text-xl uppercase">Preview (First 3 Rows)</h3>
                 <p className="font-text text-sm text-gray-600">
-                    Showing {Math.min(data.length, 10)} of {manifestData.total_rows} rows
+                    Showing {Math.min(data.length, 3)} of {manifestData.total_rows} rows
                 </p>
             </div>
 
@@ -87,44 +90,44 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
                 <div className="max-h-[500px] overflow-y-auto">
                     <table className="w-full border-collapse">
                         <thead className="sticky top-0 z-10 bg-primary text-white">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <tr key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <th
-                                            key={header.id}
-                                            className="border-r-2 border-primary-600 last:border-r-0 px-4 py-3 text-left font-headers font-bold text-sm uppercase whitespace-nowrap"
-                                        >
-                                            {flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                            ))}
+                        {table.getHeaderGroups().map((headerGroup) => (
+                            <tr key={headerGroup.id}>
+                                {headerGroup.headers.map((header) => (
+                                    <th
+                                        key={header.id}
+                                        className="border-r-2 border-primary-600 last:border-r-0 px-4 py-3 text-left font-headers font-bold text-sm uppercase whitespace-nowrap"
+                                    >
+                                        {flexRender(
+                                            header.column.columnDef.header,
+                                            header.getContext()
+                                        )}
+                                    </th>
+                                ))}
+                            </tr>
+                        ))}
                         </thead>
                         <tbody>
-                            {table.getRowModel().rows.map((row, index) => (
-                                <tr
-                                    key={row.id}
-                                    className={`
+                        {table.getRowModel().rows.map((row, index) => (
+                            <tr
+                                key={row.id}
+                                className={`
                                         ${index % 2 === 0 ? "bg-white" : "bg-secondary/10"}
                                         hover:bg-secondary/30 transition-colors
                                     `}
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <td
-                                            key={cell.id}
-                                            className="border-r border-b border-gray-300 last:border-r-0 px-4 py-2 font-text text-sm"
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                    <td
+                                        key={cell.id}
+                                        className="border-r border-b border-gray-300 last:border-r-0 px-4 py-2 font-text text-sm"
+                                    >
+                                        {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext()
+                                        )}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
