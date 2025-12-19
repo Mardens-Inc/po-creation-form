@@ -15,7 +15,6 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(save_system::init())
-        .plugin(manifest_parser::init())
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
@@ -39,7 +38,11 @@ pub fn run() {
             }
         })
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            manifest_parser::commands::parse_manifest_file,
+            manifest_parser::commands::validate_column_mapping
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -51,7 +51,7 @@ export function InventoryItemsForm() {
         setManifestLoading(path, true);
 
         try {
-            const data = await invoke<ManifestData>("plugin:manifest_parser|parse_manifest_file", {path});
+            const data = await invoke<ManifestData>("parse_manifest_file", {path});
             setManifestParsedData(path, data);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
