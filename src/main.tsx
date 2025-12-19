@@ -3,7 +3,7 @@ import {BrowserRouter, Navigate, Route, Routes, useNavigate} from "react-router-
 import ReactDOM from "react-dom/client";
 import $ from "jquery";
 
-import "./css/index.css";
+import "./styles/index.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -51,18 +51,18 @@ export function MainContentRenderer()
                 <div className={"flex flex-row w-full max-h-[calc(100vh-2rem)] h-screen overflow-y-auto p-0 m-0"}>
                     <Routes>
                         {/* Root redirect */}
-                        <Route path="/" element={<Navigate to="/po-number" replace />} />
+                        <Route path="/" element={<Navigate to="/po-number" replace/>}/>
 
                         {/* Home as layout with nested routes */}
-                        <Route element={<ErrorBoundary><Home /></ErrorBoundary>}>
-                            <Route path="/history" element={<ErrorBoundary><HistoryForm /></ErrorBoundary>} />
-                            <Route path="/po-number" element={<ErrorBoundary><POInformationForm /></ErrorBoundary>} />
-                            <Route path="/items" element={<ErrorBoundary><InventoryItemsForm /></ErrorBoundary>} />
-                            <Route path="/finalize" element={<ErrorBoundary><FinalizeForm /></ErrorBoundary>} />
+                        <Route element={<ErrorBoundary><Home/></ErrorBoundary>}>
+                            <Route path="/history" element={<ErrorBoundary><HistoryForm/></ErrorBoundary>}/>
+                            <Route path="/po-number" element={<ErrorBoundary><POInformationForm/></ErrorBoundary>}/>
+                            <Route path="/items" element={<ErrorBoundary><InventoryItemsForm/></ErrorBoundary>}/>
+                            <Route path="/finalize" element={<ErrorBoundary><FinalizeForm/></ErrorBoundary>}/>
                         </Route>
 
                         {/* Catch-all for invalid routes - redirect to default */}
-                        <Route path="*" element={<Navigate to="/po-number" replace />} />
+                        <Route path="*" element={<Navigate to="/po-number" replace/>}/>
                     </Routes>
                 </div>
 
