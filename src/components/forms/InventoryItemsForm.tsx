@@ -30,7 +30,7 @@ export function InventoryItemsForm()
         [uploadForm.files]
     );
 
-    // Initialize manifest mappings on mount
+    // Initialize manifest mappings on mount and parse all files
     useEffect(() =>
     {
         if (manifestFiles.length > 0)
@@ -39,18 +39,18 @@ export function InventoryItemsForm()
         }
     }, [manifestFiles.length]);
 
-    // Parse active manifest file when it changes
+    // Parse all manifest files on mount or when mappings are initialized
     useEffect(() =>
     {
-        const activeMapping = manifestMappings[activeManifestIndex];
-        if (!activeMapping) return;
-
-        // Only parse if not already parsed
-        if (!activeMapping.parsedData && !activeMapping.isLoading && !activeMapping.error)
+        manifestMappings.forEach((mapping) =>
         {
-            parseManifestFile(activeMapping.path);
-        }
-    }, [activeManifestIndex, manifestMappings]);
+            // Only parse if not already parsed, loading, or errored
+            if (!mapping.parsedData && !mapping.isLoading && !mapping.error)
+            {
+                parseManifestFile(mapping.path);
+            }
+        });
+    }, [manifestMappings.length]);
 
     const parseManifestFile = async (path: string) =>
     {
@@ -141,6 +141,7 @@ export function InventoryItemsForm()
             {/* Preview Table */}
             {activeMapping && (
                 <ManifestPreviewTable
+                    key={`${activeManifestIndex}-${JSON.stringify(activeMapping.mappings)}`}
                     manifestData={activeMapping.parsedData}
                     mappings={activeMapping.mappings}
                 />

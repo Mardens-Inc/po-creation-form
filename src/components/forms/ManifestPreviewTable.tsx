@@ -7,10 +7,10 @@ type ManifestPreviewTableProps = {
     mappings: Record<string, string>;
 }
 
+const columnHelper = createColumnHelper<string[]>();
+
 export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTableProps)
 {
-    const columnHelper = createColumnHelper<string[]>();
-
     const columns = useMemo(() =>
     {
         return TEMPLATE_FIELDS.map((field) =>
@@ -42,7 +42,7 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
                 }
             )
         );
-    }, [mappings, manifestData, columnHelper]);
+    }, [mappings, manifestData]);
 
     const data = useMemo(() =>
     {
