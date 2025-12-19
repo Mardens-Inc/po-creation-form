@@ -4,6 +4,10 @@ import ReactDOM from "react-dom/client";
 import $ from "jquery";
 
 import "./css/index.css";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "./styles/swiper-custom.scss";
 import {Home} from "./pages/Home.tsx";
 import Titlebar from "./components/Titlebar.tsx";
 import {HeroUIProvider, ToastProvider} from "@heroui/react";
