@@ -1,3 +1,5 @@
+mod save_system;
+
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
@@ -11,16 +13,17 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(save_system::init())
         .plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
                 .build(),
         )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                if let Err(e) = window.set_focus() {
-                    eprintln!("Failed to set focus: {}", e);
-                }
+            if let Some(window) = app.get_webview_window("main")
+                && let Err(e) = window.set_focus()
+            {
+                eprintln!("Failed to set focus: {}", e);
             }
         }))
         .on_window_event(|window, event| {
