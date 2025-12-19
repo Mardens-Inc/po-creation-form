@@ -9,7 +9,12 @@ import {open} from "@tauri-apps/plugin-dialog";
 import {useTauriDragDropZone} from "../../hooks/useTauriDragDropZone.ts";
 import {AnimatePresence, motion} from "framer-motion";
 
-export type UploadManifestFormData = {
+export type POInformationFormData = {
+    po_number: number;
+    buyer_id: string;
+    vendor_name: string;
+    creation_date: CalendarDate;
+    estimated_arrival: CalendarDate | null;
     files: UploadFileItem[];
 }
 
@@ -28,7 +33,7 @@ export type UploadFileItem = {
 
 const manifestExtensions = ["xlsx", "csv", "pdf"];
 
-export function POInformation()
+export function POInformationForm()
 {
     const [buyerId, setBuyerId] = useState("01");
     const [poNumber, setPoNumber] = useState(96);
