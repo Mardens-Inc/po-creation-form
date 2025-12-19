@@ -15,6 +15,7 @@
     "core:window:allow-toggle-maximize",
     "allow-parse-manifest-file",
     "allow-validate-column-mapping",
+    "allow-write-manifest-csv",
     "allow-save",
     "allow-load"
   ]

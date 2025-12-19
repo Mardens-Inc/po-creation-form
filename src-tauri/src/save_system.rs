@@ -107,14 +107,16 @@ pub async fn load(path: String) -> Result<SaveItem, String> {
         // 5. Update asset paths in SaveItem to point to extracted location
         let assets_dir = extract_dir.join("assets");
         for asset in &mut save_item.assets {
-            asset.path = assets_dir.join(&asset.filename)
+            asset.path = assets_dir
+                .join(&asset.filename)
                 .to_string_lossy()
                 .to_string();
         }
 
         // Update manifest paths as well
         for manifest in &mut save_item.manifests {
-            manifest.path = assets_dir.join(&manifest.filename)
+            manifest.path = assets_dir
+                .join(&manifest.filename)
                 .to_string_lossy()
                 .to_string();
         }

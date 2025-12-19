@@ -8,14 +8,17 @@ import {UploadFileType} from "./POInformationForm.tsx";
 import {useFormDataStore} from "../../stores/useFormDataStore.ts";
 import {ColumnMappingCard} from "./ColumnMappingCard.tsx";
 import {ManifestPreviewTable} from "./ManifestPreviewTable.tsx";
-import {EmptyManifestState} from "./EmptyManifestState.tsx";
 import {ManifestData, REQUIRED_FIELDS} from "../../types/manifest.ts";
+import {CreateManifestCard} from "./CreateManifestCard.tsx";
+import {CreateManifestTable} from "./CreateManifestTable.tsx";
 
 export function InventoryItemsForm()
 {
     const {
         uploadForm,
         manifestMappings,
+        createdManifest,
+        setCreatedManifest,
         initializeManifestMappings,
         setManifestParsedData,
         setManifestLoading,
@@ -76,6 +79,7 @@ export function InventoryItemsForm()
     {
         let hasErrors = false;
 
+        // Validate uploaded manifest files
         for (const mapping of manifestMappings)
         {
             const missingRequired = REQUIRED_FIELDS.filter(
@@ -93,6 +97,24 @@ export function InventoryItemsForm()
             }
         }
 
+        // Validate created manifest if it exists and has data
+        if (createdManifest.length > 0)
+        {
+            const emptyRequiredFields = createdManifest.some(row =>
+                REQUIRED_FIELDS.some(field => !row[field] || row[field].trim() === "")
+            );
+
+            if (emptyRequiredFields)
+            {
+                hasErrors = true;
+                addToast({
+                    title: "Validation Error: Created Manifest",
+                    description: `All rows must have: ${REQUIRED_FIELDS.join(", ")}`,
+                    color: "danger"
+                });
+            }
+        }
+
         return !hasErrors;
     };
 
@@ -102,19 +124,27 @@ export function InventoryItemsForm()
         {
             addToast({
                 title: "Success",
-                description: "All manifests are properly mapped!",
+                description: "All manifests are properly validated!",
                 color: "success"
             });
         }
     };
 
-    // Show empty state if no manifest files
-    if (manifestFiles.length === 0)
-    {
-        return <EmptyManifestState/>;
-    }
+    // Determine if we should show the create manifest slide (always true)
+    const hasManifestFiles = manifestFiles.length > 0;
 
-    const activeMapping = manifestMappings[activeManifestIndex];
+    // Calculate total slides: uploaded manifests + create manifest slide
+    const totalSlides = manifestMappings.length + 1;
+
+    // Determine if the active index is the create manifest slide
+    const isCreateManifestActive = hasManifestFiles
+        ? activeManifestIndex === totalSlides - 1  // At the end if manifest files exist
+        : activeManifestIndex === 0;                // First slide if no manifest files
+
+    // Get the active mapping (only if not on create manifest slide)
+    const activeMapping = !isCreateManifestActive && hasManifestFiles
+        ? manifestMappings[activeManifestIndex]
+        : null;
 
     return (
         <div className="flex flex-col h-full gap-8 mb-16 overflow-visible">
@@ -130,16 +160,36 @@ export function InventoryItemsForm()
                     className="w-full h-full overflow-visible"
                     style={{overflow: "visible"}}
                 >
+                    {/* Show Create Manifest slide first if no manifest files exist */}
+                    {!hasManifestFiles && (
+                        <SwiperSlide key="create-manifest" className="h-full overflow-visible">
+                            <CreateManifestCard />
+                        </SwiperSlide>
+                    )}
+
+                    {/* Show uploaded manifest slides */}
                     {manifestMappings.map((mapping) => (
                         <SwiperSlide key={mapping.path} className="h-full overflow-visible">
                             <ColumnMappingCard mappingData={mapping}/>
                         </SwiperSlide>
                     ))}
+
+                    {/* Show Create Manifest slide at the end if manifest files exist */}
+                    {hasManifestFiles && (
+                        <SwiperSlide key="create-manifest" className="h-full overflow-visible">
+                            <CreateManifestCard />
+                        </SwiperSlide>
+                    )}
                 </Swiper>
             </div>
 
-            {/* Preview Table */}
-            {activeMapping && (
+            {/* Preview Table or Create Manifest Table */}
+            {isCreateManifestActive ? (
+                <CreateManifestTable
+                    data={createdManifest}
+                    onChange={setCreatedManifest}
+                />
+            ) : activeMapping && (
                 <ManifestPreviewTable
                     key={`${activeManifestIndex}-${JSON.stringify(activeMapping.mappings)}`}
                     manifestData={activeMapping.parsedData}

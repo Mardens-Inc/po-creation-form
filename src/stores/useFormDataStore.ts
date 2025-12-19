@@ -3,6 +3,7 @@ import {POInformationFormData, UploadFileItem, UploadFileType} from "../componen
 import {getLocalTimeZone, parseDate, today} from "@internationalized/date";
 import {ManifestData} from "../types/manifest.ts";
 import {invoke} from "@tauri-apps/api/core";
+import {ManifestRow} from "../components/forms/CreateManifestTable.tsx";
 
 export type ManifestMapping = {
     filename: string;
@@ -44,6 +45,7 @@ type SaveItemData = {
 export type FormDataStore = {
     uploadForm: POInformationFormData;
     manifestMappings: ManifestMapping[];
+    createdManifest: ManifestRow[];
     history: HistoryItem[];
     isSaving: boolean;
     isLoading: boolean;
@@ -58,6 +60,8 @@ type FormDataActions = {
     setManifestLoading: (path: string, isLoading: boolean) => void;
     setManifestError: (path: string, error: string | null) => void;
     initializeManifestMappings: (files: UploadFileItem[]) => void;
+    setCreatedManifest: (data: ManifestRow[]) => void;
+    clearCreatedManifest: () => void;
     addToHistory: (item: HistoryItem) => void;
     removeFromHistory: (filePath: string) => void;
     clearHistory: () => void;
@@ -74,6 +78,7 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
         files: []
     },
     manifestMappings: [],
+    createdManifest: [],
     history: [],
     isSaving: false,
     isLoading: false,
@@ -83,6 +88,21 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
 
         try {
             const state = get();
+
+            // Handle created manifest - write to CSV if it exists
+            let createdManifestPath: string | null = null;
+            let createdManifestFilename: string | null = null;
+
+            if (state.createdManifest.length > 0) {
+                // Generate filename for created manifest
+                createdManifestFilename = `created_manifest_${Date.now()}.csv`;
+
+                // Call Rust command to write CSV
+                createdManifestPath = await invoke<string>('write_manifest_csv', {
+                    rows: state.createdManifest,
+                    filename: createdManifestFilename
+                });
+            }
 
             // Prepare SaveItem data
             const saveData: SaveItemData = {
@@ -103,6 +123,39 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
                     file_type: f.asset_type
                 }))
             };
+
+            // Add created manifest to manifests array if it exists
+            if (createdManifestPath && createdManifestFilename) {
+                // Create identity mapping for created manifest (all fields map to themselves)
+                const identityMapping: Record<string, string> = {
+                    item_number: "Item Number",
+                    upc: "UPC",
+                    description: "Description",
+                    case_pack: "Case Pack",
+                    cases: "Cases",
+                    mardens_cost: "Mardens Cost",
+                    mardens_price: "Mardens Price",
+                    comp_retail: "Comp Retail",
+                    department: "Department",
+                    category: "Category",
+                    sub_category: "Sub Category",
+                    season: "Season",
+                    notes: "Notes"
+                };
+
+                saveData.manifests.push({
+                    filename: createdManifestFilename,
+                    path: createdManifestPath,
+                    mappings: identityMapping
+                });
+
+                // Also add to assets
+                saveData.assets.push({
+                    filename: createdManifestFilename,
+                    path: createdManifestPath,
+                    file_type: "manifest"
+                });
+            }
 
             // Invoke save command
             await invoke('save', {path: filePath, item: saveData});
@@ -200,6 +253,8 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
             manifestMappings: [...state.manifestMappings, ...newMappings]
         };
     }),
+    setCreatedManifest: (data: ManifestRow[]) => set(() => ({createdManifest: data})),
+    clearCreatedManifest: () => set(() => ({createdManifest: []})),
     addToHistory: (item: HistoryItem) => {
         set(state => ({
             history: [...state.history, item]

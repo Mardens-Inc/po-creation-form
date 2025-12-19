@@ -1,4 +1,4 @@
-use calamine::{open_workbook_auto, Reader, Data};
+use calamine::{Data, Reader, open_workbook_auto};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -31,8 +31,8 @@ pub fn parse_manifest(path: String) -> Result<ManifestData, String> {
 }
 
 fn parse_excel(path: String) -> Result<ManifestData, String> {
-    let mut workbook = open_workbook_auto(&path)
-        .map_err(|e| format!("Failed to open Excel file: {}", e))?;
+    let mut workbook =
+        open_workbook_auto(&path).map_err(|e| format!("Failed to open Excel file: {}", e))?;
 
     let sheet_names = workbook.sheet_names();
     if sheet_names.is_empty() {
@@ -47,14 +47,9 @@ fn parse_excel(path: String) -> Result<ManifestData, String> {
     let mut rows_iter = range.rows();
 
     // Get column headers from first row
-    let header_row = rows_iter
-        .next()
-        .ok_or("Excel file is empty")?;
+    let header_row = rows_iter.next().ok_or("Excel file is empty")?;
 
-    let columns: Vec<String> = header_row
-        .iter()
-        .map(cell_to_string)
-        .collect();
+    let columns: Vec<String> = header_row.iter().map(cell_to_string).collect();
 
     if columns.is_empty() {
         return Err("Excel file has no columns".to_string());
@@ -65,10 +60,7 @@ fn parse_excel(path: String) -> Result<ManifestData, String> {
     let total_rows = range.height() - 1; // Subtract header row
 
     for row in rows_iter.take(3) {
-        let row_data: Vec<String> = row
-            .iter()
-            .map(cell_to_string)
-            .collect();
+        let row_data: Vec<String> = row.iter().map(cell_to_string).collect();
         rows.push(row_data);
     }
 
@@ -104,12 +96,8 @@ fn parse_csv(path: String) -> Result<ManifestData, String> {
     for result in reader.records() {
         total_rows += 1;
         if rows.len() < 10 {
-            let record = result
-                .map_err(|e| format!("Failed to read CSV row: {}", e))?;
-            let row_data: Vec<String> = record
-                .iter()
-                .map(|s| s.to_string())
-                .collect();
+            let record = result.map_err(|e| format!("Failed to read CSV row: {}", e))?;
+            let row_data: Vec<String> = record.iter().map(|s| s.to_string()).collect();
             rows.push(row_data);
         }
     }
