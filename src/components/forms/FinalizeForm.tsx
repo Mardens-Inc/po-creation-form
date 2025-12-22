@@ -10,7 +10,7 @@ import {getLocalTimeZone} from "@internationalized/date";
 
 export function FinalizeForm()
 {
-    const {uploadForm, manifestMappings, saveToFile, isSaving} = useFormDataStore();
+    const {uploadForm, manifestMappings, saveToFile, saveCurrentFile, currentFilePath, isSaving} = useFormDataStore();
     const navigate = useNavigate();
 
     // Validate that all required manifest fields are mapped
@@ -47,28 +47,41 @@ export function FinalizeForm()
             return;
         }
 
-        // Show save dialog
-        const filePath = await save({
-            filters: [{
-                name: "Purchase Order Files",
-                extensions: ["pocf"]
-            }],
-            defaultPath: `PO_${uploadForm.po_number}_${uploadForm.buyer_id}.pocf`
-        });
-
-        if (!filePath)
-        {
-            return;
-        }
-
         try
         {
-            await saveToFile(filePath);
-            addToast({
-                title: "Success",
-                description: "Purchase order saved successfully",
-                color: "success"
-            });
+            if (currentFilePath)
+            {
+                // Update existing file
+                await saveCurrentFile();
+                addToast({
+                    title: "Success",
+                    description: "Purchase order updated successfully",
+                    color: "success"
+                });
+            }
+            else
+            {
+                // Show save dialog for new file
+                const filePath = await save({
+                    filters: [{
+                        name: "Purchase Order Files",
+                        extensions: ["pocf"]
+                    }],
+                    defaultPath: `PO_${uploadForm.po_number}_${uploadForm.buyer_id}.pocf`
+                });
+
+                if (!filePath)
+                {
+                    return;
+                }
+
+                await saveToFile(filePath);
+                addToast({
+                    title: "Success",
+                    description: "Purchase order saved successfully",
+                    color: "success"
+                });
+            }
             navigate("/history");
         } catch (error)
         {
@@ -207,7 +220,7 @@ export function FinalizeForm()
                     isDisabled={!allMapped || isSaving}
                     isLoading={isSaving}
                 >
-                    {isSaving ? "Saving..." : "Save Purchase Order"}
+                    {isSaving ? "Saving..." : (currentFilePath ? "Update Purchase Order" : "Save Purchase Order")}
                 </Button>
             </div>
 
