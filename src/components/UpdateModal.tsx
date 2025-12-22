@@ -65,7 +65,7 @@ export function UpdateModal()
                     case "Progress":
                         setUpdateState({
                             type: "downloading",
-                            progress: (event.data.chunkLength / event.data.contentLength!) * 100
+                            progress: (event.data.chunkLength / (event.data as any).contentLength!) * 100
                         });
                         break;
                     case "Finished":
