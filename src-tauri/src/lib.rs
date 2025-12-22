@@ -13,11 +13,24 @@ pub fn run() {
                 .with_state_flags(StateFlags::MAXIMIZED | StateFlags::POSITION | StateFlags::SIZE)
                 .build(),
         )
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(window) = app.get_webview_window("main")
-                && let Err(e) = window.set_focus()
-            {
-                eprintln!("Failed to set focus: {}", e);
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                // Focus the window
+                if let Err(e) = window.set_focus() {
+                    eprintln!("Failed to set focus: {}", e);
+                }
+
+                // Parse command-line arguments for .pocf file path
+                // Args format: ["exe_path", "file.pocf"] when opening file
+                if args.len() > 1 {
+                    let potential_file = &args[1];
+                    if potential_file.ends_with(".pocf") && std::path::Path::new(potential_file).exists() {
+                        // Emit event to frontend with file path
+                        if let Err(e) = window.emit("open-file", potential_file.clone()) {
+                            eprintln!("Failed to emit open-file event: {}", e);
+                        }
+                    }
+                }
             }
         }))
         .on_window_event(|window, event| {
