@@ -6,6 +6,7 @@ import {InfoCard} from "../InfoCard.tsx";
 import {useFormDataStore} from "../../stores/useFormDataStore.ts";
 import {REQUIRED_FIELDS} from "../../types/manifest.ts";
 import {UploadFileType} from "./POInformationForm.tsx";
+import {getLocalTimeZone} from "@internationalized/date";
 
 export function FinalizeForm()
 {
@@ -91,36 +92,32 @@ export function FinalizeForm()
     return (
         <div className="flex flex-col h-full gap-8 mb-16">
             {/* Summary Section */}
-            <InfoCard>
-                <InfoCard.Header>Review Purchase Order</InfoCard.Header>
-                <InfoCard.Body>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex flex-col gap-2">
-                            <span className="font-headers font-bold text-sm uppercase text-gray-600">PO Number</span>
-                            <span className="font-text text-lg">{uploadForm.po_number}</span>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <span className="font-headers font-bold text-sm uppercase text-gray-600">Buyer ID</span>
-                            <span className="font-text text-lg">{uploadForm.buyer_id}</span>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <span className="font-headers font-bold text-sm uppercase text-gray-600">Vendor</span>
-                            <span className="font-text text-lg">{uploadForm.vendor_name}</span>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <span className="font-headers font-bold text-sm uppercase text-gray-600">Creation Date</span>
-                            <span className="font-text text-lg">{uploadForm.creation_date.toString()}</span>
-                        </div>
-                        {uploadForm.estimated_arrival && (
-                            <div className="flex flex-col gap-2">
-                                <span className="font-headers font-bold text-sm uppercase text-gray-600">Estimated Arrival</span>
-                                <span className="font-text text-lg">{uploadForm.estimated_arrival.toString()}</span>
-                            </div>
-                        )}
-                    </div>
-                </InfoCard.Body>
-            </InfoCard>
-
+            <div className={"grid grid-cols-4 gap-6"}>
+                <InfoCard>
+                    <InfoCard.Header>PO#</InfoCard.Header>
+                    <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
+                        {uploadForm.buyer_id + String(uploadForm.po_number).padStart(4, "0")}
+                    </InfoCard.Body>
+                </InfoCard>
+                <InfoCard>
+                    <InfoCard.Header>Buyer ID</InfoCard.Header>
+                    <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
+                        {uploadForm.buyer_id.padStart(2, "0")}
+                    </InfoCard.Body>
+                </InfoCard>
+                <InfoCard>
+                    <InfoCard.Header>Vendor</InfoCard.Header>
+                    <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
+                        {uploadForm.vendor_name || "No Vendor"}
+                    </InfoCard.Body>
+                </InfoCard>
+                <InfoCard>
+                    <InfoCard.Header>Creation Date</InfoCard.Header>
+                    <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
+                        {uploadForm.creation_date.toDate(getLocalTimeZone()).toLocaleDateString("en-US", {weekday: "short", month: "short", day: "numeric", year: "numeric"})}
+                    </InfoCard.Body>
+                </InfoCard>
+            </div>
             {/* Manifests Section */}
             <InfoCard>
                 <InfoCard.Header>Manifest Files ({manifestFiles.length})</InfoCard.Header>
@@ -132,7 +129,8 @@ export function FinalizeForm()
                             </p>
                         ) : (
                             <div className="flex flex-col gap-3">
-                                {manifestMappings.map((mapping, index) => {
+                                {manifestMappings.map((mapping, index) =>
+                                {
                                     const mappedCount = Object.keys(mapping.mappings).filter(k => mapping.mappings[k]).length;
                                     const requiredMapped = REQUIRED_FIELDS.every(field =>
                                         mapping.mappings[field] && mapping.mappings[field] !== ""
