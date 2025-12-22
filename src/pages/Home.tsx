@@ -10,8 +10,8 @@ export function Home()
 
             {/* Form Content */}
             <ErrorBoundary>
-                <div className={"flex flex-col gap-4 w-full py-12 items-center max-h-[calc(100vh-2rem)] overflow-y-auto overflow-x-hidden"}>
-                    <div className={"flex flex-col gap-4 w-[75%] h-full mb-[200px]"}>
+                <div className={"flex flex-col gap-4 w-full py-12 items-center max-h-[calc(100vh-2rem)] overflow-y-auto overflow-x-hidden mx-8"}>
+                    <div className={"flex flex-col gap-4 w-full h-full"}>
                         <ErrorBoundary>
                             <Outlet />
                         </ErrorBoundary>
