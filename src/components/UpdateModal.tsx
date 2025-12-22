@@ -5,12 +5,12 @@ import {check, Update} from "@tauri-apps/plugin-updater";
 import {relaunch} from "@tauri-apps/plugin-process";
 
 type UpdateState =
-    | {type: "checking"}
-    | {type: "available"; update: Update}
-    | {type: "downloading"; progress: number}
-    | {type: "ready"}
-    | {type: "uptodate"}
-    | {type: "error"; message: string};
+    | { type: "checking" }
+    | { type: "available"; update: Update }
+    | { type: "downloading"; progress: number }
+    | { type: "ready" }
+    | { type: "uptodate" }
+    | { type: "error"; message: string };
 
 export function UpdateModal()
 {
@@ -24,7 +24,6 @@ export function UpdateModal()
 
     const checkForUpdates = async () =>
     {
-        setIsOpen(true);
         setUpdateState({type: "checking"});
 
         try
@@ -33,6 +32,7 @@ export function UpdateModal()
 
             if (update?.available)
             {
+                setIsOpen(true);
                 setUpdateState({type: "available", update});
             } else
             {
@@ -41,6 +41,7 @@ export function UpdateModal()
             }
         } catch (error)
         {
+            setIsOpen(true);
             setUpdateState({
                 type: "error",
                 message: error instanceof Error ? error.message : String(error)
@@ -93,6 +94,7 @@ export function UpdateModal()
             isDismissable={updateState.type === "uptodate" || updateState.type === "error"}
             hideCloseButton={updateState.type !== "uptodate" && updateState.type !== "error"}
             radius="none"
+            backdrop={"blur"}
             classNames={{
                 base: "bg-white border-2 border-primary"
             }}
