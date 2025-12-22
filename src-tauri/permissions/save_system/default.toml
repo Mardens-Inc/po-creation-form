@@ -1,7 +1,7 @@
 [[permission]]
 identifier = "allow-save"
 description = "Enables the saving of the processed data"
-commands.allow = ["save"]
+commands.allow = ["save", "update-save"]
 
 [[permission]]
 identifier = "allow-load"

@@ -21,6 +21,7 @@
     "dialog:allow-save",
     "dialog:default",
     "allow-parse-manifest-file",
-    "allow-validate-column-mapping"
+    "allow-validate-column-mapping",
+    "allow-save"
   ]
 }

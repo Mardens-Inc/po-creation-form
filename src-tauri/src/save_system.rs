@@ -71,6 +71,15 @@ pub async fn save(path: String, item: SaveItem) -> Result<(), String> {
     .await
     .map_err(|e| format!("Task join error: {}", e))?
 }
+
+#[tauri::command]
+pub async fn update_save(path: String, item: SaveItem) -> Result<(), String> {
+    // For now, this is identical to save() since 7z format doesn't support
+    // true incremental updates. Future optimization: compare old manifest.json
+    // with new one, only recompress if assets changed.
+    save(path, item).await
+}
+
 #[tauri::command]
 pub async fn load(path: String) -> Result<SaveItem, String> {
     tokio::task::spawn_blocking(move || {

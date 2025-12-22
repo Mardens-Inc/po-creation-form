@@ -1,7 +1,7 @@
 mod manifest_parser;
 mod save_system;
 
-use tauri::{Manager, WindowEvent};
+use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -37,7 +37,8 @@ pub fn run() {
             manifest_parser::commands::validate_column_mapping,
             manifest_parser::commands::write_manifest_csv,
             save_system::save,
-            save_system::load
+            save_system::load,
+            save_system::update_save
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
