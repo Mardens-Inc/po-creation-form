@@ -11,44 +11,7 @@ on:
         required: true
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    outputs:
-      release_id: ${{ steps.create-release.outputs.id }}
-      release_upload_url: ${{ steps.create-release.outputs.upload_url }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOK }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ steps.get_version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-          body: |
-            ## What's Changed
-
-            See the full changelog for details.
-
-            ## Installation
-
-            Download the appropriate installer for your platform below.
-
   build-tauri:
-    needs: create-release
     strategy:
       fail-fast: false
       matrix:
@@ -97,5 +60,56 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PASSWORD }}
         with:
-          releaseId: ${{ needs.create-release.outputs.release_id }}
           args: --target ${{ matrix.rust_target }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-artifacts-${{ matrix.rust_target }}
+          path: src-tauri/target/${{ matrix.rust_target }}/release/bundle/*
+          if-no-files-found: error
+
+  create-release:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOK }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            ## What's Changed
+
+            See the full changelog for details.
+
+            ## Installation
+
+            Download the appropriate installer for your platform below.
+
+      - name: Upload Release Assets
+        run: |
+          for file in artifacts/*/*; do
+            if [ -f "$file" ]; then
+              echo "Uploading $file"
+              gh release upload ${{ github.ref_name }} "$file" --clobber
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOK }}
