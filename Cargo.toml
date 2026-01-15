@@ -1,3 +1,3 @@
 [workspace]
 resolver = "3"
-members = ["./src-tauri", "tools/update_version"]
+members = ["crates/app/src-tauri", "crates/web"]
