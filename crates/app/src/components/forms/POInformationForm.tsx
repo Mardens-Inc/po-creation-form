@@ -33,13 +33,15 @@ export type UploadFileItem = {
 
 const manifestExtensions = ["xlsx", "csv", "pdf"];
 
-const getPoNumberFromLocalStorage = (buyerId: string): number => {
+const getPoNumberFromLocalStorage = (buyerId: string): number =>
+{
     const key = `po_last_number_${buyerId}`;
     const stored = localStorage.getItem(key);
     return stored ? parseInt(stored, 10) : 1;
 };
 
-const savePoNumberToLocalStorage = (buyerId: string, poNumber: number) => {
+const savePoNumberToLocalStorage = (buyerId: string, poNumber: number) =>
+{
     const key = `po_last_number_${buyerId}`;
     localStorage.setItem(key, poNumber.toString());
 };
@@ -57,18 +59,21 @@ export function POInformationForm()
     const dragDropAreaRef = useRef<HTMLDivElement | null>(null);
 
     // Load PO number from local storage when buyer ID changes
-    useEffect(() => {
+    useEffect(() =>
+    {
         const storedPoNumber = getPoNumberFromLocalStorage(buyerId);
         setPoNumber(storedPoNumber);
     }, [buyerId]);
 
     // Save PO number to local storage whenever it changes
-    useEffect(() => {
+    useEffect(() =>
+    {
         savePoNumberToLocalStorage(buyerId, poNumber);
     }, [buyerId, poNumber]);
 
     // Auto-save all form data to the store whenever any field changes
-    useEffect(() => {
+    useEffect(() =>
+    {
         setUploadForm({
             po_number: poNumber,
             buyer_id: buyerId,
@@ -187,19 +192,33 @@ export function POInformationForm()
                                 <label className={"font-headers font-bold text-lg uppercase"}>
                                     Buyer ID
                                 </label>
-                                <Input
+                                <Select
                                     radius={"none"}
                                     size={"lg"}
-                                    maxLength={2}
-                                    minLength={2}
                                     placeholder="Enter buyer ID"
                                     value={buyerId}
-                                    onValueChange={setBuyerId}
-                                    classNames={{
-                                        input: "font-text text-lg",
-                                        inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
+                                    disallowEmptySelection
+                                    onSelectionChange={keys =>
+                                    {
+                                        const key = [...keys][0] as string | undefined;
+                                        if (!key)
+                                            setBuyerId("");
+                                        else
+                                            setBuyerId(key);
                                     }}
-                                />
+                                    classNames={{
+                                        innerWrapper: "font-text text-lg",
+                                        trigger: "border-2 border-primary/50 hover:border-primary transition-colors",
+                                        popoverContent: "rounded-none"
+                                    }}
+                                    listboxProps={{
+                                        itemClasses: {
+                                            base: "rounded-none"
+                                        }
+                                    }}
+                                >
+                                    <SelectItem key={"11"}>Andrew Marden</SelectItem>
+                                </Select>
                             </div>
 
                             {/* Vendor Name */}

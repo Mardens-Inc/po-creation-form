@@ -65,7 +65,7 @@ input:focus-visible, textarea:focus-visible {
         top: 0;
         bottom: 0;
         width: 0.34rem;
-        background-image: url("/src/images/spike-horizontal.svg");
+        background-image: url("/crates/app/srctes/app/src/images/spike-horizontal.svg");
         background-repeat: repeat;
         background-size: contain;
         background-position: center;
@@ -81,6 +81,6 @@ input:focus-visible, textarea:focus-visible {
     }
 
     .spikes.secondary::after, .spikes.secondary::before {
-        background-image: url("/src/images/spike-horizontal-secondary.svg");
+        background-image: url("/crates/app/srctes/app/src/images/spike-horizontal-secondary.svg");
     }
 }

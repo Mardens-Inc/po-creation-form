@@ -51,7 +51,7 @@ const InfoCardRoot = forwardRef<HTMLDivElement, InfoCardProps>((props, ref) =>
     });
 
     return (
-        <div className={cn("flex flex-col min-w-[200px] bg-secondary p-4 pt-6 relative 3d-shadow mt-8", className)} ref={ref}>
+        <div className={cn("flex flex-col min-w-[200px] bg-secondary p-4 pt-6 relative mt-8", className)} ref={ref}>
             {header}
             <div className={"mt-2"}/>
             {body}
