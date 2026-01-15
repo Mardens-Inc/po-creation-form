@@ -1,3 +1,0 @@
-[alias]
-update-version = "run --bin update_version --release -q --"
-uv = "update-version"
