@@ -1,10 +1,13 @@
 {
   "name": "po-creation-form",
   "workspaces": [
-    "crates/app"
+    "crates/app",
+    "crates/web"
   ],
   "scripts": {
-    "app:dev": "cd crates/app && npm run tauri-dev",
-    "app:build": "cd crates/app && npm run tauri-build"
+    "app:dev": "cd crates/app && pnpm run tauri-dev",
+    "app:build": "cd crates/app && pnpm run tauri-build",
+    "web:dev": "cd crates/web && pnpm run dev",
+    "web:build": "cd crates/web && pnpm run build"
   }
 }
