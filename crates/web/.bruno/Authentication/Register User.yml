@@ -1,0 +1,25 @@
+info:
+  name: Register User
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base_url}}/auth/register"
+  body:
+    type: json
+    data: |-
+      {
+        "first_name": "Drew",
+        "last_name": "Chase",
+        "email": "drew.chase@mardens.com",
+        "password": "test123",
+        "role": 0
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
