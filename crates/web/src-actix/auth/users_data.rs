@@ -4,7 +4,8 @@ use crate::auth::user_role::UserRole;
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
 pub struct User{
-	pub id: u32,
+	#[serde(skip_serializing_if="Option::is_none")]
+	pub id: Option<u32>,
 	pub first_name: String,
 	pub last_name: String,
 	pub email: String,
