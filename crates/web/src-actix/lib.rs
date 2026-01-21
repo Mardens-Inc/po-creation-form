@@ -8,6 +8,7 @@ use vite_actix::start_vite_server;
 
 mod auth;
 mod util;
+mod app_db;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
@@ -21,6 +22,16 @@ pub async fn run() -> Result<()> {
         })
         .format_timestamp(None)
         .init();
+
+    {
+        let pool = app_db::create_pool().await?;
+        let mut transaction = pool.begin().await?;
+        auth::initialize_table(&mut transaction).await?;
+        transaction.commit().await?;
+        pool.close().await;
+    }
+
+
 
     let server = HttpServer::new(move || {
         App::new()
@@ -51,8 +62,13 @@ pub async fn run() -> Result<()> {
     );
 
     if DEBUG {
-        ProxyViteOptions::default().disable_logging().build()?;
-        start_vite_server().expect("Failed to start vite server");
+        tokio::spawn(async move {
+            ProxyViteOptions::default().disable_logging().build()?;
+            start_vite_server()
+                .expect("Failed to start vite server")
+                .wait()?;
+            Ok::<(), anyhow::Error>(())
+        });
     }
 
     let stop_result = server.await;
