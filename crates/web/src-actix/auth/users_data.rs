@@ -24,4 +24,11 @@ impl User{
 	{
 		crate::auth::users_db::get_users().await
 	}
+
+	pub async fn register(&mut self)->Result<()>
+	{
+
+		Ok(())
+	}
+
 }

@@ -23,6 +23,9 @@ pub async fn run() -> Result<()> {
         .format_timestamp(None)
         .init();
 
+
+
+
     {
         let pool = app_db::create_pool().await?;
         let mut transaction = pool.begin().await?;
