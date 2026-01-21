@@ -6,9 +6,9 @@ use serde_json::json;
 use vite_actix::proxy_vite_options::ProxyViteOptions;
 use vite_actix::start_vite_server;
 
+mod app_db;
 mod auth;
 mod util;
-mod app_db;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
@@ -31,8 +31,6 @@ pub async fn run() -> Result<()> {
         pool.close().await;
     }
 
-
-
     let server = HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
@@ -48,7 +46,7 @@ pub async fn run() -> Result<()> {
                         .into()
                     }),
             )
-            .service(web::scope("api"))
+            .service(web::scope("api").configure(auth::configure))
             .configure_frontend_routes()
     })
     .workers(4)

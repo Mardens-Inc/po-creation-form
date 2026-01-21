@@ -1,0 +1,28 @@
+opencollection: 1.0.0
+
+info:
+  name: PO Creation Dashboard
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: base_url
+      value: http://localhost:8522/api
+    - name: base_url
+      value: https://potracker.mardens.com/api
+      disabled: true
+bundled: false
+extensions:
+  ignore:
+    - node_modules
+    - .git
