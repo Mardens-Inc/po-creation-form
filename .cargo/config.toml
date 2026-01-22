@@ -9,3 +9,6 @@ HASH_SALT = 'development-hash-salt'
 SMTP_HOST = ""
 SMTP_USERNAME = ""
 SMTP_PASSWORD = ""
+
+[target.x86_64-pc-windows-msvc]
+linker = "lld-link"
