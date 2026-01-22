@@ -1,7 +1,10 @@
 use crate::auth::auth_endpoint_data::{ConfirmEmailBody, UserRegistrationBody};
+use crate::auth::auth_middleware::validator;
+use crate::auth::jwt_data::Claims;
 use crate::auth::users_data::User;
 use actix_web::web::Json;
-use actix_web::{get, post, HttpResponse, Responder, Result};
+use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder, Result};
+use actix_web_httpauth::middleware::HttpAuthentication;
 use serde_json::json;
 
 #[get("/users")]
@@ -33,11 +36,27 @@ pub async fn confirm_email(body: Json<ConfirmEmailBody>) -> Result<impl Responde
     Ok(HttpResponse::Ok().finish())
 }
 
+#[get("/me")]
+pub async fn get_current_user(req: HttpRequest) -> Result<impl Responder> {
+    let claims = req.extensions().get::<Claims>().cloned();
+    match claims {
+        None => Ok(HttpResponse::Unauthorized().json(json!({
+            "error": "Unauthorized".to_string(),
+        }))),
+        Some(claims) => Ok(HttpResponse::Ok().json(json!({
+            "user": claims.sub,
+        }))),
+    }
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    let auth = HttpAuthentication::bearer(validator);
     cfg.service(
-        actix_web::web::scope("/auth")
+        web::scope("/auth")
             .service(get_users)
             .service(register_user)
-            .default_service(actix_web::web::to(|| async {
+            .service(web::scope("").wrap(auth).service(get_current_user))
+            .default_service(web::to(|| async {
                 HttpResponse::NotFound().json(json!({
                     "error": "API endpoint not found".to_string(),
                 }))
