@@ -1,3 +1,5 @@
+use crate::auth::auth_service::generate_jwt_token;
+use crate::auth::jwt_data::AuthResponse;
 use crate::auth::user_role::UserRole;
 use anyhow::Result;
 use log::error;
@@ -25,6 +27,11 @@ impl PartialEq for User {
 impl User {
     pub async fn get_users() -> Result<Vec<User>> {
         crate::auth::users_db::get_users().await
+    }
+
+    pub fn id(&self) -> Result<u32> {
+        self.id
+            .ok_or(anyhow!("User with email {} not found", self.email))
     }
 
     pub async fn get_user_by_id(uid: u32) -> Result<Option<Self>> {
@@ -85,8 +92,28 @@ impl User {
         Ok(())
     }
 
-    pub async fn login(&self) -> Result<()> {
-        Ok(())
+    pub async fn login(email: &str, password: &str) -> Result<AuthResponse> {
+        let user: User =
+            match users_db::get_user_by_email(  email).await? {
+                Some(user) => user,
+                None => {
+                    return Err(anyhow!(
+                        "User with email {} not found",
+                        email.replace("\n", "")
+                    ));
+                }
+            };
+
+        if !user.validate_password(password).await? {
+            return Err(anyhow!("Invalid password"));
+        }
+
+        info!("User logged in: {} (ID: {:?})", user.email, user.id);
+
+        let token = generate_jwt_token(user.id()?, &user.email)
+            .map_err(|e| anyhow!("Failed to generate JWT token: {e}"))?;
+
+        Ok(AuthResponse { token, token_type: "Bearer".to_string() })
     }
 
     pub async fn validate_password(&self, password: &str) -> Result<bool> {

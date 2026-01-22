@@ -30,3 +30,9 @@ pub struct ConfirmEmailBody{
 	pub token: String,
 	pub email: String
 }
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct LoginRequestBody{
+	pub email: String,
+	pub password: String
+}

@@ -1,4 +1,4 @@
-use crate::auth::auth_endpoint_data::{ConfirmEmailBody, UserRegistrationBody};
+use crate::auth::auth_endpoint_data::{ConfirmEmailBody, LoginRequestBody, UserRegistrationBody};
 use crate::auth::auth_middleware::validator;
 use crate::auth::jwt_data::Claims;
 use crate::auth::users_data::User;
@@ -13,6 +13,16 @@ pub async fn get_users() -> Result<impl Responder> {
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     Ok(HttpResponse::Ok().json(users))
+}
+
+
+#[post("/login")]
+pub async fn login(body: Json<LoginRequestBody>) -> Result<impl Responder> {
+    let body = body.into_inner();
+    let email = body.email.as_str();
+    let password = body.password.as_str();
+    let response = User::login(email, password).await.map_err(actix_web::error::ErrorInternalServerError)?;
+    Ok(HttpResponse::Ok().json(response))
 }
 
 #[post("/register")]
@@ -54,6 +64,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/auth")
             .service(get_users)
+            .service(login)
             .service(register_user)
             .service(web::scope("").wrap(auth).service(get_current_user))
             .default_service(web::to(|| async {
