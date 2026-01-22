@@ -27,6 +27,9 @@ pub async fn get_user_by_id(uid: u32) -> Result<Option<User>> {
     let mut transaction = pool.begin().await?;
     let user = get_user_by_id_with_transaction(&mut transaction, uid).await?;
     transaction.commit().await?;
+    pool.close().await;
+    Ok(user)
+}
 
 pub async fn get_user_by_email_with_transaction<'a>(
     transaction: &mut MySqlTransaction<'a>,
@@ -62,6 +65,7 @@ pub async fn get_users() -> Result<Vec<User>> {
     let mut transaction = pool.begin().await?;
     let users = get_users_with_transaction(&mut transaction).await?;
     transaction.commit().await?;
+    pool.close().await;
     Ok(users)
 }
 
@@ -88,6 +92,7 @@ pub async fn register(user: &User, hashed_password: &str) -> Result<u32> {
     let mut transaction = pool.begin().await?;
     let uid = register_with_transaction(&mut transaction, user, hashed_password).await?;
     transaction.commit().await?;
+    pool.close().await;
     Ok(uid)
 }
 

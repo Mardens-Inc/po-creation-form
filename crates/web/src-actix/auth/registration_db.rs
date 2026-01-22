@@ -16,14 +16,14 @@ pub async fn insert_request_with_transaction<'a>(
     token: &str,
     user_id: u32,
 ) -> Result<u32> {
-    let request_id: u32 = sqlx::query_scalar(
-        "INSERT INTO registration_requests (token, email, user_id) VALUES (?, ?, ?)",
-    )
-    .bind(token)
-    .bind(email)
-    .bind(user_id)
-    .fetch_one(&mut **transaction)
-    .await?;
+    let request_id: u32 =
+        sqlx::query("INSERT INTO registration_requests (token, email, user_id) VALUES (?, ?, ?)")
+            .bind(token)
+            .bind(email)
+            .bind(user_id)
+            .execute(&mut **transaction)
+            .await?
+            .last_insert_id() as u32;
     Ok(request_id)
 }
 

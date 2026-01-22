@@ -1,11 +1,12 @@
 use crate::auth::auth_service::generate_jwt_token;
 use crate::auth::jwt_data::AuthResponse;
 use crate::auth::user_role::UserRole;
-use anyhow::Result;
-use log::error;
+use crate::auth::users_db;
+use anyhow::{anyhow, Result};
+use log::{error, info};
+use obsidian_scheduler::timer_trait::Timer;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-use obsidian_scheduler::timer_trait::Timer;
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
 pub struct User {
@@ -57,6 +58,11 @@ impl User {
             user_id,
         )
         .await?;
+
+        // Submit and clean up the transaction
+        transaction.commit().await?;
+        pool.close().await;
+
         let email_service = crate::auth::email_service::EmailService::new()?;
         email_service
             .send_confirmation_email(
