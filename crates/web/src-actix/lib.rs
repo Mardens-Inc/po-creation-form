@@ -23,16 +23,7 @@ pub async fn run() -> Result<()> {
         .format_timestamp(None)
         .init();
 
-
-
-
-    {
-        let pool = app_db::create_pool().await?;
-        let mut transaction = pool.begin().await?;
-        auth::initialize_table(&mut transaction).await?;
-        transaction.commit().await?;
-        pool.close().await;
-    }
+    app_db::initialize_database().await?;
 
     let server = HttpServer::new(move || {
         App::new()
@@ -77,3 +68,4 @@ pub async fn run() -> Result<()> {
 
     Ok(stop_result?)
 }
+
