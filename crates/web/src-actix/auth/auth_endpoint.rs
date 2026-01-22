@@ -41,7 +41,7 @@ pub async fn confirm_email(body: Json<ConfirmEmailBody>) -> Result<impl Responde
     let body = body.into_inner();
     let token = body.token.as_str();
     let email = body.email.as_str();
-    User::confirm_email(token, email).await.map_err(actix_web::error::ErrorInternalServerError)?;
+    User::confirm_email(email, token).await.map_err(actix_web::error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().finish())
 }
@@ -66,6 +66,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .service(get_users)
             .service(login)
             .service(register_user)
+            .service(confirm_email)
             .service(web::scope("").wrap(auth).service(get_current_user))
             .default_service(web::to(|| async {
                 HttpResponse::NotFound().json(json!({
