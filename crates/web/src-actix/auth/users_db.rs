@@ -27,6 +27,24 @@ pub async fn get_user_by_id(uid: u32) -> Result<Option<User>> {
     let mut transaction = pool.begin().await?;
     let user = get_user_by_id_with_transaction(&mut transaction, uid).await?;
     transaction.commit().await?;
+
+pub async fn get_user_by_email_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    email: &str,
+)->Result<Option<User>>{
+    let user: Option<User> = sqlx::query_as(r#"SELECT * FROM users WHERE email = ? LIMIT 1"#)
+        .bind(email)
+        .fetch_optional(&mut **transaction)
+        .await?;
+    Ok(user)
+}
+
+pub async fn get_user_by_email(email: &str) -> Result<Option<User>> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    let user = get_user_by_email_with_transaction(&mut transaction, email).await?;
+    transaction.commit().await?;
+    pool.close().await;
     Ok(user)
 }
 
