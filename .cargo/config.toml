@@ -1,4 +1,11 @@
 [env]
-JWT_SECRET='development-jwt-secret'
-MYSQL_CONNECTION_STRING='mysql://root:password@localhost:3306/po_tracker'
-HASH_SALT='development-hash-salt'
+MYSQL_CONNECTION_STRING = 'mysql://root:password@localhost:3306/po_tracker'
+
+# Secrets
+JWT_SECRET = 'development-jwt-secret'
+HASH_SALT = 'development-hash-salt'
+
+# Email configuration
+SMTP_HOST = ""
+SMTP_USERNAME = ""
+SMTP_PASSWORD = ""
