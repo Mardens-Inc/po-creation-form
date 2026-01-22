@@ -1,0 +1,22 @@
+info:
+  name: Confirm Email
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/auth/confirm-email"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "drew.chase@mardens.com",
+        "token": "3e9b7e2e-f0ac-4637-9c7f-923670b0fc44"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
