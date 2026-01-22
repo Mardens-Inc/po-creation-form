@@ -11,6 +11,25 @@ pub async fn initialize_table<'a>(transaction: &mut MySqlTransaction<'a>) -> Res
     Ok(())
 }
 
+pub async fn get_user_by_id_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    uid: u32,
+) -> Result<Option<User>> {
+    let user: Option<User> = sqlx::query_as(r#"SELECT * FROM users WHERE id = ? LIMIT 1"#)
+        .bind(uid)
+        .fetch_optional(&mut **transaction)
+        .await?;
+    Ok(user)
+}
+
+pub async fn get_user_by_id(uid: u32) -> Result<Option<User>> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    let user = get_user_by_id_with_transaction(&mut transaction, uid).await?;
+    transaction.commit().await?;
+    Ok(user)
+}
+
 pub async fn get_users_with_transaction<'a>(
     transaction: &mut MySqlTransaction<'a>,
 ) -> Result<Vec<User>> {
@@ -26,4 +45,39 @@ pub async fn get_users() -> Result<Vec<User>> {
     let users = get_users_with_transaction(&mut transaction).await?;
     transaction.commit().await?;
     Ok(users)
+}
+
+pub async fn register_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    user: &User,
+    hashed_password: &str,
+) -> Result<u32> {
+    let uid = sqlx::query(r#"INSERT INTO users (first_name, last_name, email, password, role) VALUES (?, ?, ?, ?, ?)"#)
+        .bind(&user.first_name)
+        .bind(&user.last_name)
+        .bind(&user.email)
+        .bind(hashed_password)
+        .bind(&user.role)
+        .execute(&mut **transaction)
+        .await?
+        .last_insert_id();
+
+    Ok(uid as u32)
+}
+
+pub async fn register(user: &User, hashed_password: &str) -> Result<u32> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    let uid = register_with_transaction(&mut transaction, user, hashed_password).await?;
+    transaction.commit().await?;
+    Ok(uid)
+}
+
+
+pub async fn set_confirmed_email_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, uid: u32) -> Result<()> {
+    sqlx::query("UPDATE users SET has_confirmed_email = 1 WHERE id = ?")
+        .bind(uid)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
 }

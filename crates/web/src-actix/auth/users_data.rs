@@ -1,34 +1,95 @@
-use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use crate::auth::user_role::UserRole;
+use anyhow::Result;
+use log::error;
+use serde::{Deserialize, Serialize};
+use std::time::Duration;
+use obsidian_scheduler::timer_trait::Timer;
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
-pub struct User{
-	#[serde(skip_serializing_if="Option::is_none")]
-	pub id: Option<u32>,
-	pub first_name: String,
-	pub last_name: String,
-	pub email: String,
-	pub password: String,
-	pub role: UserRole
+pub struct User {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<u32>,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub password: String,
+    pub role: UserRole,
 }
 
-impl PartialEq for User{
-	fn eq(&self, other: &Self) -> bool {
-		self.id == other.id
-	}
+impl PartialEq for User {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
 }
 
-impl User{
-	pub async fn get_users()->Result<Vec<User>>
-	{
-		crate::auth::users_db::get_users().await
-	}
+impl User {
+    pub async fn get_users() -> Result<Vec<User>> {
+        crate::auth::users_db::get_users().await
+    }
 
-	pub async fn register(&mut self)->Result<()>
-	{
+    pub async fn get_user_by_id(uid: u32) -> Result<Option<Self>> {
+        Ok(crate::auth::users_db::get_user_by_id(uid).await?)
+    }
 
-		Ok(())
-	}
+    pub async fn register(&mut self) -> Result<u32> {
+        let hashed_password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST)?;
+        let pool = crate::app_db::create_pool().await?;
+        let mut transaction = pool.begin().await?;
 
+        let user_id = crate::auth::users_db::register_with_transaction(
+            &mut transaction,
+            self,
+            hashed_password.as_str(),
+        )
+        .await?;
+        let token = uuid::Uuid::new_v4().to_string();
+        crate::auth::registration_db::insert_request_with_transaction(
+            &mut transaction,
+            self.email.as_str(),
+            token.as_str(),
+            user_id,
+        )
+        .await?;
+        let email_service = crate::auth::email_service::EmailService::new()?;
+        email_service
+            .send_confirmation_email(
+                self.email.as_str(),
+                token.as_str(),
+                self.first_name.as_str(),
+            )
+            .await?;
+
+        // Start a 1-hour timer to clean up the request
+        let timer = obsidian_scheduler::callback::CallbackTimer::new(
+            move |handler| {
+                let user_id = user_id;
+                async move {
+                    if let Err(e) = crate::auth::registration_db::remove_request(user_id).await {
+                        error!("Failed to cleanup expired registration request: {e}")
+                    } else {
+                        // Stop the timer from repeating
+                        handler.stop();
+                    }
+                    Ok(())
+                }
+            },
+            Duration::from_hours(1),
+        );
+        timer.start().await?;
+
+        Ok(user_id)
+    }
+
+    pub async fn confirm_email(email: &str, token: &str) -> Result<()> {
+        crate::auth::registration_db::confirm_request(email, token).await?;
+        Ok(())
+    }
+
+    pub async fn login(&self) -> Result<()> {
+        Ok(())
+    }
+
+    pub async fn validate_password(&self, password: &str) -> Result<bool> {
+        Ok(bcrypt::verify(password, &self.password)?)
+    }
 }

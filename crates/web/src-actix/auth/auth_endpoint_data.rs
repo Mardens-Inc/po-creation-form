@@ -24,3 +24,9 @@ impl From<UserRegistrationBody> for User {
 		}
 	}
 }
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct ConfirmEmailBody{
+	pub token: String,
+	pub email: String
+}
