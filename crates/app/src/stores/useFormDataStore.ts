@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import {FOBType, POInformationFormData, UploadFileItem, UploadFileType} from "../components/forms/POInformationForm.tsx";
+import {FOBType, POInformationFormData, UploadFileItem, UploadFileType} from "../components/forms/po-information";
 import {getLocalTimeZone, parseDate, today} from "@internationalized/date";
 import {ManifestData} from "../types/manifest.ts";
 import {invoke} from "@tauri-apps/api/core";
@@ -16,7 +16,7 @@ export type ManifestMapping = {
 
 export type HistoryItem = {
     filePath: string;
-    poNumber: number;
+    poNumber: string;
     vendor: string;
     buyerId: number;
     savedAt: string; // ISO 8601
@@ -25,7 +25,7 @@ export type HistoryItem = {
 // Types for save/load backend communication
 type SaveItemData = {
     version: string;
-    po_number: number;
+    po_number: string;
     buyer_id: number;
     vendor: string;
     order_date: string;
@@ -86,7 +86,7 @@ type FormDataActions = {
 
 export const useFormDataStore = create<FormDataStore & FormDataActions>((set, get) => ({
     uploadForm: {
-        po_number: 1,
+        po_number: "",
         buyer_id: 0,
         vendor_name: "",
         order_date: today(getLocalTimeZone()),

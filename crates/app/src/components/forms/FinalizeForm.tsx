@@ -5,7 +5,7 @@ import {save} from "@tauri-apps/plugin-dialog";
 import {InfoCard} from "../InfoCard.tsx";
 import {useFormDataStore} from "../../stores/useFormDataStore.ts";
 import {REQUIRED_FIELDS} from "../../types/manifest.ts";
-import {UploadFileType} from "./POInformationForm.tsx";
+import {UploadFileType} from "./po-information";
 import {getLocalTimeZone} from "@internationalized/date";
 
 export function FinalizeForm()
@@ -109,13 +109,13 @@ export function FinalizeForm()
                 <InfoCard>
                     <InfoCard.Header>PO#</InfoCard.Header>
                     <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
-                        {uploadForm.buyer_id + String(uploadForm.po_number).padStart(4, "0")}
+                        {uploadForm.po_number}
                     </InfoCard.Body>
                 </InfoCard>
                 <InfoCard>
                     <InfoCard.Header>Buyer ID</InfoCard.Header>
                     <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
-                        {uploadForm.buyer_id.padStart(2, "0")}
+                        {String(uploadForm.buyer_id).padStart(2, "0")}
                     </InfoCard.Body>
                 </InfoCard>
                 <InfoCard>

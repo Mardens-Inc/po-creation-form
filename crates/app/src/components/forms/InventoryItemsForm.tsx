@@ -4,7 +4,7 @@ import {useEffect, useMemo, useState} from "react";
 import {Swiper, SwiperSlide} from "swiper/react";
 import {Navigation, Pagination} from "swiper/modules";
 import {invoke} from "@tauri-apps/api/core";
-import {UploadFileType} from "./POInformationForm.tsx";
+import {UploadFileType} from "./po-information";
 import {useFormDataStore} from "../../stores/useFormDataStore.ts";
 import {ColumnMappingCard} from "./ColumnMappingCard.tsx";
 import {ManifestPreviewTable} from "./ManifestPreviewTable.tsx";
