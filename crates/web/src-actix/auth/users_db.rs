@@ -104,3 +104,24 @@ pub async fn set_confirmed_email_with_transaction<'a>(transaction: &mut MySqlTra
         .await?;
     Ok(())
 }
+
+pub async fn delete_user_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    uid: u32,
+) -> Result<()> {
+    sqlx::query(r#"DELETE FROM users WHERE id = ?"#)
+        .bind(uid)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}
+
+pub async fn delete_user(uid: u32) -> Result<()> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    delete_user_with_transaction(&mut transaction, uid).await?;
+    transaction.commit().await?;
+    pool.close().await;
+    Ok(())
+}
+

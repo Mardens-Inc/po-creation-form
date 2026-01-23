@@ -17,6 +17,8 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub role: UserRole,
+    pub has_confirmed_email: bool,
+    pub needs_password_reset: bool,
 }
 
 impl PartialEq for User {
@@ -44,12 +46,9 @@ impl User {
         let pool = crate::app_db::create_pool().await?;
         let mut transaction = pool.begin().await?;
 
-        let user_id = crate::auth::users_db::register_with_transaction(
-            &mut transaction,
-            self,
-            hashed_password.as_str(),
-        )
-        .await?;
+        let user_id =
+            users_db::register_with_transaction(&mut transaction, self, hashed_password.as_str())
+                .await?;
         let token = uuid::Uuid::new_v4().to_string();
         crate::auth::registration_db::insert_request_with_transaction(
             &mut transaction,
@@ -77,12 +76,24 @@ impl User {
             move |handler| {
                 let user_id = user_id;
                 async move {
-                    if let Err(e) = crate::auth::registration_db::remove_request(user_id).await {
+                    let pool = crate::app_db::create_pool().await?;
+                    let mut transaction = pool.begin().await?;
+
+                    users_db::delete_user_with_transaction(&mut transaction, user_id).await?;
+                    if let Err(e) = crate::auth::registration_db::remove_request_with_transaction(
+                        &mut transaction,
+                        user_id,
+                    )
+                    .await
+                    {
                         error!("Failed to cleanup expired registration request: {e}")
                     } else {
                         // Stop the timer from repeating
                         handler.stop();
                     }
+
+                    transaction.commit().await?;
+                    pool.close().await;
                     Ok(())
                 }
             },
@@ -99,19 +110,26 @@ impl User {
     }
 
     pub async fn login(email: &str, password: &str) -> Result<AuthResponse> {
-        let user: User =
-            match users_db::get_user_by_email(  email).await? {
-                Some(user) => user,
-                None => {
-                    return Err(anyhow!(
-                        "User with email {} not found",
-                        email.replace("\n", "")
-                    ));
-                }
-            };
+        let user: User = match users_db::get_user_by_email(email).await? {
+            Some(user) => user,
+            None => {
+                return Err(anyhow!(
+                    "User with email {} not found",
+                    email.replace("\n", "")
+                ));
+            }
+        };
 
         if !user.validate_password(password).await? {
             return Err(anyhow!("Invalid password"));
+        }
+
+        if !user.has_confirmed_email {
+            return Err(anyhow!("Email not confirmed"));
+        }
+
+        if user.needs_password_reset {
+            return Err(anyhow!("Password reset required"));
         }
 
         info!("User logged in: {} (ID: {:?})", user.email, user.id);
@@ -119,7 +137,10 @@ impl User {
         let token = generate_jwt_token(user.id()?, &user.email)
             .map_err(|e| anyhow!("Failed to generate JWT token: {e}"))?;
 
-        Ok(AuthResponse { token, token_type: "Bearer".to_string() })
+        Ok(AuthResponse {
+            token,
+            token_type: "Bearer".to_string(),
+        })
     }
 
     pub async fn validate_password(&self, password: &str) -> Result<bool> {

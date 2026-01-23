@@ -21,6 +21,8 @@ impl From<UserRegistrationBody> for User {
 			email: val.email,
 			password: val.password,
 			role: val.role,
+			has_confirmed_email: false,
+			needs_password_reset: false
 		}
 	}
 }
