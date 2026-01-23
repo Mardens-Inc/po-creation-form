@@ -58,7 +58,10 @@ export default {
                         DEFAULT: "#ec2b37",
                         foreground: "#fff",
                     },
-                    secondary: "#fec60b",
+                    secondary: {
+                        DEFAULT: "#fec60b",
+                        foreground: "#000"
+                    },
                     background: "#fff",
 
                 }

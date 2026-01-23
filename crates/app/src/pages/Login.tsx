@@ -1,8 +1,16 @@
-import {Button, Input, Link, Spinner} from "@heroui/react";
+import {addToast, Button, Form, Input, Link, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {FormEvent, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
+
+const validateEmail = (value: string) => {
+    if (!value) return "Email is required";
+    if (!value.toLowerCase().endsWith("@mardens.com")) {
+        return "Only @mardens.com email addresses are allowed";
+    }
+    return null;
+};
 
 export function Login() {
     const navigate = useNavigate();
@@ -12,7 +20,6 @@ export function Login() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Redirect authenticated users to main app
     useEffect(() => {
@@ -21,36 +28,38 @@ export function Login() {
         }
     }, [authLoading, isAuthenticated, navigate]);
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setError(null);
 
-        if (!email.trim()) {
-            setError("Email is required");
-            return;
-        }
+        const formData = Object.fromEntries(new FormData(e.currentTarget));
+        const emailValue = formData.email as string;
+        const passwordValue = formData.password as string;
 
-        if (!email.toLowerCase().endsWith("@mardens.com")) {
-            setError("Only @mardens.com email addresses are allowed");
-            return;
-        }
+        // Validate email
+        const emailError = validateEmail(emailValue);
+        if (emailError) return;
 
-        if (!password) {
-            setError("Password is required");
-            return;
-        }
+        if (!passwordValue) return;
 
         setIsSubmitting(true);
 
         try {
-            const user = await login(email, password);
+            const user = await login(emailValue, passwordValue);
             if (user) {
                 navigate("/po-number", {replace: true});
             } else {
-                setError("Login failed. Please try again.");
+                addToast({
+                    title: "Login Failed",
+                    description: "Please check your credentials and try again.",
+                    color: "danger",
+                });
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An unexpected error occurred");
+            addToast({
+                title: "Login Error",
+                description: err instanceof Error ? err.message : "An unexpected error occurred",
+                color: "danger",
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -78,17 +87,14 @@ export function Login() {
                 </div>
 
                 {/* Login Form */}
-                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                    {/* Error Message */}
-                    {error && (
-                        <div className="flex items-center gap-2 p-4 bg-danger/20 border-2 border-danger text-danger">
-                            <Icon icon="tabler:alert-circle" width={20} height={20}/>
-                            <span className="font-text">{error}</span>
-                        </div>
-                    )}
-
+                <Form
+                    onSubmit={handleSubmit}
+                    validationBehavior="native"
+                    className="flex flex-col gap-6"
+                >
                     {/* Email Input */}
                     <Input
+                        name="email"
                         type="email"
                         label="Email"
                         labelPlacement="outside"
@@ -97,6 +103,9 @@ export function Login() {
                         placeholder="you@mardens.com"
                         value={email}
                         onValueChange={setEmail}
+                        autoComplete="one-time-code"
+                        isRequired
+                        validate={validateEmail}
                         startContent={
                             <Icon icon="tabler:mail" width={20} height={20} className="text-foreground/50"/>
                         }
@@ -110,6 +119,7 @@ export function Login() {
 
                     {/* Password Input */}
                     <Input
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         label="Password"
                         labelPlacement="outside"
@@ -118,6 +128,9 @@ export function Login() {
                         placeholder="Enter your password"
                         value={password}
                         onValueChange={setPassword}
+                        autoComplete="one-time-code"
+                        isRequired
+                        errorMessage="Password is required"
                         startContent={
                             <Icon icon="tabler:lock" width={20} height={20} className="text-foreground/50"/>
                         }
@@ -155,6 +168,7 @@ export function Login() {
                         isLoading={isSubmitting}
                         isDisabled={isSubmitting}
                         startContent={!isSubmitting && <Icon icon="tabler:login" width={20} height={20}/>}
+                        fullWidth
                     >
                         {isSubmitting ? "Signing In..." : "Sign In"}
                     </Button>
@@ -171,7 +185,7 @@ export function Login() {
                             </Link>
                         </p>
                     </div>
-                </form>
+                </Form>
             </div>
         </div>
     );

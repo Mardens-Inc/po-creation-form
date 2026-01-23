@@ -1,5 +1,6 @@
 use crate::util::asset_endpoint::AssetsAppConfig;
-use actix_web::{middleware, web, App, HttpResponse, HttpServer};
+use actix_cors::Cors;
+use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer};
 use anyhow::Result;
 use log::*;
 use serde_json::json;
@@ -26,7 +27,17 @@ pub async fn run() -> Result<()> {
     app_db::initialize_database().await?;
 
     let server = HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin("http://localhost:1420")
+            .allowed_origin("http://127.0.0.1:1420")
+            .allowed_origin("tauri://localhost")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+            .allowed_headers(vec![header::AUTHORIZATION, header::CONTENT_TYPE, header::ACCEPT])
+            .supports_credentials()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .wrap(middleware::Logger::default())
             .app_data(
                 web::JsonConfig::default()

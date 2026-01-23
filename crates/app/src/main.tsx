@@ -55,7 +55,8 @@ export function MainContentRenderer()
                 toastProps={{
                     shouldShowTimeoutProgress: true,
                     timeout: 3000,
-                    variant: "flat"
+                    variant: "flat",
+                    radius: "none",
                 }}
             />
 

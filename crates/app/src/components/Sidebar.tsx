@@ -1,4 +1,4 @@
-import {Tab, Tabs} from "@heroui/react";
+import {Button, Tab, Tabs} from "@heroui/react";
 import Stars from "../images/badge-exclamation-background.svg";
 import Spike from "../images/spike-horizontal.svg";
 import {ReactNode, useCallback, useEffect} from "react";
@@ -8,6 +8,8 @@ import {HistoryForm} from "./forms/HistoryForm.tsx";
 import {POInformationForm} from "./forms/POInformationForm.tsx";
 import {InventoryItemsForm} from "./forms/InventoryItemsForm.tsx";
 import {FinalizeForm} from "./forms/FinalizeForm.tsx";
+import {Icon} from "@iconify-icon/react";
+import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
 
 export type TabConfig = {
     title: string;
@@ -51,6 +53,7 @@ export function Sidebar()
     const navigate = useNavigate();
     const location = useLocation();
     const {width} = useScreenSize();
+    const {logout} = useAuthentication();
 
     const handleSelectionChange = (key: string) => {
         const tab = SidebarTabs[key as SidebarTabKey];
@@ -98,6 +101,19 @@ export function Sidebar()
                         }/>
                     ))}
                 </Tabs>
+
+
+                <Button
+                    radius={"none"}
+                    className={"font-headers font-bold"}
+                    color={"secondary"}
+                    size={"lg"}
+                    fullWidth
+                    endContent={<Icon icon="mdi:logout"/>}
+                    onPress={logout}
+                >
+                    Logout
+                </Button>
             </div>
         </>
     );

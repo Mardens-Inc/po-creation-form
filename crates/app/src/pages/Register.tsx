@@ -1,8 +1,22 @@
-import {Button, Input, Link, Select, SelectItem, Spinner} from "@heroui/react";
+import {addToast, Button, Form, Input, Link, Select, SelectItem, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {FormEvent, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAuthentication, UserRole, UserRegistrationRequest} from "../providers/AuthenticationProvider.tsx";
+
+const validateEmail = (value: string) => {
+    if (!value) return "Email is required";
+    if (!value.toLowerCase().endsWith("@mardens.com")) {
+        return "Only @mardens.com email addresses are allowed";
+    }
+    return null;
+};
+
+const validatePassword = (value: string) => {
+    if (!value) return "Password is required";
+    if (value.length < 8) return "Password must be at least 8 characters";
+    return null;
+};
 
 export function Register() {
     const navigate = useNavigate();
@@ -17,7 +31,6 @@ export function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     // Redirect authenticated users to main app
@@ -27,61 +40,44 @@ export function Register() {
         }
     }, [authLoading, isAuthenticated, navigate]);
 
-    const handleSubmit = async (e: FormEvent) => {
+    const validateConfirmPassword = (value: string) => {
+        if (!value) return "Please confirm your password";
+        if (value !== password) return "Passwords do not match";
+        return null;
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setError(null);
 
-        // Validation
-        if (!firstName.trim()) {
-            setError("First name is required");
-            return;
-        }
+        const formData = Object.fromEntries(new FormData(e.currentTarget));
 
-        if (!lastName.trim()) {
-            setError("Last name is required");
-            return;
-        }
+        // Validate all fields
+        const emailError = validateEmail(formData.email as string);
+        const passwordError = validatePassword(formData.password as string);
+        const confirmError = validateConfirmPassword(formData.confirmPassword as string);
 
-        if (!email.trim()) {
-            setError("Email is required");
-            return;
-        }
-
-        if (!email.toLowerCase().endsWith("@mardens.com")) {
-            setError("Only @mardens.com email addresses are allowed");
-            return;
-        }
-
-        if (!password) {
-            setError("Password is required");
-            return;
-        }
-
-        if (password.length < 8) {
-            setError("Password must be at least 8 characters");
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setError("Passwords do not match");
-            return;
-        }
+        if (emailError || passwordError || confirmError) return;
+        if (!formData.firstName || !formData.lastName) return;
 
         setIsSubmitting(true);
 
         try {
             const userData: UserRegistrationRequest = {
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                email: email.trim(),
-                password,
+                firstName: (formData.firstName as string).trim(),
+                lastName: (formData.lastName as string).trim(),
+                email: (formData.email as string).trim(),
+                password: formData.password as string,
                 role
             };
 
             await register(userData);
             setSuccess(true);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An unexpected error occurred");
+            addToast({
+                title: "Registration Error",
+                description: err instanceof Error ? err.message : "An unexpected error occurred",
+                color: "danger",
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -140,19 +136,16 @@ export function Register() {
                 </div>
 
                 {/* Register Form */}
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                    {/* Error Message */}
-                    {error && (
-                        <div className="flex items-center gap-2 p-4 bg-danger/20 border-2 border-danger text-danger">
-                            <Icon icon="tabler:alert-circle" width={20} height={20}/>
-                            <span className="font-text">{error}</span>
-                        </div>
-                    )}
-
+                <Form
+                    onSubmit={handleSubmit}
+                    validationBehavior="native"
+                    className="flex flex-col gap-5"
+                >
                     {/* Name Row */}
                     <div className="grid grid-cols-2 gap-4">
                         {/* First Name */}
                         <Input
+                            name="firstName"
                             type="text"
                             label="First Name"
                             labelPlacement="outside"
@@ -161,6 +154,9 @@ export function Register() {
                             placeholder="John"
                             value={firstName}
                             onValueChange={setFirstName}
+                            autoComplete="one-time-code"
+                            isRequired
+                            errorMessage="First name is required"
                             classNames={{
                                 label: "font-headers font-bold text-sm uppercase",
                                 input: "font-text text-lg",
@@ -171,6 +167,7 @@ export function Register() {
 
                         {/* Last Name */}
                         <Input
+                            name="lastName"
                             type="text"
                             label="Last Name"
                             labelPlacement="outside"
@@ -179,6 +176,9 @@ export function Register() {
                             placeholder="Doe"
                             value={lastName}
                             onValueChange={setLastName}
+                            autoComplete="one-time-code"
+                            isRequired
+                            errorMessage="Last name is required"
                             classNames={{
                                 label: "font-headers font-bold text-sm uppercase",
                                 input: "font-text text-lg",
@@ -190,6 +190,7 @@ export function Register() {
 
                     {/* Email Input */}
                     <Input
+                        name="email"
                         type="email"
                         label="Email"
                         labelPlacement="outside"
@@ -198,6 +199,9 @@ export function Register() {
                         placeholder="you@mardens.com"
                         value={email}
                         onValueChange={setEmail}
+                        autoComplete="one-time-code"
+                        isRequired
+                        validate={validateEmail}
                         startContent={
                             <Icon icon="tabler:mail" width={20} height={20} className="text-foreground/50"/>
                         }
@@ -211,6 +215,7 @@ export function Register() {
 
                     {/* Role Select */}
                     <Select
+                        name="role"
                         label="Role"
                         labelPlacement="outside"
                         radius="none"
@@ -223,6 +228,7 @@ export function Register() {
                                 setRole(parseInt(key) as UserRole);
                             }
                         }}
+                        isRequired
                         classNames={{
                             label: "font-headers font-bold text-sm uppercase",
                             innerWrapper: "font-text text-lg",
@@ -243,6 +249,7 @@ export function Register() {
 
                     {/* Password Input */}
                     <Input
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         label="Password"
                         labelPlacement="outside"
@@ -251,6 +258,9 @@ export function Register() {
                         placeholder="At least 8 characters"
                         value={password}
                         onValueChange={setPassword}
+                        autoComplete="one-time-code"
+                        isRequired
+                        validate={validatePassword}
                         startContent={
                             <Icon icon="tabler:lock" width={20} height={20} className="text-foreground/50"/>
                         }
@@ -280,6 +290,7 @@ export function Register() {
 
                     {/* Confirm Password Input */}
                     <Input
+                        name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
                         label="Confirm Password"
                         labelPlacement="outside"
@@ -288,6 +299,9 @@ export function Register() {
                         placeholder="Re-enter your password"
                         value={confirmPassword}
                         onValueChange={setConfirmPassword}
+                        autoComplete="one-time-code"
+                        isRequired
+                        validate={validateConfirmPassword}
                         startContent={
                             <Icon icon="tabler:lock-check" width={20} height={20} className="text-foreground/50"/>
                         }
@@ -325,6 +339,7 @@ export function Register() {
                         isLoading={isSubmitting}
                         isDisabled={isSubmitting}
                         startContent={!isSubmitting && <Icon icon="tabler:user-plus" width={20} height={20}/>}
+                        fullWidth
                     >
                         {isSubmitting ? "Creating Account..." : "Create Account"}
                     </Button>
@@ -341,7 +356,7 @@ export function Register() {
                             </Link>
                         </p>
                     </div>
-                </form>
+                </Form>
             </div>
         </div>
     );

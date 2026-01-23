@@ -22,16 +22,12 @@ export default {
                         DEFAULT: "#f13848",
                         foreground: "#fff",
                     },
-                    secondary: "#2b2b2b",
+                    secondary: {
+                        DEFAULT: "#2b2b2b",
+                        foreground: "#000"
+                    },
                     background: "#e3e3ea",
 
-                }
-            },
-            dark: {
-                colors: {
-                    primary: "#ff3247",
-                    secondary: "#eaeaea",
-                    background: "#18181b",
                 }
             },
         }
