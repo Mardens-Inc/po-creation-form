@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-get-api-url"
+description = "Enables the parse_manifest_file command"
+commands.allow = ["get_api_url"]

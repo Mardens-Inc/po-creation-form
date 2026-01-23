@@ -51,8 +51,18 @@ pub fn run() {
             manifest_parser::commands::write_manifest_csv,
             save_system::save,
             save_system::load,
-            save_system::update_save
+            save_system::update_save,
+            get_api_url
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+
+#[tauri::command]
+fn get_api_url() -> String {
+    #[cfg(debug_assertions)]
+    return "http://localhost:8522/api".to_string();
+    #[cfg(not(debug_assertions))]
+    return "https://potracker.mardens.com/api".to_string();
 }
