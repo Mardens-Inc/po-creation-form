@@ -113,7 +113,7 @@
         </p>
 
         <div style="text-align: center;">
-            <a href="https://potracker.mardens.com/confirm-email?email={{ email }}&token={{ token }}" class="cta-button">Confirm Your Account</a>
+            <a href="{{ url }}/confirm-email?email={{ email }}&token={{ token }}" class="cta-button">Confirm Your Account</a>
         </div>
 
         <div class="expiry-notice">
