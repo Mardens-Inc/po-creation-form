@@ -276,7 +276,6 @@ export function POInformationForm()
                                             color: "primary",
                                             variant: "solid"
                                         }
-
                                     }}
                                 />
                             </div>

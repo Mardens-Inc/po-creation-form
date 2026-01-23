@@ -4,6 +4,7 @@ use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer};
 use anyhow::Result;
 use log::*;
 use serde_json::json;
+use std::env::set_current_dir;
 use vite_actix::proxy_vite_options::ProxyViteOptions;
 use vite_actix::start_vite_server;
 
@@ -32,7 +33,11 @@ pub async fn run() -> Result<()> {
             .allowed_origin("http://127.0.0.1:1420")
             .allowed_origin("tauri://localhost")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-            .allowed_headers(vec![header::AUTHORIZATION, header::CONTENT_TYPE, header::ACCEPT])
+            .allowed_headers(vec![
+                header::AUTHORIZATION,
+                header::CONTENT_TYPE,
+                header::ACCEPT,
+            ])
             .supports_credentials()
             .max_age(3600);
 
@@ -66,7 +71,7 @@ pub async fn run() -> Result<()> {
 
     if DEBUG {
         tokio::spawn(async move {
-            ProxyViteOptions::default().disable_logging().build()?;
+            ProxyViteOptions::default().working_directory("crates/web").build()?;
             start_vite_server()
                 .expect("Failed to start vite server")
                 .wait()?;
@@ -79,4 +84,3 @@ pub async fn run() -> Result<()> {
 
     Ok(stop_result?)
 }
-

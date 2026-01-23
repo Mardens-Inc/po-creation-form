@@ -41,9 +41,9 @@ impl EmailService {
         context.insert("token", token);
         context.insert("first_name", first_name);
 	    let url = if cfg!(debug_assertions) {
-		    format!("http://localhost:{}/confirm-email", crate::PORT)
+		    format!("http://localhost:{}", crate::PORT)
 	    } else {
-		    "https://potracker.mardens.com/confirm-email".to_string()
+		    "https://potracker.mardens.com".to_string()
 	    };
 	    context.insert("url", &url);
         let body = tera::Tera::one_off(CONFIRM_EMAIL_TEMPLATE, &context, true)?;
