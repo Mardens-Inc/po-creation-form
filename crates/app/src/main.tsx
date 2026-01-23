@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import {BrowserRouter, Navigate, Route, Routes, useNavigate} from "react-router-dom";
 import ReactDOM from "react-dom/client";
 import $ from "jquery";
@@ -10,7 +10,7 @@ import "swiper/css/pagination";
 import "./styles/swiper-custom.scss";
 import {Home} from "./pages/Home.tsx";
 import Titlebar from "./components/Titlebar.tsx";
-import {addToast, HeroUIProvider, ToastProvider} from "@heroui/react";
+import {HeroUIProvider, ToastProvider} from "@heroui/react";
 import {ScreenSizeProvider} from "./providers/ScreenSizeProvider.tsx";
 import {ErrorBoundary} from "./components/ErrorBoundry.tsx";
 import {HistoryForm} from "./components/forms/HistoryForm.tsx";
@@ -21,13 +21,19 @@ import {UpdateModal} from "./components/UpdateModal.tsx";
 import {useFormDataStore} from "./stores/useFormDataStore.ts";
 import {save} from "@tauri-apps/plugin-dialog";
 import {listen} from "@tauri-apps/api/event";
+import {ProtectedRoute} from "./components/ProtectedRoute.tsx";
+import {Login} from "./pages/Login.tsx";
+import {Register} from "./pages/Register.tsx";
+import {AuthenticationProvider} from "./providers/AuthenticationProvider.tsx";
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
     <React.StrictMode>
         <BrowserRouter>
             <ScreenSizeProvider>
-                <MainContentRenderer/>
+                <AuthenticationProvider>
+                    <MainContentRenderer/>
+                </AuthenticationProvider>
             </ScreenSizeProvider>
         </BrowserRouter>
     </React.StrictMode>
@@ -168,26 +174,27 @@ export function MainContentRenderer()
                 }}
             />
 
-            <UpdateModal />
+            <UpdateModal/>
 
             <main className={"flex flex-col p-0 m-0"}>
                 <Titlebar/>
 
                 <div className={"flex flex-row w-full max-h-[calc(100vh-2rem)] h-screen overflow-y-auto p-0 m-0"}>
                     <Routes>
-                        {/* Root redirect */}
-                        <Route path="/" element={<Navigate to="/po-number" replace/>}/>
+                        <Route element={<ErrorBoundary><ProtectedRoute/></ErrorBoundary>}>
+                            <Route path={"/login"} element={<Login/>}/>
+                            <Route path={"/register"} element={<Register/>}/>
 
-                        {/* Home as layout with nested routes */}
-                        <Route element={<ErrorBoundary><Home/></ErrorBoundary>}>
-                            <Route path="/history" element={<ErrorBoundary><HistoryForm/></ErrorBoundary>}/>
-                            <Route path="/po-number" element={<ErrorBoundary><POInformationForm/></ErrorBoundary>}/>
-                            <Route path="/items" element={<ErrorBoundary><InventoryItemsForm/></ErrorBoundary>}/>
-                            <Route path="/finalize" element={<ErrorBoundary><FinalizeForm/></ErrorBoundary>}/>
+                            {/* Home as layout with nested routes */}
+                            <Route element={<ErrorBoundary><Home/></ErrorBoundary>}>
+                                <Route path="/history" element={<ErrorBoundary><HistoryForm/></ErrorBoundary>}/>
+                                <Route path="/po-number" element={<ErrorBoundary><POInformationForm/></ErrorBoundary>}/>
+                                <Route path="/items" element={<ErrorBoundary><InventoryItemsForm/></ErrorBoundary>}/>
+                                <Route path="/finalize" element={<ErrorBoundary><FinalizeForm/></ErrorBoundary>}/>
+                            </Route>
+                            {/* Catch-all for invalid routes - redirect to default */}
+                            <Route path="*" element={<Navigate to="/po-number" replace/>}/>
                         </Route>
-
-                        {/* Catch-all for invalid routes - redirect to default */}
-                        <Route path="*" element={<Navigate to="/po-number" replace/>}/>
                     </Routes>
                 </div>
 
