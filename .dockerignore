@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+artifact/
+dist/
+build/
+
+# Misc
+*.log
+.env
+.env.*
