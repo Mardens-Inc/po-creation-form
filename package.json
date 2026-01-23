@@ -8,6 +8,7 @@
     "app:dev": "cd crates/app && pnpm run tauri-dev",
     "app:build": "cd crates/app && pnpm run tauri-build",
     "web:dev": "cd crates/web && pnpm run dev",
-    "web:build": "cd crates/web && pnpm run build"
+    "web:build": "cd crates/web && pnpm run build",
+    "dev": "concurrently \"pnpm run web:dev\" \"pnpm run app:dev\""
   }
 }
