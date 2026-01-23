@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import {POInformationFormData, UploadFileItem, UploadFileType} from "../components/forms/POInformationForm.tsx";
+import {FOBType, POInformationFormData, UploadFileItem, UploadFileType} from "../components/forms/POInformationForm.tsx";
 import {getLocalTimeZone, parseDate, today} from "@internationalized/date";
 import {ManifestData} from "../types/manifest.ts";
 import {invoke} from "@tauri-apps/api/core";
@@ -18,7 +18,7 @@ export type HistoryItem = {
     filePath: string;
     poNumber: number;
     vendor: string;
-    buyerId: string;
+    buyerId: number;
     savedAt: string; // ISO 8601
 }
 
@@ -26,10 +26,18 @@ export type HistoryItem = {
 type SaveItemData = {
     version: string;
     po_number: number;
-    buyer_id: string;
+    buyer_id: number;
     vendor: string;
-    creation_date: string;
-    expected_delivery_date: string | null;
+    order_date: string;
+    ship_date: string | null;
+    cancel_date: string | null;
+    shipping_notes: string;
+    description: string;
+    terms: string;
+    ship_to_address: string;
+    fob_type: string;
+    fob_point: string;
+    notes: string;
     manifests: Array<{
         filename: string;
         path: string;
@@ -79,10 +87,18 @@ type FormDataActions = {
 export const useFormDataStore = create<FormDataStore & FormDataActions>((set, get) => ({
     uploadForm: {
         po_number: 1,
-        buyer_id: "01",
+        buyer_id: 0,
         vendor_name: "",
-        creation_date: today(getLocalTimeZone()),
-        estimated_arrival: null,
+        order_date: today(getLocalTimeZone()),
+        ship_date: null,
+        cancel_date: null,
+        shipping_notes: "",
+        description: "",
+        terms: "",
+        ship_to_address: "",
+        fob_type: "Pickup" as FOBType,
+        fob_point: "",
+        notes: "",
         files: []
     },
     manifestMappings: [],
@@ -128,8 +144,16 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
                 po_number: state.uploadForm.po_number,
                 buyer_id: state.uploadForm.buyer_id,
                 vendor: state.uploadForm.vendor_name,
-                creation_date: state.uploadForm.creation_date.toString(),
-                expected_delivery_date: state.uploadForm.estimated_arrival?.toString() || null,
+                order_date: state.uploadForm.order_date.toString(),
+                ship_date: state.uploadForm.ship_date?.toString() || null,
+                cancel_date: state.uploadForm.cancel_date?.toString() || null,
+                shipping_notes: state.uploadForm.shipping_notes,
+                description: state.uploadForm.description,
+                terms: state.uploadForm.terms,
+                ship_to_address: state.uploadForm.ship_to_address,
+                fob_type: state.uploadForm.fob_type,
+                fob_point: state.uploadForm.fob_point,
+                notes: state.uploadForm.notes,
                 manifests: state.manifestMappings.map(m => ({
                     filename: m.filename,
                     path: m.path,
@@ -218,10 +242,16 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
                     po_number: saveData.po_number,
                     buyer_id: saveData.buyer_id,
                     vendor_name: saveData.vendor,
-                    creation_date: parseDate(saveData.creation_date),
-                    estimated_arrival: saveData.expected_delivery_date
-                        ? parseDate(saveData.expected_delivery_date)
-                        : null,
+                    order_date: parseDate(saveData.order_date),
+                    ship_date: saveData.ship_date ? parseDate(saveData.ship_date) : null,
+                    cancel_date: saveData.cancel_date ? parseDate(saveData.cancel_date) : null,
+                    shipping_notes: saveData.shipping_notes || "",
+                    description: saveData.description || "",
+                    terms: saveData.terms || "",
+                    ship_to_address: saveData.ship_to_address || "",
+                    fob_type: (saveData.fob_type as "Pickup" | "Delivered") || "Pickup",
+                    fob_point: saveData.fob_point || "",
+                    notes: saveData.notes || "",
                     files: saveData.assets.map(a => ({
                         key: a.path, // Use path as unique key
                         filename: a.filename,
@@ -395,8 +425,16 @@ export const useFormDataStore = create<FormDataStore & FormDataActions>((set, ge
                 po_number: state.uploadForm.po_number,
                 buyer_id: state.uploadForm.buyer_id,
                 vendor: state.uploadForm.vendor_name,
-                creation_date: state.uploadForm.creation_date.toString(),
-                expected_delivery_date: state.uploadForm.estimated_arrival?.toString() || null,
+                order_date: state.uploadForm.order_date.toString(),
+                ship_date: state.uploadForm.ship_date?.toString() || null,
+                cancel_date: state.uploadForm.cancel_date?.toString() || null,
+                shipping_notes: state.uploadForm.shipping_notes,
+                description: state.uploadForm.description,
+                terms: state.uploadForm.terms,
+                ship_to_address: state.uploadForm.ship_to_address,
+                fob_type: state.uploadForm.fob_type,
+                fob_point: state.uploadForm.fob_point,
+                notes: state.uploadForm.notes,
                 manifests: state.manifestMappings.map(m => ({
                     filename: m.filename,
                     path: m.path,
