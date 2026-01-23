@@ -66,12 +66,12 @@ export function MainContentRenderer()
 
                 <div className={"flex flex-row w-full max-h-[calc(100vh-2rem)] h-screen overflow-y-auto p-0 m-0"}>
                     <Routes>
+                        <Route path={"/login"} element={<Login/>}/>
+                        <Route path={"/register"} element={<Register/>}/>
                         <Route element={<ErrorBoundary><ProtectedRoute/></ErrorBoundary>}>
-                            <Route path={"/login"} element={<Login/>}/>
-                            <Route path={"/register"} element={<Register/>}/>
-
                             {/* Home as layout with nested routes */}
                             <Route element={<ErrorBoundary><Home/></ErrorBoundary>}>
+                                <Route path="/" element={<Navigate to="/po-number"/>}/>
                                 <Route path="/history" element={<ErrorBoundary><HistoryForm/></ErrorBoundary>}/>
                                 <Route path="/po-number" element={<ErrorBoundary><POInformationForm/></ErrorBoundary>}/>
                                 <Route path="/items" element={<ErrorBoundary><InventoryItemsForm/></ErrorBoundary>}/>
@@ -80,6 +80,7 @@ export function MainContentRenderer()
                             {/* Catch-all for invalid routes - redirect to default */}
                             <Route path="*" element={<Navigate to="/po-number" replace/>}/>
                         </Route>
+                        <Route path={"*"} element={<Navigate to="/login"/>}/>
                     </Routes>
                 </div>
 

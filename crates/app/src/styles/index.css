@@ -54,6 +54,12 @@ input:focus-visible, textarea:focus-visible {
     outline: none !important;
 }
 
+/* Hide browser's native password reveal button (Edge/IE) */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
 @layer utilities {
     .spikes, a.spikes {
         overflow: visible;
