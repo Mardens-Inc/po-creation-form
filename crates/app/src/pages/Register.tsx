@@ -123,7 +123,7 @@ export function Register() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-2rem)] p-8">
+        <div className="flex flex-col items-center w-full min-h-[calc(100vh-2rem)] p-8 mt-8">
             <div className="w-full max-w-md">
                 {/* Header */}
                 <div className="flex flex-col items-center mb-8">
