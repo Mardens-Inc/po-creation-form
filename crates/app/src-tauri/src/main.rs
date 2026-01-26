@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    po_creation_form_lib::run()
+    po_tracker_lib::run()
 }

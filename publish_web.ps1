@@ -1,1 +1,1 @@
-pwp -H 192.168.21.209 -u administrator -a "$env:USERPROFILE\.ssh\mss-sshkey_ossh.key" -s po-creation-dashboard --binary po_creation_dashboard -BIStc "npm run build"
+pwp -H 192.168.21.209 -u administrator -a "$env:USERPROFILE\.ssh\mss-sshkey_ossh.key" -s po-creation-dashboard --binary po_tracker_dashboard -BIStc "npm run build"

@@ -85,7 +85,7 @@ pub async fn load(path: String) -> Result<SaveItem, String> {
     tokio::task::spawn_blocking(move || {
         // 1. Extract to persistent directory (not temp, so files remain accessible)
         // Use a subdirectory of temp with a predictable name structure
-        let extract_base = std::env::temp_dir().join("po_creation_form_loaded");
+        let extract_base = std::env::temp_dir().join("po_tracker_loaded");
         std::fs::create_dir_all(&extract_base)
             .map_err(|e| format!("Failed to create extraction base directory: {}", e))?;
 

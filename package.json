@@ -1,5 +1,5 @@
 {
-  "name": "po-creation-form",
+  "name": "po_tracker",
   "workspaces": [
     "crates/app",
     "crates/web"

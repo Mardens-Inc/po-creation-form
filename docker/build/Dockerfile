@@ -1,26 +1,26 @@
 FROM rust:1.92-alpine AS builder
 LABEL authors="Drew Chase"
 WORKDIR /app
-COPY . .
-RUN apk update
 
-# Install Dependencies
-RUN apk add --no-cache nodejs npm musl-dev
+# Install system dependencies FIRST (cached unless Dockerfile changes)
+RUN apk update && apk add --no-cache nodejs npm musl-dev
 RUN npm i vite pnpm -g
 
-# Install project dependencies (force clean install without prompts)
+# Copy ONLY dependency manifests first
+COPY Cargo.toml Cargo.lock ./
+COPY crates/web/Cargo.toml ./crates/web/
+COPY package.json pnpm-lock.yaml ./
+
+# Install project dependencies (cached unless manifests change)
 RUN pnpm i --no-frozen-lockfile --force
-# Build the project
-# This will build both the frontend and the backend
+
+# NOW copy source code (only this layer invalidates on code changes)
+COPY . .
+
+# Build the project (frontend and backend)
 RUN pnpm run "web:build"
 RUN cargo build --release
-RUN strip target/release/po_creation_dashboard
-
-
-#RUN apk add --no-cache npm openssl-dev pkgconfig musl-dev
-#RUN npm i pnpm -g
-#RUN CI=true pnpm i
-#RUN CI=true pnpm run web:build
+RUN strip target/release/po_tracker_dashboard
 
 FROM scratch AS artifact
-COPY --from=builder target/release/po_creation_dashboard /
+COPY --from=builder /app/target/release/po_tracker_dashboard /

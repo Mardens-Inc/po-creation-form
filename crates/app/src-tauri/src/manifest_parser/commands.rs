@@ -34,7 +34,7 @@ pub async fn write_manifest_csv(
 ) -> Result<String, String> {
     tokio::task::spawn_blocking(move || {
         // Create temp directory for CSV
-        let temp_dir = std::env::temp_dir().join("po_creation_form_manifests");
+        let temp_dir = std::env::temp_dir().join("po_tracker_manifests");
         std::fs::create_dir_all(&temp_dir)
             .map_err(|e| format!("Failed to create temp directory: {}", e))?;
 

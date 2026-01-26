@@ -1,16 +1,16 @@
 [package]
-name = "po_creation_dashboard"
+name = "po_tracker_dashboard"
 version = "0.0.0"
 edition = "2024"
 authors = ["Drew Chase (Work) <dcmanproductions@gmail.com>"]
 build = "src-actix/build.rs"
 
 [[bin]]
-name = "po_creation_dashboard"
+name = "po_tracker_dashboard"
 path = "src-actix/main.rs"
 
 [lib]
-name = "po_creation_dashboard_lib"
+name = "po_tracker_dashboard_lib"
 path = "src-actix/lib.rs"
 crate-type = ["lib"]
 
