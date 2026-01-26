@@ -4,6 +4,7 @@
     "crates/app",
     "crates/web"
   ],
+  "packageManager": "pnpm@10.28.2",
   "scripts": {
     "app:dev": "cd crates/app && pnpm run tauri-dev",
     "app:build": "cd crates/app && pnpm run tauri-build",
