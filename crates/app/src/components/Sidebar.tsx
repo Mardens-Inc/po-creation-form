@@ -72,7 +72,7 @@ export function Sidebar()
         <>            {/* Desktop Sidebar Tabs */}
             <div className={"hidden lg:flex flex-col items-start justify-start py-16 gap-8 bg-primary border-primary text-center w-[500px] relative text-white p-4 bg-cover bg-center"} style={{backgroundImage: `url("${Stars}")`}}>
                 <div className={"absolute w-4 -right-4 top-0 bottom-0 bg-repeat-y bg-contain"} style={{backgroundImage: `url("${Spike}")`}}/>
-                <h2 className={"font-accent text-4xl font-bold"}>PO Creation Form</h2>
+                <h2 className={"font-accent text-4xl font-bold"}>Select Option</h2>
                 <Tabs
                     isVertical
                     onSelectionChange={key => handleSelectionChange(key as string)}
