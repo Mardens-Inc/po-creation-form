@@ -35,7 +35,9 @@
     ],
     "fileAssociations": [
       {
-        "ext": ["pocf"],
+        "ext": [
+          "pocf"
+        ],
         "description": "Purchase Order Creation File",
         "role": "Editor",
         "mimeType": "application/x-pocf"
