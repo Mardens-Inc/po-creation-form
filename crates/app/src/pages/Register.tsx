@@ -1,24 +1,29 @@
 import {addToast, Button, Form, Input, Link, Select, SelectItem, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {FormEvent, useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {useAuthentication, UserRole, UserRegistrationRequest} from "../providers/AuthenticationProvider.tsx";
+import {Navigate, useNavigate} from "react-router-dom";
+import {useAuthentication, UserRegistrationRequest, UserRole} from "../providers/AuthenticationProvider.tsx";
+import {useRemoteServerConnection} from "../providers/RemoteServerConnectionProvider.tsx";
 
-const validateEmail = (value: string) => {
+const validateEmail = (value: string) =>
+{
     if (!value) return "Email is required";
-    if (!value.toLowerCase().endsWith("@mardens.com")) {
+    if (!value.toLowerCase().endsWith("@mardens.com"))
+    {
         return "Only @mardens.com email addresses are allowed";
     }
     return null;
 };
 
-const validatePassword = (value: string) => {
+const validatePassword = (value: string) =>
+{
     if (!value) return "Password is required";
     if (value.length < 8) return "Password must be at least 8 characters";
     return null;
 };
 
-export function Register() {
+export function Register()
+{
     const navigate = useNavigate();
     const {register, isLoading: authLoading, isAuthenticated} = useAuthentication();
 
@@ -32,21 +37,26 @@ export function Register() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
+    const {isConnected: isConnectedToRemote} = useRemoteServerConnection();
 
     // Redirect authenticated users to main app
-    useEffect(() => {
-        if (!authLoading && isAuthenticated) {
+    useEffect(() =>
+    {
+        if (!authLoading && isAuthenticated)
+        {
             navigate("/po-number", {replace: true});
         }
     }, [authLoading, isAuthenticated, navigate]);
 
-    const validateConfirmPassword = (value: string) => {
+    const validateConfirmPassword = (value: string) =>
+    {
         if (!value) return "Please confirm your password";
         if (value !== password) return "Passwords do not match";
         return null;
     };
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) =>
+    {
         e.preventDefault();
 
         const formData = Object.fromEntries(new FormData(e.currentTarget));
@@ -61,7 +71,8 @@ export function Register() {
 
         setIsSubmitting(true);
 
-        try {
+        try
+        {
             const userData: UserRegistrationRequest = {
                 firstName: (formData.firstName as string).trim(),
                 lastName: (formData.lastName as string).trim(),
@@ -72,18 +83,21 @@ export function Register() {
 
             await register(userData);
             setSuccess(true);
-        } catch (err) {
+        } catch (err)
+        {
             addToast({
                 title: "Registration Error",
                 description: err instanceof Error ? err.message : "An unexpected error occurred",
-                color: "danger",
+                color: "danger"
             });
-        } finally {
+        } finally
+        {
             setIsSubmitting(false);
         }
     };
 
-    if (authLoading) {
+    if (authLoading)
+    {
         return (
             <div className="flex items-center justify-center w-full h-full">
                 <Spinner size="lg" color="primary"/>
@@ -92,7 +106,8 @@ export function Register() {
     }
 
     // Success state
-    if (success) {
+    if (success)
+    {
         return (
             <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-2rem)] p-8">
                 <div className="w-full max-w-md text-center">
@@ -120,6 +135,11 @@ export function Register() {
                 </div>
             </div>
         );
+    }
+
+    if (!isConnectedToRemote)
+    {
+        return <Navigate to={"/offline"} replace={true}/>;
     }
 
     return (
@@ -222,9 +242,11 @@ export function Register() {
                         size="lg"
                         placeholder="Select your role"
                         selectedKeys={[role.toString()]}
-                        onSelectionChange={keys => {
+                        onSelectionChange={keys =>
+                        {
                             const key = [...keys][0] as string | undefined;
-                            if (key !== undefined) {
+                            if (key !== undefined)
+                            {
                                 setRole(parseInt(key) as UserRole);
                             }
                         }}

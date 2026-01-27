@@ -5,12 +5,14 @@ import {useEffect} from "react";
 import {useFormDataStore} from "../stores/useFormDataStore.ts";
 import {save as saveDialog} from "@tauri-apps/plugin-dialog";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
+import {useRemoteServerConnection} from "../providers/RemoteServerConnectionProvider.tsx";
 
 export default function Titlebar()
 {
     const appWindow = getCurrentWindow();
     const {currentFilePath, hasUnsavedChanges, saveCurrentFile, saveToFile, uploadForm} = useFormDataStore();
     const {isAuthenticated} = useAuthentication();
+    const {isConnected: isConnectedToRemote} = useRemoteServerConnection();
 
     useEffect(() =>
     {
@@ -71,7 +73,7 @@ export default function Titlebar()
     return (
         <div className={"flex flex-row h-fit backdrop-blur-sm sticky top-0 w-full z-[9999] backdrop-saturate-150 select-none bg-primary text-white"} data-tauri-drag-region="">
             <div className={"flex flex-row items-center"}>
-                <p className={"mx-2 my-auto font-medium select-none"} data-tauri-drag-region="">PO Tracker App</p>
+                <p className={"mx-2 my-auto font-medium select-none"} data-tauri-drag-region="">PO Tracker App {isConnectedToRemote ? "" : <span className={"text-sm italic"}>(offline)</span>}</p>
 
                 {/* File name indicator */}
                 {currentFilePath && (

@@ -1,6 +1,6 @@
 use crate::util::asset_endpoint::AssetsAppConfig;
 use actix_cors::Cors;
-use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer};
+use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
 use log::*;
 use serde_json::json;
@@ -9,6 +9,7 @@ use vite_actix::start_vite_server;
 
 mod app_db;
 mod auth;
+mod status_endpoint;
 mod util;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
@@ -55,7 +56,11 @@ pub async fn run() -> Result<()> {
                         .into()
                     }),
             )
-            .service(web::scope("api").configure(auth::configure))
+            .service(
+                web::scope("api")
+                    .configure(status_endpoint::configure)
+                    .configure(auth::configure),
+            )
             .configure_frontend_routes()
     })
     .workers(4)
@@ -70,7 +75,9 @@ pub async fn run() -> Result<()> {
 
     if DEBUG {
         tokio::spawn(async move {
-            ProxyViteOptions::default().working_directory("crates/web").build()?;
+            ProxyViteOptions::default()
+                .working_directory("crates/web")
+                .build()?;
             start_vite_server()
                 .expect("Failed to start vite server")
                 .wait()?;

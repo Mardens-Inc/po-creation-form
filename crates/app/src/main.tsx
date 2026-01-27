@@ -24,16 +24,20 @@ import {Register} from "./pages/Register.tsx";
 import {AuthenticationProvider} from "./providers/AuthenticationProvider.tsx";
 import {useGlobalKeyboardShortcuts} from "./hooks/useGlobalKeyboardShortcuts.ts";
 import {useFileOpenListener} from "./hooks/useFileOpenListener.ts";
+import {RemoteServerConnectionProvider} from "./providers/RemoteServerConnectionProvider.tsx";
+import {OfflinePage} from "./pages/OfflinePage.tsx";
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <ScreenSizeProvider>
-                <AuthenticationProvider>
-                    <MainContentRenderer/>
-                </AuthenticationProvider>
-            </ScreenSizeProvider>
+            <RemoteServerConnectionProvider>
+                <ScreenSizeProvider>
+                    <AuthenticationProvider>
+                        <MainContentRenderer/>
+                    </AuthenticationProvider>
+                </ScreenSizeProvider>
+            </RemoteServerConnectionProvider>
         </BrowserRouter>
     </React.StrictMode>
 );
@@ -56,7 +60,7 @@ export function MainContentRenderer()
                     shouldShowTimeoutProgress: true,
                     timeout: 3000,
                     variant: "flat",
-                    radius: "none",
+                    radius: "none"
                 }}
             />
 
@@ -69,6 +73,7 @@ export function MainContentRenderer()
                     <Routes>
                         <Route path={"/login"} element={<Login/>}/>
                         <Route path={"/register"} element={<Register/>}/>
+                        <Route path={"/offline"} element={<OfflinePage/>}/>
                         <Route element={<ErrorBoundary><ProtectedRoute/></ErrorBoundary>}>
                             {/* Home as layout with nested routes */}
                             <Route element={<ErrorBoundary><Home/></ErrorBoundary>}>

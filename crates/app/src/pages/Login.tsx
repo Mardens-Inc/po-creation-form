@@ -1,18 +1,22 @@
 import {addToast, Button, Form, Input, Link, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {FormEvent, useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
+import {useRemoteServerConnection} from "../providers/RemoteServerConnectionProvider.tsx";
 
-const validateEmail = (value: string) => {
+const validateEmail = (value: string) =>
+{
     if (!value) return "Email is required";
-    if (!value.toLowerCase().endsWith("@mardens.com")) {
+    if (!value.toLowerCase().endsWith("@mardens.com"))
+    {
         return "Only @mardens.com email addresses are allowed";
     }
     return null;
 };
 
-export function Login() {
+export function Login()
+{
     const navigate = useNavigate();
     const {login, isLoading: authLoading, isAuthenticated} = useAuthentication();
 
@@ -20,15 +24,19 @@ export function Login() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const {isConnected: isConnectedToRemote} = useRemoteServerConnection();
 
     // Redirect authenticated users to main app
-    useEffect(() => {
-        if (!authLoading && isAuthenticated) {
+    useEffect(() =>
+    {
+        if (!authLoading && isAuthenticated)
+        {
             navigate("/po-number", {replace: true});
         }
     }, [authLoading, isAuthenticated, navigate]);
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) =>
+    {
         e.preventDefault();
 
         const formData = Object.fromEntries(new FormData(e.currentTarget));
@@ -43,34 +51,45 @@ export function Login() {
 
         setIsSubmitting(true);
 
-        try {
+        try
+        {
             const user = await login(emailValue, passwordValue);
-            if (user) {
+            if (user)
+            {
                 navigate("/po-number", {replace: true});
-            } else {
+            } else
+            {
                 addToast({
                     title: "Login Failed",
                     description: "Please check your credentials and try again.",
-                    color: "danger",
+                    color: "danger"
                 });
             }
-        } catch (err) {
+        } catch (err)
+        {
             addToast({
                 title: "Login Error",
                 description: err instanceof Error ? err.message : "An unexpected error occurred",
-                color: "danger",
+                color: "danger"
             });
-        } finally {
+        } finally
+        {
             setIsSubmitting(false);
         }
     };
 
-    if (authLoading) {
+    if (authLoading)
+    {
         return (
             <div className="flex items-center justify-center w-full h-full">
                 <Spinner size="lg" color="primary"/>
             </div>
         );
+    }
+
+    if (!isConnectedToRemote)
+    {
+        return <Navigate to={"/offline"} replace={true}/>;
     }
 
     return (
