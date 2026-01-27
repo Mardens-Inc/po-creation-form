@@ -1,215 +1,206 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveFile {
+    pub version: String,
     pub po_number: String,
-    pub user_id: u32,
-    pub vendor_id: String,
-    pub order_date: chrono::NaiveDate,
+    pub buyer_id: u32,
+    pub vendor: String,
+    pub order_date: String,
+    pub ship_date: Option<String>,
+    pub cancel_date: Option<String>,
+    pub shipping_notes: String,
     pub description: String,
     pub terms: String,
-    pub ship_address: String,
-    #[serde(alias = "disclaimers")]
+    pub ship_to_address: String,
+    pub fob_type: String,
+    pub fob_point: String,
     pub notes: String,
-    pub shipping_info: ShippingInformation,
-    pub fob: FreightOnBoard,
+    pub manifests: Vec<ManifestItem>,
     pub assets: Vec<AssetFile>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct FreightOnBoard {
-    #[serde(rename = "type")]
-    pub location: String,
-    pub fob_type: FreightOnBoardType,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub enum FreightOnBoardType {
-    Pickup,
-    Delivery,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ShippingInformation {
-    pub date: chrono::NaiveDate,
-    pub cancel_date: chrono::NaiveDate,
-    pub notes: String,
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct ManifestItem {
+    pub filename: String,
+    pub path: String,
+    pub mappings: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct AssetFile {
-    filename: String,
-    path: String,
-    file_type: String,
+    pub filename: String,
+    pub path: String,
+    pub file_type: String,
 }
 
 impl SaveFile {
     /// Asynchronously opens and processes a save file from the specified path.
     ///
-    /// This function attempts to read a `.7z` archive at the given path, extracting
-    /// its contents temporarily and searching for a file named `manifest.json`. The
-    /// contents of `manifest.json` are then deserialized into an instance of the `Self` type.
+    /// This function reads a `.7z` archive at the given path, extracting
+    /// its contents to a persistent directory and parsing `manifest.json`.
+    /// Asset paths are updated to point to the extracted locations.
     ///
     /// # Arguments
     ///
-    /// * `path` - A type that can be converted into a reference to a `Path`. This specifies
-    ///   the path of the `.7z` archive to be opened.
+    /// * `path` - A type that can be converted into a reference to a `Path`.
     ///
     /// # Returns
     ///
-    /// Returns a `Result<Self>`, where:
-    /// * `Ok(Self)` contains the deserialized object of the type implementing this method.
-    /// * `Err(anyhow::Error)` contains an error if opening or processing the save file fails,
-    ///   or if the `manifest.json` file is missing or cannot be parsed successfully.
+    /// Returns a `Result<Self>` with the deserialized SaveFile.
     ///
     /// # Errors
     ///
     /// * Fails if the specified path does not exist or cannot be accessed.
     /// * Fails if there is an error decompressing the `.7z` archive.
     /// * Fails if the `manifest.json` file is not found within the archive.
-    /// * Fails if the contents of `manifest.json` cannot be deserialized into the expected type.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use my_crate::SaveFile; // Replace with the actual type or module
-    /// use std::path::Path;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let save_file = SaveFile::open(Path::new("path/to/savefile.7z")).await?;
-    ///     println!("Save file opened successfully: {:?}", save_file);
-    ///     Ok(())
-    /// }
-    /// ```
-    ///
-    /// # Logging
-    ///
-    /// This function logs the path of the save file being opened at the `info` level.
+    /// * Fails if the contents of `manifest.json` cannot be deserialized.
     pub async fn open(path: impl AsRef<Path>) -> Result<Self> {
-        let path = path.as_ref();
+        let path = path.as_ref().to_path_buf();
         info!("Opening save file: {path:?}");
-        let mut manifest_content = String::new();
-        sevenz_rust2::decompress_file_with_extract_fn(path, ".", |entry, reader, _| {
-            if entry.name() == "manifest.json" {
-                reader.read_to_string(&mut manifest_content)?;
+
+        tokio::task::spawn_blocking(move || {
+            // Extract to persistent directory so files remain accessible
+            let extract_base = std::env::temp_dir().join("po_tracker_loaded");
+            std::fs::create_dir_all(&extract_base)
+                .map_err(|e| anyhow!("Failed to create extraction base directory: {}", e))?;
+
+            let extract_dir = extract_base.join(format!("pocf_{}", uuid::Uuid::new_v4()));
+            std::fs::create_dir_all(&extract_dir)
+                .map_err(|e| anyhow!("Failed to create extraction directory: {}", e))?;
+
+            debug!("Extracting to: {extract_dir:?}");
+
+            // Decompress the archive
+            sevenz_rust2::decompress_file(&path, &extract_dir)
+                .map_err(|e| anyhow!("Failed to decompress archive: {}", e))?;
+
+            // Read and parse manifest.json
+            let manifest_path = extract_dir.join("manifest.json");
+            if !manifest_path.exists() {
+                return Err(anyhow!("Invalid .pocf file: manifest.json not found"));
             }
 
-            Ok(false)
-        })
-        .map_err(|e| anyhow!("Failed to open save file: {e}"))?;
+            let manifest_content = std::fs::read_to_string(&manifest_path)
+                .map_err(|e| anyhow!("Failed to read manifest.json: {}", e))?;
+            let mut save_file: SaveFile = serde_json::from_str(&manifest_content)
+                .map_err(|e| anyhow!("Failed to parse manifest.json: {}", e))?;
 
-        Ok(serde_json::from_str::<Self>(&manifest_content)?)
+            // Update asset paths to point to extracted location
+            let assets_dir = extract_dir.join("assets");
+            for asset in &mut save_file.assets {
+                asset.path = assets_dir
+                    .join(&asset.filename)
+                    .to_string_lossy()
+                    .to_string();
+            }
+
+            // Update manifest paths as well
+            for manifest in &mut save_file.manifests {
+                manifest.path = assets_dir
+                    .join(&manifest.filename)
+                    .to_string_lossy()
+                    .to_string();
+            }
+
+            Ok(save_file)
+        })
+        .await
+        .map_err(|e| anyhow!("Task join error: {}", e))?
     }
 
-    /// Asynchronously saves the current object and its associated assets to a 7z archive at the specified path.
+    /// Asynchronously saves the current object and its associated assets to a 7z archive.
     ///
     /// # Arguments
-    /// * `path` - A path-like object representing the output location for the generated 7z archive.
+    /// * `path` - The output location for the generated 7z archive.
     ///
     /// # Workflow
-    /// 1. **Create a Temporary Directory**:
-    ///    A temporary directory is created to stage the assets before compression. This is done using a UUID to ensure
-    ///    uniqueness and avoid conflicts.
-    ///
-    /// 2. **Create an Assets Subdirectory**:
-    ///    Within the temporary directory, an "assets" subdirectory is created to hold all associated asset files.
-    ///
-    /// 3. **Write a Manifest File**:
-    ///    A `manifest.json` file is generated in the root of the temporary directory. The current object is serialized
-    ///    into a JSON format, which serves as the manifest file, detailing the structure or metadata of the assets.
-    ///
-    /// 4. **Copy Asset Files**:
-    ///    Each asset specified in the object is copied into the "assets" subdirectory. Failure to locate or copy any of
-    ///    the asset files results in an error.
-    ///
-    /// 5. **Create a 7z Archive**:
-    ///    The contents of the temporary directory, including `manifest.json` and the "assets" subdirectory, are compressed
-    ///    into a 7z archive at the specified `path`.
-    ///
-    /// 6. **Cleanup Temporary Directory**:
-    ///    After successful compression, the temporary directory and its contents are deleted to clean up intermediate
-    ///    files.
+    /// 1. Creates a temporary directory for staging
+    /// 2. Creates an assets subdirectory
+    /// 3. Writes manifest.json with serialized data
+    /// 4. Copies all asset files to assets/
+    /// 5. Creates 7z archive with compression
+    /// 6. Cleans up temporary directory
     ///
     /// # Returns
     /// Returns a `Result<()>`:
     /// * `Ok(())` if the operation completes successfully.
-    /// * `Err` if any step in the process fails, with an appropriate error message.
-    ///
-    /// # Errors
-    /// * Errors may occur if:
-    ///   - Temporary or assets subdirectories cannot be created.
-    ///   - The manifest file cannot be serialized or written.
-    ///   - Asset files are missing or cannot be copied.
-    ///   - The 7z archive fails to be created.
-    ///   - The temporary directory fails to be cleaned up.
-    ///
-    /// # Examples
-    /// ```rust
-    /// let my_object = MyObject::new(...);
-    /// let result = my_object.save("/path/to/output.7z").await;
-    /// match result {
-    ///     Ok(_) => println!("Archive saved successfully."),
-    ///     Err(e) => eprintln!("Failed to save archive: {}", e),
-    /// }
-    /// ```
-    ///
-    /// # Notes
-    /// * This function depends on the `anyhow` crate for error handling, `serde_json` for serialization, and
-    ///   `sevenz_rust2` for creating 7z archives.
-    /// * Temporary directories are created using the system's default temporary directory as a base.
-    /// * Make sure the necessary permissions exist to write to the specified output path and manipulate files.
-    ///
-    /// # Logging
-    /// * The function emits debug and info-level logs for each significant step in the process.
+    /// * `Err` if any step in the process fails.
     pub async fn save(&self, path: impl AsRef<Path>) -> Result<()> {
-        let path = path.as_ref();
-        // 1. Create temp directory for staging
-        info!("Saving asset file to {path:?}");
-        let temp_dir = std::env::temp_dir().join(format!("pocf_{}", uuid::Uuid::new_v4()));
-        debug!("creating temp directory for staging: {temp_dir:?}");
-        std::fs::create_dir_all(&temp_dir)
-            .map_err(|e| anyhow!("Failed to create temp directory: {}", e))?;
+        let path = path.as_ref().to_path_buf();
+        let save_file = self.clone_for_save();
 
-        // 2. Create assets subdirectory
-        let assets_dir = temp_dir.join("assets");
-        debug!("creating assets directory: {assets_dir:?}");
-        std::fs::create_dir_all(&assets_dir)
-            .map_err(|e| anyhow!("Failed to create assets directory: {}", e))?;
+        tokio::task::spawn_blocking(move || {
+            info!("Saving asset file to {path:?}");
+            let temp_dir = std::env::temp_dir().join(format!("pocf_{}", uuid::Uuid::new_v4()));
+            debug!("Creating temp directory for staging: {temp_dir:?}");
+            std::fs::create_dir_all(&temp_dir)
+                .map_err(|e| anyhow!("Failed to create temp directory: {}", e))?;
 
-        // 3. Write manifest.json
-        let manifest_path = temp_dir.join("manifest.json");
-        debug!("writing manifest.json to {manifest_path:?}");
-        let manifest_json = serde_json::to_string_pretty(&self)
-            .map_err(|e| anyhow!("Failed to serialize manifest: {}", e))?;
-        std::fs::write(manifest_path, manifest_json)
-            .map_err(|e| anyhow!("Failed to write manifest.json: {}", e))?;
+            // Create assets subdirectory
+            let assets_dir = temp_dir.join("assets");
+            debug!("Creating assets directory: {assets_dir:?}");
+            std::fs::create_dir_all(&assets_dir)
+                .map_err(|e| anyhow!("Failed to create assets directory: {}", e))?;
 
-        // 4. Copy all asset files to assets/
-        debug!("copying asset files to {assets_dir:?}");
-        for asset in &self.assets {
-            let src = Path::new(&asset.path);
-            if !src.exists() {
-                return Err(anyhow!("Asset file not found: {}", asset.path));
+            // Write manifest.json
+            let manifest_path = temp_dir.join("manifest.json");
+            debug!("Writing manifest.json to {manifest_path:?}");
+            let manifest_json = serde_json::to_string_pretty(&save_file)
+                .map_err(|e| anyhow!("Failed to serialize manifest: {}", e))?;
+            std::fs::write(&manifest_path, manifest_json)
+                .map_err(|e| anyhow!("Failed to write manifest.json: {}", e))?;
+
+            // Copy all asset files to assets/
+            debug!("Copying asset files to {assets_dir:?}");
+            for asset in &save_file.assets {
+                let src = Path::new(&asset.path);
+                if !src.exists() {
+                    return Err(anyhow!("Asset file not found: {}", asset.path));
+                }
+                let dst = assets_dir.join(&asset.filename);
+                std::fs::copy(src, &dst)
+                    .map_err(|e| anyhow!("Failed to copy asset {}: {}", asset.filename, e))?;
+                debug!("Copied {src:?} to {dst:?}");
             }
-            let dst = assets_dir.join(&asset.filename);
-            std::fs::copy(src, &dst)
-                .map_err(|e| anyhow!("Failed to copy asset {}: {}", asset.filename, e))?;
-            debug!("copied {src:?} to {dst:?}");
+
+            // Create 7z archive with compression
+            debug!("Creating 7z archive at {path:?}");
+            sevenz_rust2::compress_to_path(&temp_dir, &path)
+                .map_err(|e| anyhow!("Failed to create 7z archive: {}", e))?;
+
+            // Cleanup temp directory
+            std::fs::remove_dir_all(&temp_dir)
+                .map_err(|e| anyhow!("Failed to cleanup temp directory: {}", e))?;
+
+            Ok(())
+        })
+        .await
+        .map_err(|e| anyhow!("Task join error: {}", e))?
+    }
+
+    fn clone_for_save(&self) -> SaveFile {
+        SaveFile {
+            version: self.version.clone(),
+            po_number: self.po_number.clone(),
+            buyer_id: self.buyer_id,
+            vendor: self.vendor.clone(),
+            order_date: self.order_date.clone(),
+            ship_date: self.ship_date.clone(),
+            cancel_date: self.cancel_date.clone(),
+            shipping_notes: self.shipping_notes.clone(),
+            description: self.description.clone(),
+            terms: self.terms.clone(),
+            ship_to_address: self.ship_to_address.clone(),
+            fob_type: self.fob_type.clone(),
+            fob_point: self.fob_point.clone(),
+            notes: self.notes.clone(),
+            manifests: self.manifests.clone(),
+            assets: self.assets.clone(),
         }
-
-        // 5. Create 7z archive with compression
-        debug!("creating 7z archive at {path:?}");
-        sevenz_rust2::compress_to_path(&temp_dir, path)
-            .map_err(|e| anyhow!("Failed to create 7z archive: {}", e))?;
-
-        // 6. Cleanup temp directory
-        std::fs::remove_dir_all(&temp_dir)
-            .map_err(|e| anyhow!("Failed to cleanup temp directory: {}", e))?;
-
-        Ok(())
     }
 }

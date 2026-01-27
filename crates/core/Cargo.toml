@@ -11,3 +11,4 @@ sevenz-rust2 = {version = "0.20.0", features = ["zstd"] }
 anyhow = {version = "1.0.100"}
 uuid = { version = "1", features = ["v4"] }
 log = "0.4.29"
+tokio = { version = "1", features = ["rt", "sync"] }
