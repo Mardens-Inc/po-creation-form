@@ -1,17 +1,23 @@
 import {useEffect, useState} from "react";
 import {getApiRoute} from "../api_route.ts";
 
-type FieldOptionKey = "department" | "category" | "subcategory" | "season";
+export type FieldOption = {
+    id: number;
+    name: string;
+    code?: string;
+};
 
 const STORAGE_PREFIX = "pocf_field_options_";
 
-function getStorageKey(field: FieldOptionKey): string {
-    return `${STORAGE_PREFIX}${field}`;
+function getStorageKey(type: string, parentId?: number): string {
+    return parentId != null
+        ? `${STORAGE_PREFIX}${type}_${parentId}`
+        : `${STORAGE_PREFIX}${type}`;
 }
 
-function loadFromStorage(field: FieldOptionKey): string[] {
+function loadFromStorage(type: string, parentId?: number): FieldOption[] {
     try {
-        const raw = localStorage.getItem(getStorageKey(field));
+        const raw = localStorage.getItem(getStorageKey(type, parentId));
         if (raw) {
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) return parsed;
@@ -22,32 +28,108 @@ function loadFromStorage(field: FieldOptionKey): string[] {
     return [];
 }
 
-function saveToStorage(field: FieldOptionKey, options: string[]) {
-    localStorage.setItem(getStorageKey(field), JSON.stringify(options));
+function saveToStorage(type: string, options: FieldOption[], parentId?: number) {
+    localStorage.setItem(getStorageKey(type, parentId), JSON.stringify(options));
 }
 
-async function fetchFieldOptions(field: FieldOptionKey): Promise<string[]> {
+async function fetchOptions(path: string): Promise<FieldOption[]> {
     const apiRoute = await getApiRoute();
-    const response = await fetch(`${apiRoute}/data/${field}`);
+    const response = await fetch(`${apiRoute}/data/${path}`);
     if (!response.ok) {
-        throw new Error(`Failed to fetch ${field} options: ${response.statusText}`);
+        throw new Error(`Failed to fetch options from ${path}: ${response.statusText}`);
     }
     return response.json();
 }
 
-export function useFieldOptions(field: FieldOptionKey): string[] {
-    const [options, setOptions] = useState<string[]>(() => loadFromStorage(field));
+/**
+ * Fetch departments (no parent needed).
+ */
+export function useDepartments(): FieldOption[] {
+    const [options, setOptions] = useState<FieldOption[]>(() => loadFromStorage("department"));
 
     useEffect(() => {
-        fetchFieldOptions(field)
+        fetchOptions("department")
             .then((data) => {
                 setOptions(data);
-                saveToStorage(field, data);
+                saveToStorage("department", data);
             })
-            .catch(() => {
-                // Offline or error — keep localStorage values
-            });
-    }, [field]);
+            .catch(() => {});
+    }, []);
+
+    return options;
+}
+
+/**
+ * Fetch categories for a given department.
+ * Returns empty array when departmentId is undefined/null.
+ */
+export function useCategories(departmentId: number | undefined | null): FieldOption[] {
+    const [options, setOptions] = useState<FieldOption[]>(() =>
+        departmentId != null ? loadFromStorage("category", departmentId) : []
+    );
+
+    useEffect(() => {
+        if (departmentId == null) {
+            setOptions([]);
+            return;
+        }
+        // Load cached first
+        const cached = loadFromStorage("category", departmentId);
+        if (cached.length > 0) setOptions(cached);
+
+        fetchOptions(`category/${departmentId}`)
+            .then((data) => {
+                setOptions(data);
+                saveToStorage("category", data, departmentId);
+            })
+            .catch(() => {});
+    }, [departmentId]);
+
+    return options;
+}
+
+/**
+ * Fetch subcategories for a given category.
+ * Returns empty array when categoryId is undefined/null.
+ */
+export function useSubcategories(categoryId: number | undefined | null): FieldOption[] {
+    const [options, setOptions] = useState<FieldOption[]>(() =>
+        categoryId != null ? loadFromStorage("subcategory", categoryId) : []
+    );
+
+    useEffect(() => {
+        if (categoryId == null) {
+            setOptions([]);
+            return;
+        }
+        const cached = loadFromStorage("subcategory", categoryId);
+        if (cached.length > 0) setOptions(cached);
+
+        fetchOptions(`subcategory/${categoryId}`)
+            .then((data) => {
+                setOptions(data);
+                saveToStorage("subcategory", data, categoryId);
+            })
+            .catch(() => {});
+    }, [categoryId]);
+
+    return options;
+}
+
+/**
+ * Fetch seasons (no parent needed).
+ */
+export function useSeasons(): FieldOption[] {
+    const [options, setOptions] = useState<FieldOption[]>(() => loadFromStorage("season"));
+
+    useEffect(() => {
+        fetchOptions("season")
+            .then((data) => {
+                setOptions(data);
+                saveToStorage("season", data);
+            })
+            .catch(() => {});
+    }, []);
 
     return options;
 }

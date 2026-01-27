@@ -2,31 +2,92 @@ import {useCallback, useMemo, useState} from "react";
 import {createColumnHelper, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
 import {Input, Select, SelectItem} from "@heroui/react";
 import {ManifestData, TEMPLATE_FIELD_LABELS, TEMPLATE_FIELDS, TemplateField} from "../../types/manifest.ts";
-import {useFieldOptions} from "../../hooks/useFieldOptions.ts";
+import {useDepartments, useSeasons, useCategories, useSubcategories, FieldOption} from "../../hooks/useFieldOptions.ts";
 
 type ManifestPreviewTableProps = {
     manifestData: ManifestData | null;
     mappings: Record<string, string>;
 }
 
-const SELECT_FIELDS: TemplateField[] = ["department", "category", "sub_category", "season"];
 const INPUT_FIELDS: TemplateField[] = ["notes"];
 
 const columnHelper = createColumnHelper<string[]>();
 
+function CascadingSelectCell({
+    field,
+    rowIndex,
+    overrides,
+    onOverrideChange,
+    departmentOptions,
+    seasonOptions,
+}: {
+    field: TemplateField;
+    rowIndex: number;
+    overrides: Record<string, string>;
+    onOverrideChange: (rowIndex: number, field: string, value: string) => void;
+    departmentOptions: FieldOption[];
+    seasonOptions: FieldOption[];
+}) {
+    const selectedDeptId = overrides[`${rowIndex}:department`];
+    const selectedCatId = overrides[`${rowIndex}:category`];
+
+    const categoryOptions = useCategories(
+        selectedDeptId ? Number(selectedDeptId) : undefined
+    );
+    const subcategoryOptions = useSubcategories(
+        selectedCatId ? Number(selectedCatId) : undefined
+    );
+
+    let options: FieldOption[] = [];
+    if (field === "department") options = departmentOptions;
+    else if (field === "category") options = categoryOptions;
+    else if (field === "sub_category") options = subcategoryOptions;
+    else if (field === "season") options = seasonOptions;
+
+    const overrideValue = overrides[`${rowIndex}:${field}`] ?? "";
+
+    const handleChange = (value: string) => {
+        onOverrideChange(rowIndex, field, value);
+        // Clear dependent selections when parent changes
+        if (field === "department") {
+            onOverrideChange(rowIndex, "category", "");
+            onOverrideChange(rowIndex, "sub_category", "");
+        } else if (field === "category") {
+            onOverrideChange(rowIndex, "sub_category", "");
+        }
+    };
+
+    const isDisabled =
+        (field === "category" && !selectedDeptId) ||
+        (field === "sub_category" && !selectedCatId);
+
+    return (
+        <Select
+            aria-label={TEMPLATE_FIELD_LABELS[field]}
+            placeholder={isDisabled ? `Select ${field === "category" ? "department" : "category"} first` : `Select ${TEMPLATE_FIELD_LABELS[field]}`}
+            selectedKeys={overrideValue ? [overrideValue] : []}
+            onChange={(e) => handleChange(e.target.value)}
+            isDisabled={isDisabled}
+            variant="bordered"
+            size="sm"
+            classNames={{
+                trigger: "border-transparent hover:border-gray-300 focus:border-primary-500 min-w-[150px]",
+                value: "text-sm font-text",
+            }}
+        >
+            {options.map((option) => (
+                <SelectItem key={String(option.id)}>{option.name}</SelectItem>
+            ))}
+        </Select>
+    );
+}
+
+const SELECT_FIELDS: TemplateField[] = ["department", "category", "sub_category", "season"];
+
 export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTableProps)
 {
-    const departmentOptions = useFieldOptions("department");
-    const categoryOptions = useFieldOptions("category");
-    const subcategoryOptions = useFieldOptions("subcategory");
-    const seasonOptions = useFieldOptions("season");
-
-    const optionsMap: Record<string, string[]> = useMemo(() => ({
-        department: departmentOptions,
-        category: categoryOptions,
-        sub_category: subcategoryOptions,
-        season: seasonOptions,
-    }), [departmentOptions, categoryOptions, subcategoryOptions, seasonOptions]);
+    const departmentOptions = useDepartments();
+    const seasonOptions = useSeasons();
 
     // Track overrides for unmapped fields: { "rowIndex:field": value }
     const [overrides, setOverrides] = useState<Record<string, string>>({});
@@ -82,26 +143,15 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
                         // Not mapped — render interactive controls for specific fields
                         if (SELECT_FIELDS.includes(field))
                         {
-                            const options = optionsMap[field] || [];
-                            const overrideValue = overrides[getOverrideKey(info.row.index, field)] ?? "";
-
                             return (
-                                <Select
-                                    aria-label={TEMPLATE_FIELD_LABELS[field]}
-                                    placeholder={`Select ${TEMPLATE_FIELD_LABELS[field]}`}
-                                    selectedKeys={overrideValue ? [overrideValue] : []}
-                                    onChange={(e) => handleOverrideChange(info.row.index, field, e.target.value)}
-                                    variant="bordered"
-                                    size="sm"
-                                    classNames={{
-                                        trigger: "border-transparent hover:border-gray-300 focus:border-primary-500 min-w-[150px]",
-                                        value: "text-sm font-text",
-                                    }}
-                                >
-                                    {options.map((option) => (
-                                        <SelectItem key={option}>{option}</SelectItem>
-                                    ))}
-                                </Select>
+                                <CascadingSelectCell
+                                    field={field}
+                                    rowIndex={info.row.index}
+                                    overrides={overrides}
+                                    onOverrideChange={handleOverrideChange}
+                                    departmentOptions={departmentOptions}
+                                    seasonOptions={seasonOptions}
+                                />
                             );
                         }
 
@@ -131,7 +181,7 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
                 }
             )
         );
-    }, [mappings, manifestData, optionsMap, overrides, isFieldMapped, handleOverrideChange]);
+    }, [mappings, manifestData, overrides, isFieldMapped, handleOverrideChange]);
 
     const data = useMemo(() =>
     {

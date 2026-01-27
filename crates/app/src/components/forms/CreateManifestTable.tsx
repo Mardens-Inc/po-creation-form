@@ -1,8 +1,8 @@
 import {Button, Input, Select, SelectItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {useMemo, useRef} from "react";
+import {useRef} from "react";
 import {TEMPLATE_FIELDS, TEMPLATE_FIELD_LABELS, TemplateField} from "../../types/manifest.ts";
-import {useFieldOptions} from "../../hooks/useFieldOptions.ts";
+import {useDepartments, useSeasons, useCategories, useSubcategories, FieldOption} from "../../hooks/useFieldOptions.ts";
 
 const SELECT_FIELDS: TemplateField[] = ["department", "category", "sub_category", "season"];
 
@@ -13,25 +13,85 @@ type CreateManifestTableProps = {
     onChange: (data: ManifestRow[]) => void;
 }
 
+function CascadingRowSelect({
+    field,
+    row,
+    rowIndex,
+    onCellChange,
+    departmentOptions,
+    seasonOptions,
+}: {
+    field: TemplateField;
+    row: ManifestRow;
+    rowIndex: number;
+    onCellChange: (rowIndex: number, updates: Partial<ManifestRow>) => void;
+    departmentOptions: FieldOption[];
+    seasonOptions: FieldOption[];
+}) {
+    const selectedDeptId = row.department || undefined;
+    const selectedCatId = row.category || undefined;
+
+    const categoryOptions = useCategories(
+        selectedDeptId ? Number(selectedDeptId) : undefined
+    );
+    const subcategoryOptions = useSubcategories(
+        selectedCatId ? Number(selectedCatId) : undefined
+    );
+
+    let options: FieldOption[] = [];
+    if (field === "department") options = departmentOptions;
+    else if (field === "category") options = categoryOptions;
+    else if (field === "sub_category") options = subcategoryOptions;
+    else if (field === "season") options = seasonOptions;
+
+    const handleChange = (value: string) => {
+        if (field === "department") {
+            onCellChange(rowIndex, {department: value, category: "", sub_category: ""});
+        } else if (field === "category") {
+            onCellChange(rowIndex, {category: value, sub_category: ""});
+        } else {
+            onCellChange(rowIndex, {[field]: value});
+        }
+    };
+
+    const isDisabled =
+        (field === "category" && !selectedDeptId) ||
+        (field === "sub_category" && !selectedCatId);
+
+    return (
+        <Select
+            aria-label={TEMPLATE_FIELD_LABELS[field]}
+            placeholder={isDisabled ? `Select ${field === "category" ? "department" : "category"} first` : `Select ${TEMPLATE_FIELD_LABELS[field]}`}
+            selectedKeys={row[field] ? [row[field]] : []}
+            onChange={(e) => handleChange(e.target.value)}
+            isDisabled={isDisabled}
+            variant="bordered"
+            size="sm"
+            classNames={{
+                trigger: "border-transparent hover:border-gray-300 focus:border-primary-500 min-w-[150px]",
+                value: "text-sm font-text",
+            }}
+        >
+            {options.map((option) => (
+                <SelectItem key={String(option.id)}>{option.name}</SelectItem>
+            ))}
+        </Select>
+    );
+}
+
 export function CreateManifestTable({data, onChange}: CreateManifestTableProps) {
+    const departmentOptions = useDepartments();
+    const seasonOptions = useSeasons();
     const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
-    const departmentOptions = useFieldOptions("department");
-    const categoryOptions = useFieldOptions("category");
-    const subcategoryOptions = useFieldOptions("subcategory");
-    const seasonOptions = useFieldOptions("season");
-
-    const optionsMap: Record<string, string[]> = useMemo(() => ({
-        department: departmentOptions,
-        category: categoryOptions,
-        sub_category: subcategoryOptions,
-        season: seasonOptions,
-    }), [departmentOptions, categoryOptions, subcategoryOptions, seasonOptions]);
-
-    const handleCellChange = (rowIndex: number, field: TemplateField, value: string) => {
+    const handleCellChange = (rowIndex: number, updates: Partial<ManifestRow>) => {
         const newData = [...data];
-        newData[rowIndex] = {...newData[rowIndex], [field]: value};
+        newData[rowIndex] = {...newData[rowIndex], ...updates};
         onChange(newData);
+    };
+
+    const handleInputChange = (rowIndex: number, field: TemplateField, value: string) => {
+        handleCellChange(rowIndex, {[field]: value});
     };
 
     const addRow = () => {
@@ -64,16 +124,11 @@ export function CreateManifestTable({data, onChange}: CreateManifestTableProps) 
 
             if (!e.shiftKey) {
                 // Tab forward
-                // If not at the last field, move to the next field in the same row
                 if (currentFieldIndex < TEMPLATE_FIELDS.length - 1) {
                     focusCell(rowIndex, TEMPLATE_FIELDS[currentFieldIndex + 1]);
-                }
-                // If at the last field and not on the last row, move to the first field of the next row
-                else if (rowIndex < data.length - 1) {
+                } else if (rowIndex < data.length - 1) {
                     focusCell(rowIndex + 1, TEMPLATE_FIELDS[0]);
-                }
-                // If at the last field of the last row, add a new row and move to it
-                else {
+                } else {
                     addRow();
                     setTimeout(() => {
                         focusCell(data.length, TEMPLATE_FIELDS[0]);
@@ -81,22 +136,17 @@ export function CreateManifestTable({data, onChange}: CreateManifestTableProps) 
                 }
             } else {
                 // Shift+Tab backward
-                // If not at the first field, move to the previous field in the same row
                 if (currentFieldIndex > 0) {
                     focusCell(rowIndex, TEMPLATE_FIELDS[currentFieldIndex - 1]);
-                }
-                // If at the first field and not on the first row, move to the last field of the previous row
-                else if (rowIndex > 0) {
+                } else if (rowIndex > 0) {
                     focusCell(rowIndex - 1, TEMPLATE_FIELDS[TEMPLATE_FIELDS.length - 1]);
                 }
             }
         } else if (e.key === 'Enter') {
             e.preventDefault();
-            // Move to the same field in the next row
             if (rowIndex < data.length - 1) {
                 focusCell(rowIndex + 1, field);
             } else {
-                // Add new row and move to it
                 addRow();
                 setTimeout(() => {
                     focusCell(data.length, field);
@@ -167,22 +217,14 @@ export function CreateManifestTable({data, onChange}: CreateManifestTableProps) 
                                                     className="border-r border-b border-gray-300 last:border-r-0 px-2 py-2 font-text text-sm"
                                                 >
                                                     {isSelect ? (
-                                                        <Select
-                                                            aria-label={TEMPLATE_FIELD_LABELS[field]}
-                                                            placeholder={`Select ${TEMPLATE_FIELD_LABELS[field]}`}
-                                                            selectedKeys={row[field] ? [row[field]] : []}
-                                                            onChange={(e) => handleCellChange(rowIndex, field, e.target.value)}
-                                                            variant="bordered"
-                                                            size="sm"
-                                                            classNames={{
-                                                                trigger: "border-transparent hover:border-gray-300 focus:border-primary-500 min-w-[150px]",
-                                                                value: "text-sm font-text",
-                                                            }}
-                                                        >
-                                                            {(optionsMap[field] || []).map((option) => (
-                                                                <SelectItem key={option}>{option}</SelectItem>
-                                                            ))}
-                                                        </Select>
+                                                        <CascadingRowSelect
+                                                            field={field}
+                                                            row={row}
+                                                            rowIndex={rowIndex}
+                                                            onCellChange={handleCellChange}
+                                                            departmentOptions={departmentOptions}
+                                                            seasonOptions={seasonOptions}
+                                                        />
                                                     ) : (
                                                         <Input
                                                             ref={(el) => {
@@ -194,7 +236,7 @@ export function CreateManifestTable({data, onChange}: CreateManifestTableProps) 
                                                                 }
                                                             }}
                                                             value={row[field] || ""}
-                                                            onChange={(e) => handleCellChange(rowIndex, field, e.target.value)}
+                                                            onChange={(e) => handleInputChange(rowIndex, field, e.target.value)}
                                                             onKeyDown={(e) => handleKeyDown(e, rowIndex, field)}
                                                             variant="bordered"
                                                             size="sm"
