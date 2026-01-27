@@ -30,43 +30,43 @@ pub async fn login(body: Json<LoginRequestBody>) -> Result<impl Responder> {
 #[post("/register")]
 pub async fn register_user(body: Json<UserRegistrationBody>) -> Result<impl Responder> {
     let mut user: User = body.into_inner().into();
-    user.register().await.map_err(|e| {
-        fn cleanup(email: &str) -> Result<()> {
-            _ = async || -> Result<()> {
-                let pool = crate::app_db::create_pool()
-                    .await
-                    .map_err(actix_web::error::ErrorInternalServerError)?;
-                let mut transaction = pool
-                    .begin()
-                    .await
-                    .map_err(actix_web::error::ErrorInternalServerError)?;
-                User::drop_unconfirmed_user_by_email_with_transaction(&mut transaction, email)
-                    .await
-                    .map_err(actix_web::error::ErrorInternalServerError)?;
-                crate::auth::registration_db::remove_request_by_email_with_transaction(
-                    &mut transaction,
-                    email,
-                )
-                .await
-                .map_err(actix_web::error::ErrorInternalServerError)?;
-
-                transaction
-                    .commit()
-                    .await
-                    .map_err(actix_web::error::ErrorInternalServerError)?;
-                pool.close().await;
-
-                Ok(())
+    if let Err(e) = user.register().await {
+        // Cleanup on failure
+        async fn cleanup(email: String) {
+            let Ok(pool) = crate::app_db::create_pool().await else {
+                error!("Failed to create pool for cleanup");
+                return;
             };
-
-            Ok(())
+            let Ok(mut transaction) = pool.begin().await else {
+                error!("Failed to begin transaction for cleanup");
+                return;
+            };
+            if let Err(e) =
+                User::drop_unconfirmed_user_by_email_with_transaction(&mut transaction, &email)
+                    .await
+            {
+                error!("Failed to drop unconfirmed user during cleanup: {e}");
+                return;
+            }
+            if let Err(e) = crate::auth::registration_db::remove_request_by_email_with_transaction(
+                &mut transaction,
+                &email,
+            )
+            .await
+            {
+                error!("Failed to remove registration request during cleanup: {e}");
+                return;
+            }
+            if let Err(e) = transaction.commit().await {
+                error!("Failed to commit cleanup transaction: {e}");
+                return;
+            }
+            pool.close().await;
         }
 
-        if let Err(e) = cleanup(user.email.as_str()) {
-            error!("Unable to cleanup partially created user after failure: {e}");
-        }
-        actix_web::error::ErrorInternalServerError(e)
-    })?;
+        cleanup(user.email.clone()).await;
+        return Err(actix_web::error::ErrorInternalServerError(e));
+    }
     Ok(HttpResponse::Ok().json(json!({
         "message": "User registration request was successful. Please check your email for further instructions.",
     })))

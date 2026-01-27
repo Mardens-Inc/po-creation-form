@@ -57,7 +57,11 @@ impl EmailService {
 					error!("Failed to build email context with the following credentials: {SMTP_USERNAME}:{SMTP_PASSWORD}@{SMTP_HOST}");
 					anyhow::Error::from(e)
 				})?;
-        self.transport.send(&email)?;
+        self.transport.send(&email)
+                      .map_err(|e| {
+	                      error!("Failed to send email with the following credentials: {SMTP_USERNAME}:{SMTP_PASSWORD}@{SMTP_HOST}");
+	                      anyhow::Error::from(e)
+                      })?;
         Ok(())
     }
 }
