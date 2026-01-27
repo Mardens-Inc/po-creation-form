@@ -1,7 +1,7 @@
 import {createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState} from "react";
 import {getApiRoute} from "../api_route.ts";
 import {addToast} from "@heroui/react";
-import { fetch } from '@tauri-apps/plugin-http';
+import {fetch} from "@tauri-apps/plugin-http";
 
 interface RemoteServerConnectionContextType
 {
@@ -61,11 +61,17 @@ export function RemoteServerConnectionProvider({children}: { children: ReactNode
         {
             try
             {
-                const response = await fetch(`${serverUrl}/status/health`);
+                const response = await fetch(`${serverUrl}/status/health`, {
+                    danger: {
+                        acceptInvalidCerts: true,
+                        acceptInvalidHostnames: true
+                    }
+                });
                 console.info("Remote server health check response: ", response.status);
                 updateIsConnectedStatus(response.status === 200);
-            } catch
+            } catch (e)
             {
+                console.error("Error checking remote server health: ", e);
                 updateIsConnectedStatus(false);
             }
         };

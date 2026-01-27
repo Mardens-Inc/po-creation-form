@@ -64,7 +64,6 @@ pub fn run() {
 #[tauri::command]
 fn get_api_url() -> String {
     #[cfg(debug_assertions)]
-    //    return "https://potracker.mardens.com/api".to_string();
     return "http://localhost:8522/api".to_string();
     #[cfg(not(debug_assertions))]
     return "https://potracker.mardens.com/api".to_string();
