@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "tauri-dev": "tauri dev",
+    "tauri-dev": "tauri dev --no-watch",
     "tauri-build": "tauri build"
   },
   "dependencies": {
