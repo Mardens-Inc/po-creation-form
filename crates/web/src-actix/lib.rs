@@ -11,6 +11,7 @@ mod app_db;
 mod auth;
 mod status_endpoint;
 mod util;
+mod data;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
@@ -59,6 +60,7 @@ pub async fn run() -> Result<()> {
             .service(
                 web::scope("api")
                     .configure(status_endpoint::configure)
+                    .configure(data::configure)
                     .configure(auth::configure),
             )
             .configure_frontend_routes()

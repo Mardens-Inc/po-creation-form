@@ -1,4 +1,4 @@
-use crate::auth;
+use crate::{auth, data};
 use anyhow::Result;
 use sqlx::mysql::{MySqlConnectOptions, MySqlPoolOptions};
 use sqlx::{ConnectOptions, MySqlPool};
@@ -27,6 +27,7 @@ pub async fn initialize_database() -> Result<()> {
 
 	// ======   List tables here    ======
 	auth::initialize_table(&mut transaction).await?;
+    data::initialize_table(&mut transaction).await?;
 
 	// ======   End of list         ======
 

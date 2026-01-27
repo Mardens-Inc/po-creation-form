@@ -1,16 +1,53 @@
-import {useMemo} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {createColumnHelper, flexRender, getCoreRowModel, useReactTable} from "@tanstack/react-table";
-import {ManifestData, TEMPLATE_FIELD_LABELS, TEMPLATE_FIELDS} from "../../types/manifest.ts";
+import {Input, Select, SelectItem} from "@heroui/react";
+import {ManifestData, TEMPLATE_FIELD_LABELS, TEMPLATE_FIELDS, TemplateField} from "../../types/manifest.ts";
+import {useFieldOptions} from "../../hooks/useFieldOptions.ts";
 
 type ManifestPreviewTableProps = {
     manifestData: ManifestData | null;
     mappings: Record<string, string>;
 }
 
+const SELECT_FIELDS: TemplateField[] = ["department", "category", "sub_category", "season"];
+const INPUT_FIELDS: TemplateField[] = ["notes"];
+
 const columnHelper = createColumnHelper<string[]>();
 
 export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTableProps)
 {
+    const departmentOptions = useFieldOptions("department");
+    const categoryOptions = useFieldOptions("category");
+    const subcategoryOptions = useFieldOptions("subcategory");
+    const seasonOptions = useFieldOptions("season");
+
+    const optionsMap: Record<string, string[]> = useMemo(() => ({
+        department: departmentOptions,
+        category: categoryOptions,
+        sub_category: subcategoryOptions,
+        season: seasonOptions,
+    }), [departmentOptions, categoryOptions, subcategoryOptions, seasonOptions]);
+
+    // Track overrides for unmapped fields: { "rowIndex:field": value }
+    const [overrides, setOverrides] = useState<Record<string, string>>({});
+
+    const getOverrideKey = (rowIndex: number, field: string) => `${rowIndex}:${field}`;
+
+    const handleOverrideChange = useCallback((rowIndex: number, field: string, value: string) =>
+    {
+        setOverrides(prev => ({
+            ...prev,
+            [getOverrideKey(rowIndex, field)]: value,
+        }));
+    }, []);
+
+    const isFieldMapped = useCallback((field: string): boolean =>
+    {
+        const mappedColumn = mappings[field];
+        if (!mappedColumn || !manifestData) return false;
+        return manifestData.columns.indexOf(mappedColumn) !== -1;
+    }, [mappings, manifestData]);
+
     const columns = useMemo(() =>
     {
         return TEMPLATE_FIELDS.map((field) =>
@@ -31,18 +68,70 @@ export function ManifestPreviewTable({manifestData, mappings}: ManifestPreviewTa
                     cell: (info) =>
                     {
                         const value = info.getValue();
-                        if (!value)
+                        const mapped = isFieldMapped(field);
+
+                        if (mapped)
                         {
+                            if (!value)
+                            {
+                                return <span className="text-gray-400 italic text-sm">Empty</span>;
+                            }
+                            return <span className="truncate">{value}</span>;
+                        }
+
+                        // Not mapped — render interactive controls for specific fields
+                        if (SELECT_FIELDS.includes(field))
+                        {
+                            const options = optionsMap[field] || [];
+                            const overrideValue = overrides[getOverrideKey(info.row.index, field)] ?? "";
+
                             return (
-                                <span className="text-gray-400 italic text-sm">Not Mapped</span>
+                                <Select
+                                    aria-label={TEMPLATE_FIELD_LABELS[field]}
+                                    placeholder={`Select ${TEMPLATE_FIELD_LABELS[field]}`}
+                                    selectedKeys={overrideValue ? [overrideValue] : []}
+                                    onChange={(e) => handleOverrideChange(info.row.index, field, e.target.value)}
+                                    variant="bordered"
+                                    size="sm"
+                                    classNames={{
+                                        trigger: "border-transparent hover:border-gray-300 focus:border-primary-500 min-w-[150px]",
+                                        value: "text-sm font-text",
+                                    }}
+                                >
+                                    {options.map((option) => (
+                                        <SelectItem key={option}>{option}</SelectItem>
+                                    ))}
+                                </Select>
                             );
                         }
-                        return <span className="truncate">{value}</span>;
+
+                        if (INPUT_FIELDS.includes(field))
+                        {
+                            const overrideValue = overrides[getOverrideKey(info.row.index, field)] ?? "";
+
+                            return (
+                                <Input
+                                    aria-label={TEMPLATE_FIELD_LABELS[field]}
+                                    placeholder={`Enter ${TEMPLATE_FIELD_LABELS[field]}`}
+                                    value={overrideValue}
+                                    onChange={(e) => handleOverrideChange(info.row.index, field, e.target.value)}
+                                    variant="bordered"
+                                    size="sm"
+                                    classNames={{
+                                        input: "text-sm font-text",
+                                        inputWrapper: "border-transparent hover:border-gray-300 focus-within:border-primary-500 focus-within:border-2",
+                                    }}
+                                />
+                            );
+                        }
+
+                        // Other unmapped fields — show "Not Mapped"
+                        return <span className="text-gray-400 italic text-sm">Not Mapped</span>;
                     }
                 }
             )
         );
-    }, [mappings, manifestData]);
+    }, [mappings, manifestData, optionsMap, overrides, isFieldMapped, handleOverrideChange]);
 
     const data = useMemo(() =>
     {

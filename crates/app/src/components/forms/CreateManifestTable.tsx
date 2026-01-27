@@ -1,7 +1,10 @@
-import {Button, Input} from "@heroui/react";
+import {Button, Input, Select, SelectItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {useRef} from "react";
+import {useMemo, useRef} from "react";
 import {TEMPLATE_FIELDS, TEMPLATE_FIELD_LABELS, TemplateField} from "../../types/manifest.ts";
+import {useFieldOptions} from "../../hooks/useFieldOptions.ts";
+
+const SELECT_FIELDS: TemplateField[] = ["department", "category", "sub_category", "season"];
 
 export type ManifestRow = Record<TemplateField, string>;
 
@@ -12,6 +15,18 @@ type CreateManifestTableProps = {
 
 export function CreateManifestTable({data, onChange}: CreateManifestTableProps) {
     const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+
+    const departmentOptions = useFieldOptions("department");
+    const categoryOptions = useFieldOptions("category");
+    const subcategoryOptions = useFieldOptions("subcategory");
+    const seasonOptions = useFieldOptions("season");
+
+    const optionsMap: Record<string, string[]> = useMemo(() => ({
+        department: departmentOptions,
+        category: categoryOptions,
+        sub_category: subcategoryOptions,
+        season: seasonOptions,
+    }), [departmentOptions, categoryOptions, subcategoryOptions, seasonOptions]);
 
     const handleCellChange = (rowIndex: number, field: TemplateField, value: string) => {
         const newData = [...data];
@@ -144,31 +159,51 @@ export function CreateManifestTable({data, onChange}: CreateManifestTableProps) 
                                     >
                                         {TEMPLATE_FIELDS.map((field) => {
                                             const cellKey = getCellKey(rowIndex, field);
+                                            const isSelect = SELECT_FIELDS.includes(field);
 
                                             return (
                                                 <td
                                                     key={field}
                                                     className="border-r border-b border-gray-300 last:border-r-0 px-2 py-2 font-text text-sm"
                                                 >
-                                                    <Input
-                                                        ref={(el) => {
-                                                            if (el) {
-                                                                const input = el.querySelector('input');
-                                                                if (input) {
-                                                                    inputRefs.current.set(cellKey, input);
+                                                    {isSelect ? (
+                                                        <Select
+                                                            aria-label={TEMPLATE_FIELD_LABELS[field]}
+                                                            placeholder={`Select ${TEMPLATE_FIELD_LABELS[field]}`}
+                                                            selectedKeys={row[field] ? [row[field]] : []}
+                                                            onChange={(e) => handleCellChange(rowIndex, field, e.target.value)}
+                                                            variant="bordered"
+                                                            size="sm"
+                                                            classNames={{
+                                                                trigger: "border-transparent hover:border-gray-300 focus:border-primary-500 min-w-[150px]",
+                                                                value: "text-sm font-text",
+                                                            }}
+                                                        >
+                                                            {(optionsMap[field] || []).map((option) => (
+                                                                <SelectItem key={option}>{option}</SelectItem>
+                                                            ))}
+                                                        </Select>
+                                                    ) : (
+                                                        <Input
+                                                            ref={(el) => {
+                                                                if (el) {
+                                                                    const input = el.querySelector('input');
+                                                                    if (input) {
+                                                                        inputRefs.current.set(cellKey, input);
+                                                                    }
                                                                 }
-                                                            }
-                                                        }}
-                                                        value={row[field] || ""}
-                                                        onChange={(e) => handleCellChange(rowIndex, field, e.target.value)}
-                                                        onKeyDown={(e) => handleKeyDown(e, rowIndex, field)}
-                                                        variant="bordered"
-                                                        size="sm"
-                                                        classNames={{
-                                                            input: "text-sm font-text",
-                                                            inputWrapper: "border-transparent hover:border-gray-300 focus-within:border-primary-500 focus-within:border-2"
-                                                        }}
-                                                    />
+                                                            }}
+                                                            value={row[field] || ""}
+                                                            onChange={(e) => handleCellChange(rowIndex, field, e.target.value)}
+                                                            onKeyDown={(e) => handleKeyDown(e, rowIndex, field)}
+                                                            variant="bordered"
+                                                            size="sm"
+                                                            classNames={{
+                                                                input: "text-sm font-text",
+                                                                inputWrapper: "border-transparent hover:border-gray-300 focus-within:border-primary-500 focus-within:border-2"
+                                                            }}
+                                                        />
+                                                    )}
                                                 </td>
                                             );
                                         })}
