@@ -2,7 +2,7 @@ use anyhow::Result;
 use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{SmtpTransport, Transport};
-use log::debug;
+use log::{debug, error};
 
 const SMTP_HOST: &str = env!("SMTP_HOST");
 const SMTP_USERNAME: &str = env!("SMTP_USERNAME");
@@ -40,19 +40,23 @@ impl EmailService {
         context.insert("email", email_address);
         context.insert("token", token);
         context.insert("first_name", first_name);
-	    let url = if cfg!(debug_assertions) {
-		    format!("http://localhost:{}", crate::PORT)
-	    } else {
-		    "https://potracker.mardens.com".to_string()
-	    };
-	    context.insert("url", &url);
+        let url = if cfg!(debug_assertions) {
+            format!("http://localhost:{}", crate::PORT)
+        } else {
+            "https://potracker.mardens.com".to_string()
+        };
+        context.insert("url", &url);
         let body = tera::Tera::one_off(CONFIRM_EMAIL_TEMPLATE, &context, true)?;
         let email = lettre::Message::builder()
-            .from(SMTP_USERNAME.parse()?)
-            .to(email_address.parse()?)
-            .subject("Confirm your email address")
-            .header(ContentType::TEXT_HTML)
-            .body(body)?;
+			.from(SMTP_USERNAME.parse()?)
+			.to(email_address.parse()?)
+			.subject("Confirm your email address")
+			.header(ContentType::TEXT_HTML)
+			.body(body)
+			.map_err(|e| {
+					error!("Failed to build email context with the following credentials: {SMTP_USERNAME}:{SMTP_PASSWORD}@{SMTP_HOST}");
+					anyhow::Error::from(e)
+				})?;
         self.transport.send(&email)?;
         Ok(())
     }

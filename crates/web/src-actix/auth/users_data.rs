@@ -7,6 +7,7 @@ use log::{error, info};
 use obsidian_scheduler::timer_trait::Timer;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use sqlx::MySqlTransaction;
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
 pub struct User {
@@ -39,6 +40,14 @@ impl User {
 
     pub async fn get_user_by_id(uid: u32) -> Result<Option<Self>> {
         Ok(crate::auth::users_db::get_user_by_id(uid).await?)
+    }
+
+    pub async fn drop_unconfirmed_user_by_email_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, email: &str) -> Result<()> {
+        sqlx::query("DELETE FROM users WHERE email = ? AND has_confirmed_email = 0")
+            .bind(email)
+            .execute(&mut **transaction)
+            .await?;
+        Ok(())
     }
 
     pub async fn register(&mut self) -> Result<u32> {

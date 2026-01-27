@@ -79,6 +79,17 @@ pub async fn remove_request(request_id: u32) -> Result<()> {
     Ok(())
 }
 
+pub async fn remove_request_by_email_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    email: &str,
+)-> Result<()> {
+    sqlx::query("DELETE FROM registration_requests WHERE email = ?")
+        .bind(email)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}
+
 pub async fn confirm_request(email: &str, token: &str) -> Result<()> {
     let pool = crate::app_db::create_pool().await?;
     let mut transaction = pool.begin().await?;
