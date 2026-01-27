@@ -1,1 +1,1 @@
-pwp -H 192.168.21.209 -u administrator -a "$env:USERPROFILE\.ssh\mss-sshkey_ossh.key" -s po_tracker_dashboard --binary po_tracker_dashboard -BIStc "wsl bash -ic 'npm run build'"
+pwp -H 192.168.21.209 -u administrator -a "$env:USERPROFILE\.ssh\mss-sshkey_ossh.key" -s po_tracker_dashboard --binary po_tracker_dashboard -BSc "wsl bash -ic 'npm run web:build'"

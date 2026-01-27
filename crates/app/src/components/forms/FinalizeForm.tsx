@@ -127,7 +127,7 @@ export function FinalizeForm()
                 <InfoCard>
                     <InfoCard.Header>Creation Date</InfoCard.Header>
                     <InfoCard.Body className={"text-4xl text-center font-black text-primary font-headers items-center justify-center"}>
-                        {uploadForm.creation_date.toDate(getLocalTimeZone()).toLocaleDateString("en-US", {weekday: "short", month: "short", day: "numeric", year: "numeric"})}
+                        {uploadForm.order_date.toDate(getLocalTimeZone()).toLocaleDateString("en-US", {weekday: "short", month: "short", day: "numeric", year: "numeric"})}
                     </InfoCard.Body>
                 </InfoCard>
             </div>

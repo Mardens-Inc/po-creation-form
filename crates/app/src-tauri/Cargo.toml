@@ -1,6 +1,6 @@
 [package]
 name = "po_tracker"
-version="0.0.1-alpha"
+version="0.1.2-beta"
 description = "A standardized PO Creation Form application"
 authors = ["Drew Chase"]
 edition = "2024"

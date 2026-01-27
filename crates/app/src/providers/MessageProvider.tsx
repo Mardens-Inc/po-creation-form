@@ -1,6 +1,6 @@
 import {createContext, ReactNode, useContext, useState, useEffect} from "react";
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
-import {Icon} from "@iconify/react";
+import {Icon} from "@iconify-icon/react";
 
 /**
  * Represents options used for a yes/no message response.

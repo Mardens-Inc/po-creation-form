@@ -1,0 +1,15 @@
+[Unit]
+Description=A dashboard for the PO Tracker App
+StartLimitIntervalSec=0
+After=network.target
+
+[Service]
+Type=exec
+Restart=always
+RestartSec=1
+User=administrator
+WorkingDirectory=/home/administrator/.local/share/po_tracker_dashboard/
+ExecStart=/home/administrator/.local/bin/po_tracker_dashboard
+
+[Install]
+WantedBy=multi-user.target
