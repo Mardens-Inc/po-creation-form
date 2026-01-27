@@ -46,6 +46,12 @@
     "createUpdaterArtifacts": true
   },
   "plugins": {
+    "http": {
+      "scope": [
+        "http://localhost:8522/api/**",
+        "https://potracker.mardens.com/api/**"
+      ]
+    },
     "updater": {
       "active": true,
       "endpoints": [

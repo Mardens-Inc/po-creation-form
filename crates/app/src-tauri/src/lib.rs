@@ -7,6 +7,7 @@ use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_window_state::Builder::new()
@@ -24,7 +25,9 @@ pub fn run() {
                 // Args format: ["exe_path", "file.pocf"] when opening file
                 if args.len() > 1 {
                     let potential_file = &args[1];
-                    if potential_file.ends_with(".pocf") && std::path::Path::new(potential_file).exists() {
+                    if potential_file.ends_with(".pocf")
+                        && std::path::Path::new(potential_file).exists()
+                    {
                         // Emit event to frontend with file path
                         if let Err(e) = window.emit("open-file", potential_file.clone()) {
                             eprintln!("Failed to emit open-file event: {}", e);
@@ -58,10 +61,10 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-
 #[tauri::command]
 fn get_api_url() -> String {
     #[cfg(debug_assertions)]
+    //    return "https://potracker.mardens.com/api".to_string();
     return "http://localhost:8522/api".to_string();
     #[cfg(not(debug_assertions))]
     return "https://potracker.mardens.com/api".to_string();

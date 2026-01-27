@@ -33,11 +33,13 @@ pub async fn run() -> Result<()> {
             .allowed_origin("http://localhost:1420")
             .allowed_origin("http://127.0.0.1:1420")
             .allowed_origin("tauri://localhost")
+            .allowed_origin("http://tauri.localhost")
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
             .allowed_headers(vec![
                 header::AUTHORIZATION,
                 header::CONTENT_TYPE,
                 header::ACCEPT,
+                header::ACCESS_CONTROL_ALLOW_ORIGIN
             ])
             .supports_credentials()
             .max_age(3600);

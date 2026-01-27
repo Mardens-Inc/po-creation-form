@@ -1,7 +1,7 @@
 {
   "name": "po_tracker",
   "private": true,
-"version": "0.0.1-alpha",
+  "version": "0.0.1-alpha",
   "description": "",
   "author": "",
   "license": "GPL-3.0-or-later",
@@ -20,6 +20,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tauri-apps/api": "^2.9.1",
     "@tauri-apps/plugin-dialog": "^2.6.0",
+    "@tauri-apps/plugin-http": "~2.5.6",
     "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-shell": "2.3.3",
     "@tauri-apps/plugin-updater": "^2.9.0",
