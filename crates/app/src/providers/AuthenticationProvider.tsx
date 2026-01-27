@@ -1,9 +1,11 @@
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
 import {getApiRoute} from "../api_route.ts";
+import {fetch} from "@tauri-apps/plugin-http";
 
 // ============== Types ==============
 
-export enum UserRole {
+export enum UserRole
+{
     Admin = 0,
     Buyer = 1,
     Warehouse = 2,
@@ -45,20 +47,25 @@ type JWTClaims = {
 
 const TOKEN_KEY = "pocf_auth_token";
 
-function storeToken(token: string): void {
+function storeToken(token: string): void
+{
     localStorage.setItem(TOKEN_KEY, token);
 }
 
-function getStoredToken(): string | null {
+function getStoredToken(): string | null
+{
     return localStorage.getItem(TOKEN_KEY);
 }
 
-function clearStoredToken(): void {
+function clearStoredToken(): void
+{
     localStorage.removeItem(TOKEN_KEY);
 }
 
-function decodeJWT(token: string): JWTClaims | null {
-    try {
+function decodeJWT(token: string): JWTClaims | null
+{
+    try
+    {
         const parts = token.split(".");
         if (parts.length !== 3) return null;
 
@@ -73,12 +80,14 @@ function decodeJWT(token: string): JWTClaims | null {
         );
 
         return JSON.parse(jsonPayload) as JWTClaims;
-    } catch {
+    } catch
+    {
         return null;
     }
 }
 
-function isTokenExpired(token: string): boolean {
+function isTokenExpired(token: string): boolean
+{
     const claims = decodeJWT(token);
     if (!claims) return true;
 
@@ -87,19 +96,21 @@ function isTokenExpired(token: string): boolean {
     return Date.now() >= expirationTime;
 }
 
-function getUserFromToken(token: string): User | null {
+function getUserFromToken(token: string): User | null
+{
     const claims = decodeJWT(token);
     if (!claims) return null;
 
     return {
         id: claims.sub,
-        email: claims.email,
+        email: claims.email
     };
 }
 
 // ============== Context ==============
 
-interface AuthenticationContextType {
+interface AuthenticationContextType
+{
     isAuthenticated: boolean;
     isLoading: boolean;
     currentUser: User | null;
@@ -112,30 +123,36 @@ interface AuthenticationContextType {
 
 const AuthenticationContext = createContext<AuthenticationContextType | undefined>(undefined);
 
-export function AuthenticationProvider({children}: { children: ReactNode }) {
+export function AuthenticationProvider({children}: { children: ReactNode })
+{
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [apiUrl, setApiUrl] = useState<string | undefined>(undefined);
 
     // Initialize API URL
-    useEffect(() => {
+    useEffect(() =>
+    {
         getApiRoute().then(setApiUrl);
     }, []);
 
     // Auto-check authentication on mount
-    useEffect(() => {
+    useEffect(() =>
+    {
         if (!apiUrl) return;
 
-        const initializeAuth = async () => {
+        const initializeAuth = async () =>
+        {
             const token = getStoredToken();
 
-            if (!token) {
+            if (!token)
+            {
                 setIsLoading(false);
                 return;
             }
 
-            if (isTokenExpired(token)) {
+            if (isTokenExpired(token))
+            {
                 clearStoredToken();
                 setIsLoading(false);
                 return;
@@ -143,27 +160,35 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
 
             // Token exists and is not expired, extract user and validate
             const user = getUserFromToken(token);
-            if (user) {
+            if (user)
+            {
                 setCurrentUser(user);
                 setIsAuthenticated(true);
 
                 // Optionally validate with /auth/me endpoint
-                try {
+                try
+                {
                     const response = await fetch(`${apiUrl}/auth/me`, {
                         method: "GET",
                         headers: {
                             "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json",
+                            "Content-Type": "application/json"
                         },
+                        danger: {
+                            acceptInvalidCerts: true,
+                            acceptInvalidHostnames: true
+                        }
                     });
 
-                    if (!response.ok) {
+                    if (!response.ok)
+                    {
                         // Token is invalid server-side, clear auth state
                         clearStoredToken();
                         setCurrentUser(null);
                         setIsAuthenticated(false);
                     }
-                } catch {
+                } catch
+                {
                     // Network error, keep local state (offline support)
                     console.warn("Could not validate token with server");
                 }
@@ -175,19 +200,26 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
         initializeAuth();
     }, [apiUrl]);
 
-    const login = useCallback(async (email: string, password: string): Promise<User | undefined> => {
+    const login = useCallback(async (email: string, password: string): Promise<User | undefined> =>
+    {
         if (!apiUrl) return undefined;
 
-        try {
+        try
+        {
             const response = await fetch(`${apiUrl}/auth/login`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({email, password}),
+                danger: {
+                    acceptInvalidCerts: true,
+                    acceptInvalidHostnames: true
+                },
+                body: JSON.stringify({email, password})
             });
 
-            if (!response.ok) {
+            if (!response.ok)
+            {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || "Login failed");
             }
@@ -196,71 +228,89 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
             storeToken(data.token);
 
             const user = getUserFromToken(data.token);
-            if (user) {
+            if (user)
+            {
                 setCurrentUser(user);
                 setIsAuthenticated(true);
                 return user;
             }
 
             return undefined;
-        } catch (error) {
+        } catch (error)
+        {
             console.error("Login error:", error);
             throw error;
         }
     }, [apiUrl]);
 
-    const register = useCallback(async (userData: UserRegistrationRequest): Promise<void> => {
+    const register = useCallback(async (userData: UserRegistrationRequest): Promise<void> =>
+    {
         if (!apiUrl) throw new Error("API not initialized");
 
-        try {
+        try
+        {
             const response = await fetch(`${apiUrl}/auth/register`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
+                },
+                danger: {
+                    acceptInvalidCerts: true,
+                    acceptInvalidHostnames: true
                 },
                 body: JSON.stringify({
                     first_name: userData.firstName,
                     last_name: userData.lastName,
                     email: userData.email,
                     password: userData.password,
-                    role: userData.role,
-                }),
+                    role: userData.role
+                })
             });
 
-            if (!response.ok) {
+            if (!response.ok)
+            {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || "Registration failed");
             }
 
             // Registration successful, user must confirm email before logging in
-        } catch (error) {
+        } catch (error)
+        {
             console.error("Registration error:", error);
             throw error;
         }
     }, [apiUrl]);
 
-    const logout = useCallback((): void => {
+    const logout = useCallback((): void =>
+    {
         clearStoredToken();
         setCurrentUser(null);
         setIsAuthenticated(false);
     }, []);
 
-    const me = useCallback(async (): Promise<User | undefined> => {
+    const me = useCallback(async (): Promise<User | undefined> =>
+    {
         if (!apiUrl) return undefined;
 
         const token = getStoredToken();
         if (!token) return undefined;
 
-        try {
+        try
+        {
             const response = await fetch(`${apiUrl}/auth/me`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
+                danger: {
+                    acceptInvalidCerts: true,
+                    acceptInvalidHostnames: true
+                }
             });
 
-            if (response.status === 401) {
+            if (response.status === 401)
+            {
                 // Token is invalid, clear auth state
                 clearStoredToken();
                 setCurrentUser(null);
@@ -268,7 +318,8 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
                 return undefined;
             }
 
-            if (!response.ok) {
+            if (!response.ok)
+            {
                 throw new Error("Failed to fetch user info");
             }
 
@@ -276,19 +327,22 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
 
             // Update user from token claims since /me only returns user id
             const user = getUserFromToken(token);
-            if (user && user.id === data.user) {
+            if (user && user.id === data.user)
+            {
                 setCurrentUser(user);
                 return user;
             }
 
             return undefined;
-        } catch (error) {
+        } catch (error)
+        {
             console.error("Me error:", error);
             throw error;
         }
     }, [apiUrl]);
 
-    const getToken = useCallback((): string | null => {
+    const getToken = useCallback((): string | null =>
+    {
         return getStoredToken();
     }, []);
 
@@ -304,16 +358,18 @@ export function AuthenticationProvider({children}: { children: ReactNode }) {
             register,
             logout,
             me,
-            getToken,
+            getToken
         }}>
             {children}
         </AuthenticationContext.Provider>
     );
 }
 
-export function useAuthentication(): AuthenticationContextType {
+export function useAuthentication(): AuthenticationContextType
+{
     const context = useContext(AuthenticationContext);
-    if (!context) {
+    if (!context)
+    {
         throw new Error("useAuthentication must be used within an AuthenticationProvider");
     }
     return context;
