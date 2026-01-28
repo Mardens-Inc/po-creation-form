@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tauri-artifacts-${{ matrix.rust_target }}
-          path: src-tauri/target/${{ matrix.rust_target }}/release/bundle/*
+          path: target/${{ matrix.rust_target }}/release/bundle/*
           if-no-files-found: error
 
   create-release:
