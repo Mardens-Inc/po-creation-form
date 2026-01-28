@@ -5,8 +5,8 @@
   "identifier": "com.mardens.pocreationform",
   "build": {
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm build",
+    "beforeDevCommand": "pnpm -w dev",
+    "beforeBuildCommand": "pnpm -w build",
     "frontendDist": "../dist"
   },
   "app": {
