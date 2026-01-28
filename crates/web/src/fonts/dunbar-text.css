@@ -1,0 +1,67 @@
+/* Dunbar Text Regular */
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Dunbar Text Medium */
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Medium Italic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Dunbar Text Bold */
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Bold Italic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Dunbar Text Extra Bold */
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Extra Bold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'dunbar-text';
+    src: url('Dunbar Text/Dunbar Text Extra Bold Italic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+    font-display: swap;
+}

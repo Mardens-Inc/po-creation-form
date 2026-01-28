@@ -1,0 +1,118 @@
+/* Dunbar Low Hairline */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Hairline.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Hairline Italic.ttf') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Low Extra Light */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Extra Light.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Extra Light Italic.ttf') format('truetype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Low Light */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Light Italic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Low Regular */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Low Book */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Book.ttf') format('truetype');
+  font-weight: 450;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Book Italic.ttf') format('truetype');
+  font-weight: 450;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Low Medium */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Medium Italic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Dunbar Low Bold */
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'dunbar-low';
+  src: url('Dunbar Low/Dunbar Low Bold Italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
