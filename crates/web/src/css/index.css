@@ -1,46 +1,67 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url("../fonts/dunbar-low.css");
+@import url("../fonts/dunbar-tall.css");
+@import url("../fonts/dunbar-text.css");
+@import url("../fonts/eds-market-narrow-slant.css");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
 :root {
-  --scrollbar-background-color: transparent;
-  --scrollbar-thumb-color: hsl(var(--heroui-primary));
-  --scrollbar-thumb-hover-color: hsl(var(--heroui-primary));
-  overflow: auto;
-  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
-  scrollbar-width: thin;
-  scrollbar-gutter: stable;
-}
-
-body{
-  font-family: 'Roboto', sans-serif;
+    --scrollbar-background-color: transparent;
+    --scrollbar-thumb-color: hsl(var(--heroui-primary));
+    --scrollbar-thumb-hover-color: hsl(var(--heroui-primary));
+    overflow: auto;
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
+    scrollbar-width: thin;
 }
 
 ::-webkit-scrollbar {
-  width: 12px;
+    width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-background-color);
+    background: var(--scrollbar-background-color);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-color);
-  border-radius: 10px;
+    background-color: var(--scrollbar-thumb-color);
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: var(--scrollbar-thumb-hover-color);
+    background-color: var(--scrollbar-thumb-hover-color);
 }
 
 ::selection {
-  background-color: hsl(var(--heroui-primary));
-  color: hsl(var(--heroui-background));
+    background-color: #ffaf1a;
+    color: hsl(var(--heroui-primary));
 }
 
-input:focus-visible,textarea:focus-visible {
-  outline: none !important;
+
+.\33 d-shadow {
+    box-shadow: 5px 5px 0 rgba(255, 0, 0, 1);
+    transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.\33 d-shadow:hover {
+    transform: translate(-5px) scale(1.005);
+    box-shadow: 10px 10px 0 rgba(255, 0, 0, 1);
+}
+
+input:focus-visible, textarea:focus-visible {
+    outline: none !important;
+}
+
+/* Hide browser's native password reveal button (Edge/IE) */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+
+@layer utilities {
+    .spikes, a.spikes {
+        overflow: visible;
+    }
 }

@@ -5,12 +5,19 @@ import ReactDOM from "react-dom/client";
 import "./css/index.css";
 import {HeroUIProvider} from "@heroui/react";
 import {ConfirmEmail} from "./pages/ConfirmEmail.tsx";
+import {ProtectedRoute} from "./components/ProtectedRoute.tsx";
+import {Login} from "./pages/Login.tsx";
+import {Register} from "./pages/Register.tsx";
+import {Dashboard} from "./pages/protected/Dashboard.tsx";
+import {AuthenticationProvider} from "./providers/AuthenticationProvider.tsx";
 
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <MainContentRenderer/>
+            <AuthenticationProvider>
+                <MainContentRenderer/>
+            </AuthenticationProvider>
         </BrowserRouter>
     </React.StrictMode>
 );
@@ -21,8 +28,11 @@ export function MainContentRenderer()
     return (
         <HeroUIProvider navigate={navigate}>
             <Routes>
-                <Route>
-                    <Route path={"/confirm-email"} element={<ConfirmEmail/>}/>
+                <Route path={"/login"} element={<Login/>}/>
+                <Route path={"/register"} element={<Register/>}/>
+                <Route path={"/confirm-email"} element={<ConfirmEmail/>}/>
+                <Route element={<ProtectedRoute/>}>
+                    <Route path={"/"} element={<Dashboard/>}/>
                 </Route>
             </Routes>
         </HeroUIProvider>
