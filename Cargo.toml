@@ -4,6 +4,7 @@ version="0.0.1-alpha"
 edition = "2024"
 authors = ["Drew Chase (Work) <dcmanproductions@gmail.com>"]
 build = "src-actix/build.rs"
+rust-version = "1.91.0"
 
 [[bin]]
 name = "po_tracker_dashboard"
