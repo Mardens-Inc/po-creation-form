@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="3bcff8e0-73ea-4dcb-ad2b-581942eddc68" name="production">
-        <fileTransfer rootFolder="/home/administrator/.local" accessType="SFTP" host="ubuntu" port="22" sshConfigId="d26a7008-9656-4c3b-8aaf-5687620bd60e" sshConfig="Ubuntu Server" authAgent="true">
+        <fileTransfer rootFolder="/home/administrator/.local" accessType="SFTP" host="mardens" port="22" sshConfigId="d26a7008-9656-4c3b-8aaf-5687620bd60e" sshConfig="Ubuntu Server" authAgent="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
