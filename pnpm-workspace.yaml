@@ -1,8 +1,0 @@
-packages:
-  - crates/app
-  - crates/web
-
-onlyBuiltDependencies:
-  - '@heroui/shared-utils'
-  - '@parcel/watcher'
-  - esbuild

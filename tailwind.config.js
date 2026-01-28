@@ -5,7 +5,7 @@ export default {
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
-        "../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}"
+        "node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}"
     ],
     theme: {
         fontFamily: {
@@ -63,6 +63,10 @@ export default {
                         foreground: "#000"
                     },
                     background: "#fff",
+                    navigation: {
+                        DEFAULT: "#0f0f12",
+                        foreground: "#ffffff"
+                    }
 
                 }
             },

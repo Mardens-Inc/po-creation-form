@@ -135,5 +135,3 @@ Cargo.lock
 
 # InteliJ
 .idea/workspace.xml
-CLAUDE.md
-.claude/

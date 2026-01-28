@@ -80,7 +80,6 @@ pub async fn run() -> Result<()> {
     if DEBUG {
         tokio::spawn(async move {
             ProxyViteOptions::default()
-                .working_directory("crates/web")
                 .build()?;
             start_vite_server()
                 .expect("Failed to start vite server")
