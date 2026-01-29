@@ -30,9 +30,6 @@ type LoginResponse = {
     token_type: string;
 }
 
-type MeResponse = {
-    user: number;
-}
 
 type JWTClaims = {
     sub: number;
@@ -153,6 +150,10 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             if (user)
             {
                 setCurrentUser(user);
+                me().then(value =>
+                {
+                    setCurrentUser(value as User | null);
+                });
                 setIsAuthenticated(true);
 
                 // Optionally validate with /auth/me endpoint
@@ -293,15 +294,10 @@ export function AuthenticationProvider({children}: { children: ReactNode })
                 throw new Error("Failed to fetch user info");
             }
 
-            const data: MeResponse = await response.json();
+            const user: User = await response.json();
 
-            // Update user from token claims since /me only returns user id
-            const user = getUserFromToken(token);
-            if (user && user.id === data.user)
-            {
-                setCurrentUser(user);
-                return user;
-            }
+            setCurrentUser(user);
+            return user;
 
             return undefined;
         } catch (error)
