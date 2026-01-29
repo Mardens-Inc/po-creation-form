@@ -1,16 +1,20 @@
 use anyhow::Result;
 use sqlx::MySqlTransaction;
 
-use super::purchase_orders_data::{FOBType, POFile, POStatus, PurchaseOrder, UploadFileType};
+use super::purchase_orders_data::{FOBType, POFile, POLineItem, POStatus, PurchaseOrder, UploadFileType};
 
 const PURCHASE_ORDERS_TABLE: &str = include_str!("../../sql/purchase_orders.sql");
 const PO_FILES_TABLE: &str = include_str!("../../sql/po_files.sql");
+const PO_LINE_ITEMS_TABLE: &str = include_str!("../../sql/po_line_items.sql");
 
 pub async fn initialize_table<'a>(transaction: &mut MySqlTransaction<'a>) -> Result<()> {
     sqlx::query(PURCHASE_ORDERS_TABLE)
         .execute(&mut **transaction)
         .await?;
     sqlx::query(PO_FILES_TABLE)
+        .execute(&mut **transaction)
+        .await?;
+    sqlx::query(PO_LINE_ITEMS_TABLE)
         .execute(&mut **transaction)
         .await?;
     Ok(())
@@ -423,5 +427,119 @@ pub async fn delete_files_by_po_id_with_transaction<'a>(
         .bind(po_id)
         .execute(&mut **transaction)
         .await?;
+    Ok(())
+}
+
+// ── Line Item CRUD ────────────────────────────────────────────────────────────
+
+#[allow(clippy::too_many_arguments)]
+pub async fn insert_line_item_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    po_id: u32,
+    item_number: &str,
+    upc: &str,
+    description: &str,
+    case_pack: &str,
+    cases: &str,
+    qty: u32,
+    mardens_cost: f64,
+    mardens_price: f64,
+    comp_retail: f64,
+    department: &str,
+    category: &str,
+    sub_category: &str,
+    season: &str,
+    buyer_notes: Option<&str>,
+) -> Result<u32> {
+    let id = sqlx::query(
+        r#"INSERT INTO po_line_items
+           (po_id, item_number, upc, description, case_pack, cases, qty,
+            mardens_cost, mardens_price, comp_retail, department, category,
+            sub_category, season, buyer_notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"#,
+    )
+    .bind(po_id)
+    .bind(item_number)
+    .bind(upc)
+    .bind(description)
+    .bind(case_pack)
+    .bind(cases)
+    .bind(qty)
+    .bind(mardens_cost)
+    .bind(mardens_price)
+    .bind(comp_retail)
+    .bind(department)
+    .bind(category)
+    .bind(sub_category)
+    .bind(season)
+    .bind(buyer_notes)
+    .execute(&mut **transaction)
+    .await?
+    .last_insert_id();
+    Ok(id as u32)
+}
+
+pub async fn get_line_items_by_po_id(po_id: u32) -> Result<Vec<POLineItem>> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    let items: Vec<POLineItem> = sqlx::query_as(
+        r#"SELECT id, po_id, item_number, upc, description, case_pack, cases, qty,
+                  mardens_cost, mardens_price, comp_retail, department, category,
+                  sub_category, season, buyer_notes
+           FROM po_line_items WHERE po_id = ? ORDER BY id ASC"#,
+    )
+    .bind(po_id)
+    .fetch_all(&mut *transaction)
+    .await?;
+    transaction.commit().await?;
+    pool.close().await;
+    Ok(items)
+}
+
+pub async fn get_line_item_by_id(item_id: u32) -> Result<Option<POLineItem>> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    let item: Option<POLineItem> = sqlx::query_as(
+        r#"SELECT id, po_id, item_number, upc, description, case_pack, cases, qty,
+                  mardens_cost, mardens_price, comp_retail, department, category,
+                  sub_category, season, buyer_notes
+           FROM po_line_items WHERE id = ? LIMIT 1"#,
+    )
+    .bind(item_id)
+    .fetch_optional(&mut *transaction)
+    .await?;
+    transaction.commit().await?;
+    pool.close().await;
+    Ok(item)
+}
+
+pub async fn delete_line_items_by_po_id_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    po_id: u32,
+) -> Result<()> {
+    sqlx::query(r#"DELETE FROM po_line_items WHERE po_id = ?"#)
+        .bind(po_id)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}
+
+pub async fn delete_line_item_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    item_id: u32,
+) -> Result<()> {
+    sqlx::query(r#"DELETE FROM po_line_items WHERE id = ?"#)
+        .bind(item_id)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}
+
+pub async fn delete_line_item(item_id: u32) -> Result<()> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    delete_line_item_with_transaction(&mut transaction, item_id).await?;
+    transaction.commit().await?;
+    pool.close().await;
     Ok(())
 }

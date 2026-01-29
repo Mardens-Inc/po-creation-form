@@ -5,8 +5,10 @@ use actix_web::{delete, get, post, put, web, HttpMessage, HttpRequest, HttpRespo
 use actix_web_httpauth::middleware::HttpAuthentication;
 use serde_json::json;
 
+use super::manifest_parser;
 use super::purchase_orders_data::{
     CreatePurchaseOrderRequest, FileUploadQuery, PurchaseOrderResponse, UpdatePurchaseOrderRequest,
+    UploadFileType,
 };
 use super::purchase_orders_db;
 
@@ -29,11 +31,15 @@ async fn build_po_response(po_id: u32) -> Result<Option<PurchaseOrderResponse>> 
             let files = purchase_orders_db::get_files_by_po_id(po_id)
                 .await
                 .map_err(actix_web::error::ErrorInternalServerError)?;
+            let line_items = purchase_orders_db::get_line_items_by_po_id(po_id)
+                .await
+                .map_err(actix_web::error::ErrorInternalServerError)?;
             Ok(Some(PurchaseOrderResponse::from_po(
                 po,
                 vendor_name,
                 buyer_name,
                 files,
+                line_items,
             )))
         }
         None => Ok(None),
@@ -60,11 +66,15 @@ pub async fn get_purchase_orders() -> Result<impl Responder> {
         let files = purchase_orders_db::get_files_by_po_id(po_id)
             .await
             .map_err(actix_web::error::ErrorInternalServerError)?;
+        let line_items = purchase_orders_db::get_line_items_by_po_id(po_id)
+            .await
+            .map_err(actix_web::error::ErrorInternalServerError)?;
         result.push(PurchaseOrderResponse::from_po(
             po,
             vendor_name,
             buyer_name,
             files,
+            line_items,
         ));
     }
 
@@ -287,7 +297,7 @@ pub async fn upload_file(
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    let file_id = purchase_orders_db::insert_po_file_with_transaction(
+    purchase_orders_db::insert_po_file_with_transaction(
         &mut transaction,
         po_id,
         &query.filename,
@@ -298,17 +308,88 @@ pub async fn upload_file(
     .await
     .map_err(actix_web::error::ErrorInternalServerError)?;
 
+    // If this is a manifest file, parse it and update the PO
+    if query.asset_type == UploadFileType::Manifest {
+        let manifest = manifest_parser::parse_manifest(&body)
+            .map_err(actix_web::error::ErrorBadRequest)?;
+
+        // Update PO header fields from manifest
+        purchase_orders_db::update_po_with_transaction(
+            &mut transaction,
+            po_id,
+            None, // po_number - don't update from manifest
+            None, // vendor_id
+            None, // status
+            None, // description
+            None, // order_date
+            None, // ship_date
+            None, // cancel_date
+            None, // shipping_notes
+            Some(&manifest.terms),
+            Some(&manifest.ship_to_address),
+            None, // fob_type
+            None, // fob_point
+            Some(&manifest.notes),
+            None, // total_amount - will update after inserting line items
+        )
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+        // Delete existing line items for this PO (re-import clears old data)
+        purchase_orders_db::delete_line_items_by_po_id_with_transaction(&mut transaction, po_id)
+            .await
+            .map_err(actix_web::error::ErrorInternalServerError)?;
+
+        // Insert parsed line items and calculate total
+        let mut total_amount: f64 = 0.0;
+        for item in &manifest.line_items {
+            total_amount += item.qty as f64 * item.mardens_cost;
+            purchase_orders_db::insert_line_item_with_transaction(
+                &mut transaction,
+                po_id,
+                &item.item_number,
+                &item.upc,
+                &item.description,
+                &item.case_pack,
+                &item.cases,
+                item.qty,
+                item.mardens_cost,
+                item.mardens_price,
+                item.comp_retail,
+                &item.department,
+                &item.category,
+                &item.sub_category,
+                &item.season,
+                item.buyer_notes.as_deref(),
+            )
+            .await
+            .map_err(actix_web::error::ErrorInternalServerError)?;
+        }
+
+        // Update total_amount on the PO
+        purchase_orders_db::update_po_with_transaction(
+            &mut transaction,
+            po_id,
+            None, None, None, None, None, None, None, None, None, None, None, None, None,
+            Some(total_amount),
+        )
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+    }
+
     transaction
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     pool.close().await;
 
-    let file = purchase_orders_db::get_file_by_id(file_id)
-        .await
-        .map_err(actix_web::error::ErrorInternalServerError)?;
-
-    Ok(HttpResponse::Ok().json(file))
+    // Return the full updated PO response
+    match build_po_response(po_id).await? {
+        Some(response) => Ok(HttpResponse::Ok().json(response)),
+        None => Ok(HttpResponse::InternalServerError().json(json!({
+            "error": "Failed to retrieve updated purchase order",
+        }))),
+    }
 }
 
 #[get("/{po_id}/files")]
@@ -386,6 +467,52 @@ pub async fn delete_file_endpoint(path: web::Path<(u32, u32)>) -> Result<impl Re
     }
 }
 
+// ── Line Item Endpoints ───────────────────────────────────────────────────────
+
+#[get("/{po_id}/line-items")]
+pub async fn get_line_items(path: web::Path<u32>) -> Result<impl Responder> {
+    let po_id = path.into_inner();
+
+    let existing = purchase_orders_db::get_po_by_id(po_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+    if existing.is_none() {
+        return Ok(HttpResponse::NotFound().json(json!({
+            "error": "Purchase order not found",
+        })));
+    }
+
+    let line_items = purchase_orders_db::get_line_items_by_po_id(po_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok().json(line_items))
+}
+
+#[delete("/{po_id}/line-items/{item_id}")]
+pub async fn delete_line_item_endpoint(path: web::Path<(u32, u32)>) -> Result<impl Responder> {
+    let (po_id, item_id) = path.into_inner();
+
+    let item = purchase_orders_db::get_line_item_by_id(item_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    match item {
+        Some(item) if item.po_id == po_id => {
+            purchase_orders_db::delete_line_item(item_id)
+                .await
+                .map_err(actix_web::error::ErrorInternalServerError)?;
+
+            Ok(HttpResponse::Ok().json(json!({
+                "message": "Line item deleted successfully",
+            })))
+        }
+        _ => Ok(HttpResponse::NotFound().json(json!({
+            "error": "Line item not found",
+        }))),
+    }
+}
+
 // ── Configure ─────────────────────────────────────────────────────────────────
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
@@ -402,6 +529,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .service(list_files)
             .service(download_file)
             .service(delete_file_endpoint)
+            .service(get_line_items)
+            .service(delete_line_item_endpoint)
             .default_service(web::to(|| async {
                 HttpResponse::NotFound().json(json!({
                     "error": "API endpoint not found".to_string(),

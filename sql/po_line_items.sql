@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS po_line_items (
+    id              INT UNSIGNED UNIQUE AUTO_INCREMENT NOT NULL,
+    po_id           INT UNSIGNED NOT NULL,
+    item_number     VARCHAR(50) DEFAULT '' NOT NULL,
+    upc             VARCHAR(50) DEFAULT '' NOT NULL,
+    description     VARCHAR(500) DEFAULT '' NOT NULL,
+    case_pack       VARCHAR(50) DEFAULT '' NOT NULL,
+    cases           VARCHAR(50) DEFAULT '' NOT NULL,
+    qty             INT UNSIGNED DEFAULT 0 NOT NULL,
+    mardens_cost    DECIMAL(12, 2) DEFAULT 0.00 NOT NULL,
+    mardens_price   DECIMAL(12, 2) DEFAULT 0.00 NOT NULL,
+    comp_retail     DECIMAL(12, 2) DEFAULT 0.00 NOT NULL,
+    department      VARCHAR(255) DEFAULT '' NOT NULL,
+    category        VARCHAR(255) DEFAULT '' NOT NULL,
+    sub_category    VARCHAR(255) DEFAULT '' NOT NULL,
+    season          VARCHAR(255) DEFAULT '' NOT NULL,
+    buyer_notes     TEXT DEFAULT NULL,
+    PRIMARY KEY (id),
+    INDEX (po_id),
+    FOREIGN KEY (po_id) REFERENCES purchase_orders(id) ON DELETE CASCADE
+)

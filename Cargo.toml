@@ -40,6 +40,7 @@ lettre = { version = "0.11.19", default-features = false, features = ["tokio1-na
 tera = { version = "1.20.1" }
 uuid = { version = "1.19.0", features = ["v4"] }
 obsidian-scheduler = { version = "0.1.0", features = ["tokio", "callback-timers", "log"] }
+calamine = "0.26"
 
 [build-dependencies]
 include_dir = "0.7.4"
