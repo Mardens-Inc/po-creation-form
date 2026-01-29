@@ -68,3 +68,17 @@ export function getRecentPOs(limit: number = 10): PurchaseOrder[] {
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, limit);
 }
+
+export function getUniqueBuyers(): { id: number; name: string }[] {
+    const seen = new Map<number, string>();
+    for (const po of MOCK_PURCHASE_ORDERS) {
+        if (!seen.has(po.buyer_id)) {
+            seen.set(po.buyer_id, po.buyer_name);
+        }
+    }
+    return Array.from(seen, ([id, name]) => ({id, name}));
+}
+
+export function getUniqueVendors(): string[] {
+    return [...new Set(MOCK_PURCHASE_ORDERS.map(po => po.vendor))].sort();
+}

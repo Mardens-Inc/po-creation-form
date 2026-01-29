@@ -24,10 +24,10 @@ export function SidebarNavigation()
                     Home
                 </ListboxItem>
                 <ListboxItem
-                    href={`/purchase-orders?users=${encodeURIComponent(JSON.stringify([currentUser.id]))}`}
+                    href={`/purchase-orders?buyers=${encodeURIComponent(JSON.stringify([currentUser.id]))}`}
                     startContent={<Icon icon={"mage:checklist-note"}/>}
                     className={"opacity-70 hover:opacity-75 data-[active=true]:opacity-100 rounded-none"}
-                    data-active={pathname == `/purchase-orders?users=${encodeURIComponent(JSON.stringify([currentUser.id]))}`}
+                    data-active={pathname == `/purchase-orders?buyers=${encodeURIComponent(JSON.stringify([currentUser.id]))}`}
                 >
                     My PO's
                 </ListboxItem>

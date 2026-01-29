@@ -9,6 +9,7 @@ import {ProtectedRoute} from "./components/ProtectedRoute.tsx";
 import {Login} from "./pages/Login.tsx";
 import {Register} from "./pages/Register.tsx";
 import {Dashboard} from "./pages/protected/Dashboard.tsx";
+import {ManagePurchaseOrders} from "./pages/protected/ManagePurchaseOrders.tsx";
 import {AuthenticationProvider} from "./providers/AuthenticationProvider.tsx";
 
 
@@ -33,6 +34,7 @@ export function MainContentRenderer()
                 <Route path={"/confirm-email"} element={<ConfirmEmail/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/"} element={<Dashboard/>}/>
+                    <Route path={"/purchase-orders"} element={<ManagePurchaseOrders/>}/>
                 </Route>
             </Routes>
         </HeroUIProvider>

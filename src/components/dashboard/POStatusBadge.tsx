@@ -1,7 +1,7 @@
 import {Chip} from "@heroui/react";
 import {POStatus} from "../../types/po.ts";
 
-const STATUS_CONFIG: Record<POStatus, { label: string; color: "default" | "warning" | "success" | "primary" | "danger" }> = {
+export const STATUS_CONFIG: Record<POStatus, { label: string; color: "default" | "warning" | "success" | "primary" | "danger" }> = {
     [POStatus.Draft]: {label: "Draft", color: "default"},
     [POStatus.Submitted]: {label: "Submitted", color: "warning"},
     [POStatus.Approved]: {label: "Approved", color: "success"},
