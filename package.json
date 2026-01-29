@@ -10,10 +10,8 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "build:api": "cargo build --release",
-    "run:api": "cargo run --bin dashboard",
-    "dev": "vite",
     "build:frontend": "tsc && vite build",
-    "build": "npm run \"build:frontend\" && npm run \"build:api\""
+    "build": "npm run build:frontend && npm run build:api"
   },
   "dependencies": {
     "@heroui/react": "2.8.7",
