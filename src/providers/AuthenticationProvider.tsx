@@ -150,30 +150,22 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             if (user)
             {
                 setCurrentUser(user);
-                me().then(value =>
-                {
-                    setCurrentUser(value as User | null);
-                });
                 setIsAuthenticated(true);
 
                 // Optionally validate with /auth/me endpoint
                 try
                 {
-                    const response = await fetch(`/api/auth/me`, {
-                        method: "GET",
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        }
-                    });
 
-                    if (!response.ok)
+                    const user = await me();
+
+                    if (!user)
                     {
                         // Token is invalid server-side, clear auth state
                         clearStoredToken();
                         setCurrentUser(null);
                         setIsAuthenticated(false);
                     }
+
                 } catch
                 {
                     // Network error, keep local state (offline support)
@@ -212,9 +204,12 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             const user = getUserFromToken(data.token);
             if (user)
             {
-                setCurrentUser(user);
-                setIsAuthenticated(true);
-                return user;
+                const user = await me();
+                if (user)
+                {
+                    setIsAuthenticated(true);
+                    return user;
+                }
             }
 
             return undefined;
