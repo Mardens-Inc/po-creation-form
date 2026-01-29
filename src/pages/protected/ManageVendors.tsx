@@ -1,19 +1,20 @@
 import {useMemo, useState} from "react";
-import {Button} from "@heroui/react";
+import {Button, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {MOCK_VENDORS} from "../../data/mock-vendors.ts";
+import {useVendorsContext} from "../../providers/VendorsProvider.tsx";
 import {useVendorFilters} from "../../hooks/useVendorFilters.ts";
 import {VendorFilters} from "../../components/vendors/VendorFilters.tsx";
 import {VendorTable} from "../../components/vendors/VendorTable.tsx";
 
 export function ManageVendors()
 {
+    const {vendors, isLoading, error} = useVendorsContext();
     const {filters, setFilter, clearFilters, hasActiveFilters} = useVendorFilters();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const filteredVendors = useMemo(() =>
     {
-        let result = [...MOCK_VENDORS];
+        let result = [...vendors];
 
         if (filters.search)
         {
@@ -35,7 +36,23 @@ export function ManageVendors()
 
         result.sort((a, b) => a.name.localeCompare(b.name));
         return result;
-    }, [filters]);
+    }, [vendors, filters]);
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <Spinner size="lg" color="primary"/>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <p className="text-danger">Failed to load vendors: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 overflow-y-auto">
@@ -52,7 +69,7 @@ export function ManageVendors()
                     </Button>
                 </div>
                 <p className="text-sm text-default-500">
-                    Showing {filteredVendors.length} of {MOCK_VENDORS.length} vendors
+                    Showing {filteredVendors.length} of {vendors.length} vendors
                 </p>
                 <VendorTable vendors={filteredVendors}/>
             </div>

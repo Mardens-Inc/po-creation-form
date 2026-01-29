@@ -1,7 +1,9 @@
-import {useRef, useState} from "react";
+import {useMemo, useRef, useState} from "react";
 import {Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Input} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
+import {usePurchaseOrdersContext} from "../providers/PurchaseOrdersProvider.tsx";
+import {useVendorsContext} from "../providers/VendorsProvider.tsx";
 import favicon from "../images/favicon.ico";
 
 interface SearchSuggestion {
@@ -10,32 +12,59 @@ interface SearchSuggestion {
     icon: string;
 }
 
-const DUMMY_SUGGESTIONS: SearchSuggestion[] = [
-    {label: "PO-2026-00142", category: "Purchase Order", icon: "mdi:file-document-outline"},
-    {label: "PO-2026-00141", category: "Purchase Order", icon: "mdi:file-document-outline"},
-    {label: "PO-2026-00140", category: "Purchase Order", icon: "mdi:file-document-outline"},
-    {label: "Grainger", category: "Vendor", icon: "mdi:store-outline"},
-    {label: "Uline", category: "Vendor", icon: "mdi:store-outline"},
-    {label: "McMaster-Carr", category: "Vendor", icon: "mdi:store-outline"},
-    {label: "John Mitchell", category: "Buyer", icon: "mdi:account-outline"},
-    {label: "Sarah Chen", category: "Buyer", icon: "mdi:account-outline"},
-    {label: "Mike Torres", category: "Buyer", icon: "mdi:account-outline"},
-];
-
-function filterSuggestions(query: string): SearchSuggestion[] {
-    if (!query.trim()) return [];
-    const lower = query.toLowerCase();
-    return DUMMY_SUGGESTIONS.filter(s => s.label.toLowerCase().includes(lower)).slice(0, 6);
-}
-
 export function TopNavigation() {
     const {currentUser, logout} = useAuthentication();
+    const {purchaseOrders, getUniqueBuyers} = usePurchaseOrdersContext();
+    const {vendors} = useVendorsContext();
     const [searchValue, setSearchValue] = useState("");
     const [isFocused, setIsFocused] = useState(false);
     const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const suggestions = filterSuggestions(searchValue);
-    const showDropdown = isFocused && suggestions.length > 0;
+    // Build search suggestions from real data
+    const allSuggestions = useMemo((): SearchSuggestion[] => {
+        const suggestions: SearchSuggestion[] = [];
+
+        // Add PO numbers
+        for (const po of purchaseOrders) {
+            suggestions.push({
+                label: po.po_number,
+                category: "Purchase Order",
+                icon: "mdi:file-document-outline",
+            });
+        }
+
+        // Add vendors
+        for (const vendor of vendors) {
+            suggestions.push({
+                label: vendor.name,
+                category: "Vendor",
+                icon: "mdi:store-outline",
+            });
+        }
+
+        // Add buyers
+        const buyers = getUniqueBuyers();
+        for (const buyer of buyers) {
+            suggestions.push({
+                label: buyer.name,
+                category: "Buyer",
+                icon: "mdi:account-outline",
+            });
+        }
+
+        return suggestions;
+    }, [purchaseOrders, vendors, getUniqueBuyers]);
+
+    // Filter suggestions based on search value
+    const filteredSuggestions = useMemo(() => {
+        if (!searchValue.trim()) return [];
+        const lower = searchValue.toLowerCase();
+        return allSuggestions
+            .filter(s => s.label.toLowerCase().includes(lower))
+            .slice(0, 6);
+    }, [searchValue, allSuggestions]);
+
+    const showDropdown = isFocused && filteredSuggestions.length > 0;
 
     const initials = currentUser
         ? `${currentUser.first_name?.[0] ?? ""}${currentUser.last_name?.[0] ?? ""}`.toUpperCase() || currentUser.email[0].toUpperCase()
@@ -88,7 +117,7 @@ export function TopNavigation() {
                 />
                 {showDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-default-200 overflow-hidden z-50">
-                        {suggestions.map((suggestion, i) => (
+                        {filteredSuggestions.map((suggestion, i) => (
                             <button
                                 key={`${suggestion.category}-${suggestion.label}`}
                                 className="flex items-center gap-3 w-full px-4 py-2.5 text-left hover:bg-default-100 transition-colors cursor-pointer"
@@ -102,7 +131,7 @@ export function TopNavigation() {
                                     <p className="text-sm text-foreground truncate">{suggestion.label}</p>
                                 </div>
                                 <span className="text-xs text-default-400 shrink-0">{suggestion.category}</span>
-                                {i < suggestions.length - 1 && <span className="sr-only">,</span>}
+                                {i < filteredSuggestions.length - 1 && <span className="sr-only">,</span>}
                             </button>
                         ))}
                     </div>

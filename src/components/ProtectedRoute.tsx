@@ -6,6 +6,8 @@ import {SidebarNavigation} from "./SidebarNavigation.tsx";
 import {TopNavigation} from "./TopNavigation.tsx";
 import {POCreationProvider} from "./po/POCreationModal.tsx";
 import {VendorCreationProvider} from "./vendors/VendorCreationModal.tsx";
+import {PurchaseOrdersProvider} from "../providers/PurchaseOrdersProvider.tsx";
+import {VendorsProvider} from "../providers/VendorsProvider.tsx";
 
 export function ProtectedRoute()
 {
@@ -26,17 +28,21 @@ export function ProtectedRoute()
 
     return (
         <ErrorBoundary>
-            <POCreationProvider>
-                <VendorCreationProvider>
-                    <main className={"flex flex-col min-h-screen"}>
-                        <TopNavigation/>
-                        <div className={"flex flex-row h-[calc(100dvh-4rem)]"}>
-                            <SidebarNavigation/>
-                            <Outlet/>
-                        </div>
-                    </main>
-                </VendorCreationProvider>
-            </POCreationProvider>
+            <PurchaseOrdersProvider>
+                <VendorsProvider>
+                    <POCreationProvider>
+                        <VendorCreationProvider>
+                            <main className={"flex flex-col min-h-screen"}>
+                                <TopNavigation/>
+                                <div className={"flex flex-row h-[calc(100dvh-4rem)]"}>
+                                    <SidebarNavigation/>
+                                    <Outlet/>
+                                </div>
+                            </main>
+                        </VendorCreationProvider>
+                    </POCreationProvider>
+                </VendorsProvider>
+            </PurchaseOrdersProvider>
         </ErrorBoundary>
     );
 }

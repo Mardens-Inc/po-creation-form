@@ -1,4 +1,6 @@
+import {Spinner} from "@heroui/react";
 import {useAuthentication, UserRole} from "../../providers/AuthenticationProvider.tsx";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {DashboardHeader} from "../../components/dashboard/DashboardHeader.tsx";
 import {MonthlyPOChart} from "../../components/dashboard/MonthlyPOChart.tsx";
 import {YearlyPOChart} from "../../components/dashboard/YearlyPOChart.tsx";
@@ -7,6 +9,23 @@ import {RecentPurchaseOrders} from "../../components/dashboard/RecentPurchaseOrd
 
 export function Dashboard() {
     const {currentUser} = useAuthentication();
+    const {isLoading, error} = usePurchaseOrdersContext();
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <Spinner size="lg" color="primary"/>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <p className="text-danger">Failed to load purchase orders: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 overflow-y-auto">

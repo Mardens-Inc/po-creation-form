@@ -1,9 +1,10 @@
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
-import {getDashboardStats} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {StatCard} from "./StatCard.tsx";
 
 export function DashboardHeader() {
     const {currentUser} = useAuthentication();
+    const {getDashboardStats} = usePurchaseOrdersContext();
     const stats = getDashboardStats();
 
     const firstName = currentUser?.first_name || "User";

@@ -1,9 +1,10 @@
 import {Card, CardBody, CardHeader, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell} from "@heroui/react";
 import {motion} from "framer-motion";
-import {getRecentPOs} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {POStatusBadge} from "./POStatusBadge.tsx";
 
 export function RecentPurchaseOrders() {
+    const {getRecentPOs} = usePurchaseOrdersContext();
     const recentPOs = getRecentPOs(10);
 
     return (

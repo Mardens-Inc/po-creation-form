@@ -1,17 +1,18 @@
 import {useMemo, useState} from "react";
-import {Button} from "@heroui/react";
+import {Button, Spinner} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {MOCK_PURCHASE_ORDERS} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {usePOFilters} from "../../hooks/usePOFilters.ts";
 import {POFilters} from "../../components/po/POFilters.tsx";
 import {POTable} from "../../components/po/POTable.tsx";
 
 export function ManagePurchaseOrders() {
+    const {purchaseOrders, isLoading, error} = usePurchaseOrdersContext();
     const {filters, setFilter, clearFilters, hasActiveFilters} = usePOFilters();
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const filteredPOs = useMemo(() => {
-        let result = [...MOCK_PURCHASE_ORDERS];
+        let result = [...purchaseOrders];
 
         if (filters.buyers.length)
             result = result.filter(po => filters.buyers.includes(po.buyer_id));
@@ -33,7 +34,23 @@ export function ManagePurchaseOrders() {
 
         result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         return result;
-    }, [filters]);
+    }, [purchaseOrders, filters]);
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <Spinner size="lg" color="primary"/>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <p className="text-danger">Failed to load purchase orders: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 overflow-y-auto">
@@ -50,7 +67,7 @@ export function ManagePurchaseOrders() {
                     </Button>
                 </div>
                 <p className="text-sm text-default-500">
-                    Showing {filteredPOs.length} of {MOCK_PURCHASE_ORDERS.length} purchase orders
+                    Showing {filteredPOs.length} of {purchaseOrders.length} purchase orders
                 </p>
                 <POTable purchaseOrders={filteredPOs}/>
             </div>

@@ -1,12 +1,13 @@
 import {Card, CardBody, CardHeader} from "@heroui/react";
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer} from "recharts";
 import {motion} from "framer-motion";
-import {MOCK_MONTHLY_DATA} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 
 const CURRENT_MONTH_INDEX = new Date().getMonth();
 
 export function MonthlyPOChart() {
-    const data = MOCK_MONTHLY_DATA.map((d, i) => ({
+    const {getMonthlyData} = usePurchaseOrdersContext();
+    const data = getMonthlyData().map((d, i) => ({
         ...d,
         fill: i === CURRENT_MONTH_INDEX ? "#fec60b" : "#ec2b37",
     }));

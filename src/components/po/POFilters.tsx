@@ -1,7 +1,7 @@
 import {Button, DatePicker, Drawer, DrawerBody, DrawerContent, DrawerFooter, DrawerHeader, Input, Select, SelectItem} from "@heroui/react";
 import {CalendarDate, parseDate} from "@internationalized/date";
 import {POFilterState} from "../../hooks/usePOFilters.ts";
-import {getUniqueBuyers, getUniqueVendors} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {STATUS_CONFIG} from "../dashboard/POStatusBadge.tsx";
 import {POStatus} from "../../types/po.ts";
 
@@ -15,8 +15,6 @@ interface POFiltersProps
     hasActiveFilters: boolean;
 }
 
-const buyers = getUniqueBuyers();
-const vendors = getUniqueVendors();
 const statusEntries = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
     key: Number(key) as POStatus,
     label: config.label
@@ -36,6 +34,10 @@ function toCalendarDate(iso: string | null): CalendarDate | null
 
 export function POFilters({isOpen, onClose, filters, setFilter, clearFilters, hasActiveFilters}: POFiltersProps)
 {
+    const {getUniqueBuyers, getUniqueVendors} = usePurchaseOrdersContext();
+    const buyers = getUniqueBuyers();
+    const vendors = getUniqueVendors();
+
     return (
         <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="md" backdrop={"blur"}>
             <DrawerContent>

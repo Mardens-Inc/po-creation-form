@@ -1,11 +1,12 @@
 import {Card, CardBody, CardHeader, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell} from "@heroui/react";
 import {motion} from "framer-motion";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
-import {getMyPOs} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {POStatusBadge} from "./POStatusBadge.tsx";
 
 export function MyPurchaseOrders() {
     const {currentUser} = useAuthentication();
+    const {getMyPOs} = usePurchaseOrdersContext();
     const myPOs = getMyPOs(currentUser?.id ?? 0).slice(0, 5);
 
     return (

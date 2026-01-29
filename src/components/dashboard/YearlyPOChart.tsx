@@ -1,9 +1,11 @@
 import {Card, CardBody, CardHeader} from "@heroui/react";
 import {AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer} from "recharts";
 import {motion} from "framer-motion";
-import {MOCK_YEARLY_DATA} from "../../data/mock-pos.ts";
+import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 
 export function YearlyPOChart() {
+    const {getYearlyData} = usePurchaseOrdersContext();
+    const yearlyData = getYearlyData();
     return (
         <motion.div
             initial={{opacity: 0, y: 30}}
@@ -16,7 +18,7 @@ export function YearlyPOChart() {
                 </CardHeader>
                 <CardBody className="px-2">
                     <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={MOCK_YEARLY_DATA} margin={{top: 10, right: 20, left: 0, bottom: 0}}>
+                        <AreaChart data={yearlyData} margin={{top: 10, right: 20, left: 0, bottom: 0}}>
                             <defs>
                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#ec2b37" stopOpacity={0.3}/>
