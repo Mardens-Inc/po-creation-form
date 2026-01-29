@@ -10,7 +10,7 @@ export function SidebarNavigation()
     if (!currentUser) return null;
     return (
         <div className={"w-80 h-full bg-navigation text-navigation-foreground overflow-y-scroll border-t-2 border-white/10"}>
-            <Listbox className={"text-xl"}>
+            <Listbox className={"text-xl py-4"} color={"primary"}>
                 <ListboxItem
                     href={"/"}
                     startContent={<Icon icon={"mage:home-2"}/>}
@@ -34,6 +34,44 @@ export function SidebarNavigation()
                     data-active={pathname == `/account/inbox`}
                 >
                     Inbox
+                </ListboxItem>
+            </Listbox>
+            <Divider orientation={"horizontal"} className={"bg-white/10"}/>
+            <Listbox className={"text-xl py-4"}>
+                <ListboxItem
+                    href={"/purchase-orders/new"}
+                    startContent={<Icon icon={"mage:plus-square"}/>}
+                    className={"opacity-70 hover:opacity-75 data-[active=true]:opacity-100 rounded-none"}
+                    data-active={pathname == `/purchase-orders/new`}
+                >
+                    Create Purchase Order
+                </ListboxItem>
+                <ListboxItem
+                    href={`/purchase-orders`}
+                    startContent={<Icon icon={"mage:box-3d-scan"}/>}
+                    className={"opacity-70 hover:opacity-75 data-[active=true]:opacity-100 rounded-none"}
+                    data-active={pathname == `/purchase-orders`}
+                >
+                    Manage Purchase Orders
+                </ListboxItem>
+            </Listbox>
+            <Divider orientation={"horizontal"} className={"bg-white/10"}/>
+            <Listbox className={"text-xl py-4"}>
+                <ListboxItem
+                    href={"/vendors/new"}
+                    startContent={<Icon icon={"mage:user-plus"}/>}
+                    className={"opacity-70 hover:opacity-75 data-[active=true]:opacity-100 rounded-none"}
+                    data-active={pathname == `/vendors/new`}
+                >
+                    Create Vendor
+                </ListboxItem>
+                <ListboxItem
+                    href={`/vendors`}
+                    startContent={<Icon icon={"mage:contact-book"}/>}
+                    className={"opacity-70 hover:opacity-75 data-[active=true]:opacity-100 rounded-none"}
+                    data-active={pathname == `/vendors`}
+                >
+                    Manage Vendors
                 </ListboxItem>
             </Listbox>
             <Divider orientation={"horizontal"} className={"bg-white/10"}/>
