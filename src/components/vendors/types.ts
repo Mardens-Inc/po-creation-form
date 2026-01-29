@@ -11,6 +11,23 @@ export type ShipLocation = {
     address: string;
 }
 
+export enum VendorStatus {
+    Active,
+    Inactive,
+}
+
+export type Vendor = {
+    id: number;
+    name: string;
+    code: string;
+    status: VendorStatus;
+    contacts: PointOfContact[];
+    ship_locations: ShipLocation[];
+    total_pos: number;
+    total_spend: number;
+    created_at: string;
+}
+
 let _contactId = 0;
 export const nextContactId = () => `contact-${++_contactId}`;
 
