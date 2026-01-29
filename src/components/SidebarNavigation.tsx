@@ -2,11 +2,13 @@ import {Divider, Listbox, ListboxItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
 import {useLocation} from "react-router-dom";
+import {usePOCreation} from "./po/POCreationModal.tsx";
 
 export function SidebarNavigation()
 {
     const {pathname} = useLocation();
     const {currentUser} = useAuthentication();
+    const {openPOCreationModal} = usePOCreation();
     if (!currentUser) return null;
     return (
         <div className={"w-80 h-full bg-navigation text-navigation-foreground overflow-y-scroll border-t-2 border-white/10"}>
@@ -39,10 +41,9 @@ export function SidebarNavigation()
             <Divider orientation={"horizontal"} className={"bg-white/10"}/>
             <Listbox className={"text-xl py-4"}>
                 <ListboxItem
-                    href={"/purchase-orders/new"}
                     startContent={<Icon icon={"mage:plus-square"}/>}
-                    className={"opacity-70 hover:opacity-75 data-[active=true]:opacity-100 rounded-none"}
-                    data-active={pathname == `/purchase-orders/new`}
+                    className={"opacity-70 hover:opacity-75 rounded-none"}
+                    onPress={openPOCreationModal}
                 >
                     Create Purchase Order
                 </ListboxItem>

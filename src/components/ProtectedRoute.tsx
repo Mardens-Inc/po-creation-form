@@ -4,6 +4,7 @@ import {ErrorBoundary} from "../ErrorBoundry.tsx";
 import {Spinner} from "@heroui/react";
 import {SidebarNavigation} from "./SidebarNavigation.tsx";
 import {TopNavigation} from "./TopNavigation.tsx";
+import {POCreationProvider} from "./po/POCreationModal.tsx";
 
 export function ProtectedRoute()
 {
@@ -24,13 +25,15 @@ export function ProtectedRoute()
 
     return (
         <ErrorBoundary>
-            <main className={"flex flex-col min-h-screen"}>
-                <TopNavigation />
-                <div className={"flex flex-row h-[calc(100dvh-4rem)]"}>
-                    <SidebarNavigation/>
-                    <Outlet/>
-                </div>
-            </main>
+            <POCreationProvider>
+                <main className={"flex flex-col min-h-screen"}>
+                    <TopNavigation/>
+                    <div className={"flex flex-row h-[calc(100dvh-4rem)]"}>
+                        <SidebarNavigation/>
+                        <Outlet/>
+                    </div>
+                </main>
+            </POCreationProvider>
         </ErrorBoundary>
     );
 }
