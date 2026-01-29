@@ -1,0 +1,37 @@
+info:
+  name: Create Vendor
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/vendors"
+  auth:
+    type: bearer
+    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjcsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MjIxNTU1MCwiaWF0IjoxNzY5NjIzNTUwfQ.g6YxkvAL1yxhIbB0rgw5jLp0GkGbO3s2g9rQXCY85KA
+  body:
+    contentType: json
+    content: |
+      {
+        "name": "Acme Corp",
+        "code": "ACM",
+        "contacts": [
+          {
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john.doe@acme.com",
+            "phone": "555-0100"
+          }
+        ],
+        "ship_locations": [
+          {
+            "address": "123 Main St, Springfield, IL 62701"
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

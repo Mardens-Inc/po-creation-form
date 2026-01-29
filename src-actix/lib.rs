@@ -1,6 +1,6 @@
 use crate::util::asset_endpoint::AssetsAppConfig;
 use actix_cors::Cors;
-use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer};
 use anyhow::Result;
 use log::*;
 use serde_json::json;
@@ -12,6 +12,7 @@ mod auth;
 mod status_endpoint;
 mod util;
 mod data;
+mod vendors;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
@@ -63,7 +64,8 @@ pub async fn run() -> Result<()> {
                 web::scope("api")
                     .configure(status_endpoint::configure)
                     .configure(data::configure)
-                    .configure(auth::configure),
+                    .configure(auth::configure)
+                    .configure(vendors::configure),
             )
             .configure_frontend_routes()
     })

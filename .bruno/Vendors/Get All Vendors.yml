@@ -1,0 +1,17 @@
+info:
+  name: Get All Vendors
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{base_url}}/vendors"
+  auth:
+    type: bearer
+    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjcsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MjIxNTU1MCwiaWF0IjoxNzY5NjIzNTUwfQ.g6YxkvAL1yxhIbB0rgw5jLp0GkGbO3s2g9rQXCY85KA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
