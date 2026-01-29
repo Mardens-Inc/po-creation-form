@@ -1,11 +1,15 @@
 info:
-  name: Create Vendor
+  name: Update Purchase Order
   type: http
-  seq: 3
+  seq: 4
 
 http:
-  method: POST
-  url: "{{base_url}}/vendors"
+  method: PUT
+  url: "{{base_url}}/purchase-orders/:id"
+  params:
+    - name: id
+      value: ""
+      type: path
   body:
     type: json
     data: ""

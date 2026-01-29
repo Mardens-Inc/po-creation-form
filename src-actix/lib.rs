@@ -13,6 +13,7 @@ mod status_endpoint;
 mod util;
 mod data;
 mod vendors;
+mod purchase_orders;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
@@ -65,7 +66,8 @@ pub async fn run() -> Result<()> {
                     .configure(status_endpoint::configure)
                     .configure(data::configure)
                     .configure(auth::configure)
-                    .configure(vendors::configure),
+                    .configure(vendors::configure)
+                    .configure(purchase_orders::configure),
             )
             .configure_frontend_routes()
     })

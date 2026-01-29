@@ -1,14 +1,15 @@
 info:
-  name: Create Vendor
+  name: List Files
   type: http
-  seq: 3
+  seq: 7
 
 http:
-  method: POST
-  url: "{{base_url}}/vendors"
-  body:
-    type: json
-    data: ""
+  method: GET
+  url: "{{base_url}}/purchase-orders/:po_id/files"
+  params:
+    - name: po_id
+      value: ""
+      type: path
   auth:
     type: bearer
     token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjcsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MjIxNTU1MCwiaWF0IjoxNzY5NjIzNTUwfQ.g6YxkvAL1yxhIbB0rgw5jLp0GkGbO3s2g9rQXCY85KA

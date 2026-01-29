@@ -5,6 +5,9 @@ MYSQL_CONNECTION_STRING = 'mysql://root:password@localhost:3306/po_tracker'
 JWT_SECRET = 'development-jwt-secret'
 HASH_SALT = 'development-hash-salt'
 
+# File uploads
+PO_UPLOAD_DIR = './uploads/po_files'
+
 # Email configuration
 SMTP_HOST = ""
 SMTP_USERNAME = ""
