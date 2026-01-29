@@ -18,9 +18,9 @@ request:
   variables:
     - name: base_url
       value: http://localhost:8522/api
-      disabled: true
     - name: base_url
       value: https://potracker.mardens.com/api
+      disabled: true
 bundled: false
 extensions:
   ignore:
