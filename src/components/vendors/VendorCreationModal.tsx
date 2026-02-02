@@ -1,10 +1,11 @@
-import {Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
+import {addToast, Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {createContext, ReactNode, useCallback, useContext, useState} from "react";
 import {PointOfContact, ShipLocation} from "./types.ts";
 import {VendorInfoSection} from "./VendorInfoSection.tsx";
 import {ContactsSection} from "./ContactsSection.tsx";
 import {ShipLocationsSection} from "./ShipLocationsSection.tsx";
+import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 
 // ============== Modal ==============
 
@@ -19,18 +20,49 @@ export function VendorCreationModal(props: VendorCreationProperties)
     const [vendorCode, setVendorCode] = useState("");
     const [contacts, setContacts] = useState<PointOfContact[]>([]);
     const [shipLocations, setShipLocations] = useState<ShipLocation[]>([]);
+    const {getToken} = useAuthentication();
 
-    const handleSubmit = useCallback(() =>
+    const handleSubmit = useCallback(async () =>
     {
-        // TODO: Submit vendor to API
-        console.log("Submitting Vendor:", {
-            vendor_name: vendorName,
-            vendor_code: vendorCode,
-            contacts,
-            ship_locations: shipLocations,
-        });
-        props.onClose();
-    }, [vendorName, vendorCode, contacts, shipLocations, props]);
+        try
+        {
+            const response = await fetch("/api/vendors", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "authorization": `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({
+                    name: vendorName,
+                    code: vendorCode,
+                    contacts: contacts.map(({first_name, last_name, email, phone}) => ({first_name, last_name, email, phone})),
+                    ship_locations: shipLocations.map(({address}) => ({address}))
+                })
+            });
+
+            if (!response.ok)
+            {
+                const body = await response.text();
+                console.error("API Error:", body);
+                if (body.includes("Duplicate entry"))
+                {
+                    throw new Error("Vendor with the same name and code already exists");
+                } else
+                {
+                    throw new Error(`Error ${response.status}: ${body}`);
+                }
+            }
+            props.onClose();
+        } catch (e: Error | any)
+        {
+            addToast({
+                title: "Error creating vendor",
+                description: e.message,
+                color: "danger"
+            });
+        }
+
+    }, [vendorName, vendorCode, contacts, shipLocations, props, getToken]);
 
     const isValid = vendorName.trim().length > 0 && vendorCode.length === 3;
 
