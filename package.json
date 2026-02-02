@@ -9,7 +9,7 @@
   "type": "module",
   "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "build:api": "cargo build --release",
+    "build:api": "wsl bash -ic \"cargo build --release\"",
     "build:frontend": "tsc && vite build",
     "build": "npm run build:frontend && npm run build:api"
   },
