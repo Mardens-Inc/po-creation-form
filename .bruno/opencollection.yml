@@ -15,6 +15,9 @@ config:
       bypassProxy: ""
 
 request:
+  auth:
+    type: bearer
+    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MjYzNjU4OCwiaWF0IjoxNzcwMDQ0NTg4fQ.01UYJ-ccoBhXEGAloFB1rgOZTUWUcLdExNqQJedfmts
   variables:
     - name: base_url
       value: http://localhost:8522/api
