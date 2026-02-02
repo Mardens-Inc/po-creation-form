@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+
+
 use crate::util::asset_endpoint::AssetsAppConfig;
 use actix_cors::Cors;
 use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer};
