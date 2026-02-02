@@ -1,1 +1,0 @@
-pwp -H 192.168.21.209 -u administrator -a "C:\Users\drew.chase\.ssh\mss-sshkey_ossh.key" -s po_tracker_dashboard --binary po_tracker_dashboard -BSc "npm run build"
