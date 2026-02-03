@@ -37,10 +37,14 @@ pub async fn index(_req: HttpRequest) -> anyhow::Result<impl Responder, Error> {
 async fn assets(file: web::Path<String>) -> impl Responder {
 	if let Some(file) = WWWROOT.get_file(format!("assets/{}", file.as_str())) {
 		let body = file.contents();
+		let mime_type = file
+			.path()
+			.extension()
+			.and_then(|ext| ext.to_str())
+			.map(file_extension_to_mime)
+			.unwrap_or_else(|| "application/octet-stream".parse().unwrap());
 		return Ok(HttpResponse::Ok()
-			.content_type(file_extension_to_mime(
-				file.path().extension().unwrap().to_str().unwrap(),
-			))
+			.content_type(mime_type)
 			.body(body));
 	}
 	Err(ErrorInternalServerError(format!("Failed to find {}", file)))
