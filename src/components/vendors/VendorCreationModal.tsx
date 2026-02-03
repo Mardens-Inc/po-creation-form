@@ -69,15 +69,13 @@ export function VendorCreationModal(props: VendorCreationProperties)
 
             if (!response.ok)
             {
-                const body = await response.text();
-                console.error("API Error:", body);
-                if (body.includes("Duplicate entry"))
+                if (response.status === 409)
                 {
                     throw new Error("Vendor with the same name and code already exists");
-                } else
-                {
-                    throw new Error(`Error ${response.status}: ${body}`);
                 }
+                const body = await response.text();
+                console.error("API Error:", body);
+                throw new Error(`Error ${response.status}: ${body}`);
             }
 
             await refetch();
@@ -87,11 +85,12 @@ export function VendorCreationModal(props: VendorCreationProperties)
                 title: isEditMode ? "Vendor updated successfully" : "Vendor created successfully",
                 color: "success"
             });
-        } catch (e: Error | any)
+        } catch (e: unknown)
         {
+            const errorMessage = e instanceof Error ? e.message : "An unexpected error occurred";
             addToast({
                 title: isEditMode ? "Error updating vendor" : "Error creating vendor",
-                description: e.message,
+                description: errorMessage,
                 color: "danger"
             });
         }
