@@ -1,4 +1,4 @@
-import {Input} from "@heroui/react";
+import {Input, Select, SelectItem} from "@heroui/react";
 import {memo, useCallback} from "react";
 
 type VendorInfoSectionProps = {
@@ -6,9 +6,11 @@ type VendorInfoSectionProps = {
     onVendorNameChange: (value: string) => void;
     vendorCode: string;
     onVendorCodeChange: (value: string) => void;
+    vendorStatus: string;
+    onVendorStatusChange: (value: string) => void;
 }
 
-export const VendorInfoSection = memo(function VendorInfoSection({vendorName, onVendorNameChange, vendorCode, onVendorCodeChange}: VendorInfoSectionProps)
+export const VendorInfoSection = memo(function VendorInfoSection({vendorName, onVendorNameChange, vendorCode, onVendorCodeChange, vendorStatus, onVendorStatusChange}: VendorInfoSectionProps)
 {
     const handleVendorCodeChange = useCallback((value: string) =>
     {
@@ -17,7 +19,7 @@ export const VendorInfoSection = memo(function VendorInfoSection({vendorName, on
     }, [onVendorCodeChange]);
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto_auto] gap-4">
             <div className="flex flex-col gap-2">
                 <label className="font-headers font-bold text-lg uppercase">
                     Vendor Name <span className="text-danger">*</span>
@@ -56,6 +58,32 @@ export const VendorInfoSection = memo(function VendorInfoSection({vendorName, on
                         inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors",
                     }}
                 />
+            </div>
+            <div className="flex flex-col gap-2">
+                <label className="font-headers font-bold text-lg uppercase">
+                    Status <span className="text-danger">*</span>
+                </label>
+                <Select
+                    radius="none"
+                    size="lg"
+                    selectedKeys={[vendorStatus]}
+                    onSelectionChange={(keys) => {
+                        const value = Array.from(keys)[0] as string;
+                        onVendorStatusChange(value);
+                    }}
+                    isRequired
+                    classNames={{
+                        trigger: "border-2 border-primary/50 hover:border-primary transition-colors min-w-32",
+                        value: "font-text text-lg",
+                    }}
+                >
+                    <SelectItem key="Active">
+                        Active
+                    </SelectItem>
+                    <SelectItem key="Inactive">
+                        Inactive
+                    </SelectItem>
+                </Select>
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
-import {PointOfContact, ShipLocation, Vendor, VendorStatus} from "../components/vendors/types.ts";
+import {PointOfContact, ShipLocation, Vendor} from "../components/vendors/types.ts";
 
 interface BackendContact {
     id: number;
@@ -21,7 +21,7 @@ interface BackendVendor {
     id: number;
     name: string;
     code: string;
-    status: VendorStatus;
+    status: string; // "Active" or "Inactive"
     created_at: string | null;
     created_by: number;
     contacts: BackendContact[];

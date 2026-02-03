@@ -11,16 +11,11 @@ export type ShipLocation = {
     address: string;
 }
 
-export enum VendorStatus {
-    Active,
-    Inactive,
-}
-
 export type Vendor = {
     id: number;
     name: string;
     code: string;
-    status: VendorStatus;
+    status: string; // "Active" or "Inactive"
     contacts: PointOfContact[];
     ship_locations: ShipLocation[];
     total_pos: number;

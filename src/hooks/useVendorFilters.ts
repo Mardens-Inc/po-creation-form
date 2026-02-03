@@ -1,9 +1,8 @@
 import {useSearchParams} from "react-router-dom";
 import {useCallback, useMemo} from "react";
-import {VendorStatus} from "../components/vendors/types.ts";
 
 export interface VendorFilterState {
-    statuses: VendorStatus[];
+    statuses: string[];
     search: string | null;
     minPOs: number | null;
     maxPOs: number | null;
@@ -31,7 +30,7 @@ export function useVendorFilters() {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const filters: VendorFilterState = useMemo(() => ({
-        statuses: parseJsonArray<VendorStatus>(searchParams.get("status")),
+        statuses: parseJsonArray<string>(searchParams.get("status")),
         search: searchParams.get("search"),
         minPOs: parseNumber(searchParams.get("minPOs")),
         maxPOs: parseNumber(searchParams.get("maxPOs")),

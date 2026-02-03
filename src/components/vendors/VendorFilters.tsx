@@ -36,15 +36,15 @@ export function VendorFilters({isOpen, onClose, filters, setFilter, clearFilters
                     <Select
                         label="Status"
                         selectionMode="multiple"
-                        selectedKeys={new Set(filters.statuses.map(String))}
+                        selectedKeys={new Set(filters.statuses)}
                         onSelectionChange={(keys) =>
                         {
-                            const arr = [...keys].map(Number);
+                            const arr = [...keys] as string[];
                             setFilter("status", arr.length ? JSON.stringify(arr) : null);
                         }}
                     >
                         {vendorStatuses.map(s => (
-                            <SelectItem key={String(s.key)}>{s.label}</SelectItem>
+                            <SelectItem key={s.key}>{s.label}</SelectItem>
                         ))}
                     </Select>
 

@@ -1,7 +1,8 @@
-import {Button, Card, CardBody, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell} from "@heroui/react";
+import {Button, Card, CardBody, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {Vendor, VendorStatus} from "./types.ts";
-import {useAuthentication, UserRole} from "../../providers/AuthenticationProvider.tsx";
+import {Vendor} from "./types.ts";
+import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
+import {useVendorCreation} from "./VendorCreationModal.tsx";
 
 interface VendorTableProps
 {
@@ -11,7 +12,8 @@ interface VendorTableProps
 export function VendorTable({vendors}: VendorTableProps)
 {
     const {currentUser} = useAuthentication();
-    const canEdit = currentUser?.role === UserRole.Admin;
+    const {openVendorEditModal} = useVendorCreation();
+    const canEdit = currentUser?.role === "Admin";
 
     return (
         <Card shadow="sm">
@@ -26,7 +28,7 @@ export function VendorTable({vendors}: VendorTableProps)
                         <TableColumn>Total POs</TableColumn>
                         <TableColumn>Total Spend</TableColumn>
                         <TableColumn>Created</TableColumn>
-                        <TableColumn>Actions</TableColumn>
+                        <TableColumn hidden={!canEdit}>Actions</TableColumn>
                     </TableHeader>
                     <TableBody emptyContent="No vendors match the current filters.">
                         {vendors.map(vendor => (
@@ -37,9 +39,9 @@ export function VendorTable({vendors}: VendorTableProps)
                                     <Chip
                                         size="sm"
                                         variant="flat"
-                                        color={vendor.status === VendorStatus.Active ? "success" : "default"}
+                                        color={vendor.status === "Active" ? "success" : "default"}
                                     >
-                                        {vendor.status === VendorStatus.Active ? "Active" : "Inactive"}
+                                        {vendor.status}
                                     </Chip>
                                 </TableCell>
                                 <TableCell>{vendor.contacts.length}</TableCell>
@@ -54,6 +56,7 @@ export function VendorTable({vendors}: VendorTableProps)
                                             variant="light"
                                             isIconOnly
                                             aria-label="Edit vendor"
+                                            onPress={() => openVendorEditModal(vendor)}
                                         >
                                             <Icon icon="mage:edit" width={16}/>
                                         </Button>
