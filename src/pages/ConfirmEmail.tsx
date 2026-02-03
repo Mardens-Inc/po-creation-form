@@ -39,9 +39,13 @@ export function ConfirmEmail()
             {
                 setHasError(true);
             }
+        }).catch((error) =>
+        {
+            console.error("Email confirmation failed:", error);
+            setHasError(true);
         }).finally(() => setIsLoading(false));
 
-    }, []);
+    }, [email, token]);
 
     if (isLoading) return (
         <div className={"h-dvh flex items-center justify-center"}>
