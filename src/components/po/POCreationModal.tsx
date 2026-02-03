@@ -1,8 +1,9 @@
 import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
+import {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {CalendarDate, getLocalTimeZone, today} from "@internationalized/date";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
+import {useVendors} from "../../hooks/useVendors.ts";
 import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadManifestSection} from "./po-information";
 
 type POCreationProperties = {
@@ -42,6 +43,12 @@ export function POCreationModal(props: POCreationProperties)
 {
     const {currentUser} = useAuthentication();
     const buyerId = currentUser?.id ?? 0;
+    const {vendors, isLoading: isLoadingVendors} = useVendors();
+
+    const vendorOptions = useMemo(() =>
+        vendors.map(v => ({key: String(v.id), label: v.name})),
+        [vendors]
+    );
 
     const [poNumber, setPoNumber] = useState(() =>
     {
@@ -148,6 +155,8 @@ export function POCreationModal(props: POCreationProperties)
                                     onShipToAddressChange={handleShipToAddressChange}
                                     notes={notes}
                                     onNotesChange={handleNotesChange}
+                                    vendors={vendorOptions}
+                                    isLoadingVendors={isLoadingVendors}
                                 />
 
                                 {/* Shipping Information */}

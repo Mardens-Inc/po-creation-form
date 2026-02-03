@@ -1,6 +1,5 @@
 import {Button, Drawer, DrawerBody, DrawerContent, DrawerFooter, DrawerHeader, Input, Select, SelectItem} from "@heroui/react";
 import {VendorFilterState} from "../../hooks/useVendorFilters.ts";
-import {getUniqueVendorStatuses} from "../../data/mock-vendors.ts";
 
 interface VendorFiltersProps
 {
@@ -12,7 +11,10 @@ interface VendorFiltersProps
     hasActiveFilters: boolean;
 }
 
-const vendorStatuses = getUniqueVendorStatuses();
+const vendorStatuses = [
+    {key: "Active", label: "Active"},
+    {key: "Inactive", label: "Inactive"},
+];
 
 export function VendorFilters({isOpen, onClose, filters, setFilter, clearFilters, hasActiveFilters}: VendorFiltersProps)
 {

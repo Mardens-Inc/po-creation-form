@@ -36,14 +36,6 @@ export const PO_NUMBER_MAX_LENGTH = 10;
 
 export const manifestExtensions = ["xlsx", "csv", "pdf"];
 
-export const vendorOptions = [
-    {key: "vendor-1", label: "Vendor 1"},
-    {key: "vendor-2", label: "Vendor 2"},
-    {key: "vendor-3", label: "Vendor 3"},
-    {key: "vendor-4", label: "Vendor 4"},
-    {key: "vendor-5", label: "Vendor 5"},
-];
-
 export const shipToAddressOptions = [
     {key: "address-1", label: "123 Main Street, Waterville, ME 04901"},
     {key: "address-2", label: "456 Oak Avenue, Portland, ME 04101"},

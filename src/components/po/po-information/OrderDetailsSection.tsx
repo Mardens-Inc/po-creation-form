@@ -1,7 +1,12 @@
 import {Autocomplete, AutocompleteItem, DatePicker, Input, Textarea} from "@heroui/react";
 import {CalendarDate} from "@internationalized/date";
 import {memo} from "react";
-import {shipToAddressOptions, vendorOptions} from "./types.ts";
+import {shipToAddressOptions} from "./types.ts";
+
+type VendorOption = {
+    key: string;
+    label: string;
+};
 
 type OrderDetailsSectionProps = {
     vendorName: string;
@@ -16,6 +21,8 @@ type OrderDetailsSectionProps = {
     onShipToAddressChange: (value: string) => void;
     notes: string;
     onNotesChange: (value: string) => void;
+    vendors?: VendorOption[];
+    isLoadingVendors?: boolean;
 }
 
 export const OrderDetailsSection = memo(function OrderDetailsSection(props: OrderDetailsSectionProps)
@@ -26,7 +33,9 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
         description, onDescriptionChange,
         terms, onTermsChange,
         shipToAddress, onShipToAddressChange,
-        notes, onNotesChange
+        notes, onNotesChange,
+        vendors = [],
+        isLoadingVendors = false
     } = props;
 
     return (
@@ -45,6 +54,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                         inputValue={vendorName}
                         onInputChange={onVendorNameChange}
                         isRequired
+                        isLoading={isLoadingVendors}
                         classNames={{
                             base: "font-text text-lg",
                             listboxWrapper: "rounded-none",
@@ -62,7 +72,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                             }
                         }}
                     >
-                        {vendorOptions.map((vendor) => (
+                        {vendors.map((vendor) => (
                             <AutocompleteItem key={vendor.key}>
                                 {vendor.label}
                             </AutocompleteItem>
