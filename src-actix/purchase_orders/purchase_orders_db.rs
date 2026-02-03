@@ -138,28 +138,30 @@ pub async fn get_po_by_id(id: u32) -> Result<Option<PurchaseOrder>> {
 pub async fn get_vendor_name(vendor_id: u32) -> Result<String> {
     let pool = crate::app_db::create_pool().await?;
     let mut transaction = pool.begin().await?;
-    let name: (String,) =
+    let name: Option<(String,)> =
         sqlx::query_as(r#"SELECT name FROM vendors WHERE id = ? LIMIT 1"#)
             .bind(vendor_id)
-            .fetch_one(&mut *transaction)
+            .fetch_optional(&mut *transaction)
             .await?;
     transaction.commit().await?;
     pool.close().await;
-    Ok(name.0)
+    name.map(|n| n.0)
+        .ok_or_else(|| anyhow::anyhow!("Vendor with id {} not found", vendor_id))
 }
 
 pub async fn get_buyer_name(buyer_id: u32) -> Result<String> {
     let pool = crate::app_db::create_pool().await?;
     let mut transaction = pool.begin().await?;
-    let name: (String,) = sqlx::query_as(
+    let name: Option<(String,)> = sqlx::query_as(
         r#"SELECT CONCAT(first_name, ' ', last_name) FROM users WHERE id = ? LIMIT 1"#,
     )
     .bind(buyer_id)
-    .fetch_one(&mut *transaction)
+    .fetch_optional(&mut *transaction)
     .await?;
     transaction.commit().await?;
     pool.close().await;
-    Ok(name.0)
+    name.map(|n| n.0)
+        .ok_or_else(|| anyhow::anyhow!("Buyer with id {} not found", buyer_id))
 }
 
 pub async fn update_po_with_transaction<'a>(
