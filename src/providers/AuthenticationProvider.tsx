@@ -146,24 +146,27 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             }
 
             // Token exists and is not expired, extract user and validate
-            const user = getUserFromToken(token);
-            if (user)
+            const tokenUser = getUserFromToken(token);
+            if (tokenUser)
             {
-                setCurrentUser(user);
+                setCurrentUser(tokenUser);
                 setIsAuthenticated(true);
 
                 // Optionally validate with /auth/me endpoint
                 try
                 {
+                    const validatedUser = await me();
 
-                    const user = await me();
-
-                    if (!user)
+                    if (!validatedUser)
                     {
                         // Token is invalid server-side, clear auth state
                         clearStoredToken();
                         setCurrentUser(null);
                         setIsAuthenticated(false);
+                    } else
+                    {
+                        // Update with full user data from server
+                        setCurrentUser(validatedUser);
                     }
 
                 } catch
@@ -201,14 +204,15 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             const data: LoginResponse = await response.json();
             storeToken(data.token);
 
-            const user = getUserFromToken(data.token);
-            if (user)
+            const tokenUser = getUserFromToken(data.token);
+            if (tokenUser)
             {
-                const user = await me();
-                if (user)
+                const validatedUser = await me();
+                if (validatedUser)
                 {
+                    setCurrentUser(validatedUser);
                     setIsAuthenticated(true);
-                    return user;
+                    return validatedUser;
                 }
             }
 
@@ -293,8 +297,6 @@ export function AuthenticationProvider({children}: { children: ReactNode })
 
             setCurrentUser(user);
             return user;
-
-            return undefined;
         } catch (error)
         {
             console.error("Me error:", error);
