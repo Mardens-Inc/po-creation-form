@@ -4,7 +4,7 @@ mod user_role;
 mod auth_endpoint;
 mod auth_endpoint_data;
 pub(crate) mod jwt_data;
-mod auth_service;
+pub(crate) mod auth_service;
 pub(crate) mod auth_middleware;
 mod registration_db;
 mod email_service;
