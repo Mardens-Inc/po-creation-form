@@ -3,6 +3,7 @@ import {Icon} from "@iconify-icon/react";
 import {PurchaseOrder} from "../../types/po.ts";
 import {POStatusBadge} from "../dashboard/POStatusBadge.tsx";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
+import {usePOEdit} from "./POEditModal.tsx";
 
 interface POTableProps {
     purchaseOrders: PurchaseOrder[];
@@ -10,11 +11,16 @@ interface POTableProps {
 
 export function POTable({purchaseOrders}: POTableProps) {
     const {currentUser} = useAuthentication();
+    const {openPOEditModal} = usePOEdit();
 
     const canEdit = (po: PurchaseOrder): boolean => {
         if (!currentUser) return false;
         if (currentUser.role === "Admin") return true;
         return currentUser.id === po.buyer_id;
+    };
+
+    const handleEdit = (po: PurchaseOrder) => {
+        openPOEditModal(po.id);
     };
 
     return (
@@ -48,6 +54,7 @@ export function POTable({purchaseOrders}: POTableProps) {
                                             variant="light"
                                             isIconOnly
                                             aria-label="Edit purchase order"
+                                            onPress={() => handleEdit(po)}
                                         >
                                             <Icon icon="mage:edit" width={16}/>
                                         </Button>
