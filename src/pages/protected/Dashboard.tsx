@@ -1,5 +1,5 @@
 import {Spinner} from "@heroui/react";
-import {useAuthentication, UserRole} from "../../providers/AuthenticationProvider.tsx";
+import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {usePurchaseOrdersContext} from "../../providers/PurchaseOrdersProvider.tsx";
 import {DashboardHeader} from "../../components/dashboard/DashboardHeader.tsx";
 import {MonthlyPOChart} from "../../components/dashboard/MonthlyPOChart.tsx";
@@ -37,7 +37,7 @@ export function Dashboard() {
                     <YearlyPOChart/>
                 </div>
 
-                {currentUser?.role === UserRole.Buyer && <MyPurchaseOrders/>}
+                {currentUser?.role === "Buyer" && <MyPurchaseOrders/>}
 
                 <RecentPurchaseOrders/>
             </div>

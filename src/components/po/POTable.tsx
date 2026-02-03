@@ -2,7 +2,7 @@ import {Button, Card, CardBody, Table, TableHeader, TableColumn, TableBody, Tabl
 import {Icon} from "@iconify-icon/react";
 import {PurchaseOrder} from "../../types/po.ts";
 import {POStatusBadge} from "../dashboard/POStatusBadge.tsx";
-import {useAuthentication, UserRole} from "../../providers/AuthenticationProvider.tsx";
+import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 
 interface POTableProps {
     purchaseOrders: PurchaseOrder[];
@@ -13,7 +13,7 @@ export function POTable({purchaseOrders}: POTableProps) {
 
     const canEdit = (po: PurchaseOrder): boolean => {
         if (!currentUser) return false;
-        if (currentUser.role === UserRole.Admin) return true;
+        if (currentUser.role === "Admin") return true;
         return currentUser.id === po.buyer_id;
     };
 

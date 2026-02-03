@@ -14,7 +14,7 @@ export type User = {
     email: string;
     first_name?: string;
     last_name?: string;
-    role?: UserRole;
+    role?: string; // Backend sends "Admin", "Buyer", or "Warehouse"
 }
 
 export type UserRegistrationRequest = {
@@ -306,6 +306,7 @@ export function AuthenticationProvider({children}: { children: ReactNode })
     {
         return getStoredToken();
     }, []);
+
 
     return (
         <AuthenticationContext.Provider value={{
