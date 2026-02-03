@@ -18,10 +18,7 @@ pub struct EmailService {
 
 impl EmailService {
     pub fn new() -> Result<Self> {
-        debug!(
-            "Creating SMTP transport with credentials: {}@{}",
-            SMTP_USERNAME, SMTP_HOST
-        );
+        debug!("Creating SMTP transport for host: {}", SMTP_HOST);
         let creds = Credentials::new(SMTP_USERNAME.to_string(), SMTP_PASSWORD.to_string());
         let transport = SmtpTransport::starttls_relay(SMTP_HOST)?
             .credentials(creds)
