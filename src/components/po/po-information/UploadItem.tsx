@@ -1,9 +1,9 @@
-import {Button, Select, SelectItem} from "@heroui/react";
+import {Button, Chip} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {Dispatch, memo, useCallback} from "react";
+import {Dispatch, memo} from "react";
 import {motion} from "framer-motion";
 import {ErrorBoundary} from "../../../ErrorBoundry.tsx";
-import {UploadFileItem, UploadFileType} from "./types.ts";
+import {UploadFileItem} from "./types.ts";
 
 type UploadItemProps = {
     item: UploadFileItem;
@@ -14,12 +14,7 @@ type UploadItemProps = {
 
 export const UploadItem = memo(function UploadItem(props: UploadItemProps)
 {
-    const {item, index, onChange, onRemove} = props;
-
-    const handleSelectionChange = useCallback((keys: any) =>
-    {
-        onChange({...item, asset_type: [...keys][0] as UploadFileType});
-    }, [item, onChange]);
+    const {item, index, onRemove} = props;
 
     return (
         <ErrorBoundary>
@@ -39,34 +34,14 @@ export const UploadItem = memo(function UploadItem(props: UploadItemProps)
                 <div className={"flex flex-col min-w-0 flex-1"}>
                     <p className={"font-bold truncate"}>{item.filename}</p>
                     <p className={"italic truncate text-tiny text-default-400"}>
-                        {(item.file.size / 1024).toFixed(1)} KB &middot; {item.file.type || "unknown type"}
+                        {(item.file.size / 1024).toFixed(1)} KB &middot; {item.file.type || "Excel Spreadsheet"}
                     </p>
                 </div>
                 <div className={"flex flex-row gap-2 items-center"}>
-                    <Select
-                        value={item.key}
-                        selectedKeys={item.asset_type ? [item.asset_type] : [UploadFileType.Asset]}
-                        onSelectionChange={handleSelectionChange}
-                        selectionMode={"single"}
-                        className={"w-32"}
-                        size={"sm"}
-                        radius={"none"}
-                        label={"Asset Type"}
-                        listboxProps={{
-                            itemClasses: {
-                                base: "rounded-none"
-                            }
-                        }}
-                        popoverProps={{
-                            classNames: {content: "p-0"},
-                            radius: "none",
-                            itemProp: "rounded-none"
-                        }}
-                    >
-                        {Object.values(UploadFileType).map((type) => (
-                            <SelectItem key={type as string}>{type}</SelectItem>
-                        ))}
-                    </Select>
+                    <Chip size="sm" color="primary" variant="flat">
+                        <Icon icon="tabler:file-spreadsheet" className="mr-1" />
+                        PO Template
+                    </Chip>
                     <Button
                         isIconOnly
                         size="sm"
