@@ -1,10 +1,10 @@
-import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
+import {addToast, Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {CalendarDate, getLocalTimeZone, today} from "@internationalized/date";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendors} from "../../hooks/useVendors.ts";
-import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadManifestSection} from "./po-information";
+import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection} from "./po-information";
 
 type POCreationProperties = {
     isOpen: boolean;
@@ -41,9 +41,10 @@ const savePoSequentialToLocalStorage = (buyerId: number, sequential: number) =>
 
 export function POCreationModal(props: POCreationProperties)
 {
-    const {currentUser} = useAuthentication();
+    const {currentUser, getToken} = useAuthentication();
     const buyerId = currentUser?.id ?? 0;
     const {vendors, isLoading: isLoadingVendors} = useVendors();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const vendorOptions = useMemo(() =>
         vendors.map(v => ({key: String(v.id), label: v.name})),
@@ -96,27 +97,140 @@ export function POCreationModal(props: POCreationProperties)
     const handleFobPointChange = useCallback((value: string) => setFobPoint(value), []);
     const handleFilesChange = useCallback((value: UploadFileItem[]) => setFiles(value), []);
 
-    const handleSubmit = useCallback(() =>
+    const handleSubmit = useCallback(async () =>
     {
-        // TODO: Submit PO to API
-        console.log("Submitting PO:", {
-            po_number: poNumber,
-            buyer_id: buyerId,
-            vendor_name: vendorName,
-            order_date: orderDate,
-            ship_date: shipDate,
-            cancel_date: cancelDate,
-            shipping_notes: shippingNotes,
-            description,
-            terms,
-            ship_to_address: shipToAddress,
-            fob_type: fobType,
-            fob_point: fobPoint,
-            notes,
-            files
-        });
-        props.onClose();
-    }, [poNumber, buyerId, vendorName, orderDate, shipDate, cancelDate, shippingNotes, description, terms, shipToAddress, fobType, fobPoint, notes, files, props]);
+        const token = getToken();
+        if (!token)
+        {
+            addToast({title: "Not authenticated", color: "danger"});
+            return;
+        }
+
+        // Validate required fields
+        if (!vendorName)
+        {
+            addToast({title: "Please select a vendor", color: "warning"});
+            return;
+        }
+
+        if (!orderDate)
+        {
+            addToast({title: "Please select an order date", color: "warning"});
+            return;
+        }
+
+        // Find vendor ID from vendor name
+        const selectedVendor = vendors.find(v => v.name === vendorName || String(v.id) === vendorName);
+        if (!selectedVendor)
+        {
+            addToast({title: "Invalid vendor selected", color: "danger"});
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try
+        {
+            // Format dates for API
+            const formatDate = (date: CalendarDate | null) =>
+                date ? `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}` : null;
+
+            // Step 1: Create the PO
+            const createResponse = await fetch("/api/purchase-orders", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    po_number: poNumber,
+                    vendor_id: selectedVendor.id,
+                    description: description || "Purchase Order",
+                    order_date: formatDate(orderDate),
+                    ship_date: formatDate(shipDate),
+                    cancel_date: formatDate(cancelDate),
+                    shipping_notes: shippingNotes || null,
+                    terms: terms || "",
+                    ship_to_address: shipToAddress || "",
+                    fob_type: fobType === "Pickup" ? 0 : 1,
+                    fob_point: fobPoint || "",
+                    notes: notes || null
+                })
+            });
+
+            if (!createResponse.ok)
+            {
+                const errorData = await createResponse.json().catch(() => ({}));
+                throw new Error(errorData.error || `Failed to create PO: ${createResponse.status}`);
+            }
+
+            const createdPO = await createResponse.json();
+            const poId = createdPO.id;
+
+            // Step 2: Upload manifest files
+            for (const file of files)
+            {
+                const assetType = file.asset_type === UploadFileType.Manifest ? 1 : 0;
+                const uploadUrl = `/api/purchase-orders/${poId}/files?filename=${encodeURIComponent(file.filename)}&asset_type=${assetType}`;
+
+                const fileBuffer = await file.file.arrayBuffer();
+
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/octet-stream"
+                    },
+                    body: fileBuffer
+                });
+
+                if (!uploadResponse.ok)
+                {
+                    console.error(`Failed to upload file ${file.filename}:`, await uploadResponse.text());
+                    addToast({
+                        title: `Warning: Failed to upload ${file.filename}`,
+                        color: "warning"
+                    });
+                }
+            }
+
+            addToast({
+                title: "Purchase Order created successfully",
+                description: `PO #${poNumber} has been created`,
+                color: "success"
+            });
+
+            // Reset form
+            const nextSequential = getSequentialFromPoNumber(poNumber) + 1;
+            savePoSequentialToLocalStorage(buyerId, nextSequential);
+            setPoNumber(generateInitialPoNumber(buyerId, nextSequential));
+            setVendorName("");
+            setOrderDate(today(getLocalTimeZone()));
+            setShipDate(null);
+            setCancelDate(null);
+            setShippingNotes("");
+            setDescription("");
+            setTerms("");
+            setShipToAddress("");
+            setFobType("Pickup");
+            setFobPoint("");
+            setNotes("");
+            setFiles([]);
+
+            props.onClose();
+        } catch (error)
+        {
+            console.error("Error creating PO:", error);
+            addToast({
+                title: "Error creating Purchase Order",
+                description: error instanceof Error ? error.message : "An unexpected error occurred",
+                color: "danger"
+            });
+        } finally
+        {
+            setIsSubmitting(false);
+        }
+    }, [getToken, vendorName, orderDate, vendors, poNumber, description, shipDate, cancelDate, shippingNotes, terms, shipToAddress, fobType, fobPoint, notes, files, buyerId, props]);
 
     return (
         <Modal
@@ -197,10 +311,12 @@ export function POCreationModal(props: POCreationProperties)
                             <Button
                                 color="primary"
                                 radius="none"
-                                endContent={<Icon icon="mdi:check" width={18} height={18}/>}
+                                endContent={!isSubmitting && <Icon icon="mdi:check" width={18} height={18}/>}
                                 onPress={handleSubmit}
+                                isLoading={isSubmitting}
+                                isDisabled={isSubmitting}
                             >
-                                Create PO
+                                {isSubmitting ? "Creating..." : "Create PO"}
                             </Button>
                         </ModalFooter>
                     </>

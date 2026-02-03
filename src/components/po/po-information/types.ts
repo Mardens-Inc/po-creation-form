@@ -34,7 +34,7 @@ export type POInformationFormData = {
 
 export const PO_NUMBER_MAX_LENGTH = 10;
 
-export const manifestExtensions = ["xlsx", "csv", "pdf"];
+export const manifestExtensions = ["xlsx"];
 
 export const shipToAddressOptions = [
     {key: "address-1", label: "123 Main Street, Waterville, ME 04901"},

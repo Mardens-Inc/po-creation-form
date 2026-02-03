@@ -25,10 +25,20 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
         {
             if (existingNames.has(file.name)) continue;
             const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-            const asset_type = manifestExtensions.includes(extension)
-                ? UploadFileType.Manifest
-                : UploadFileType.Asset;
-            newItems.push({key: `${file.name}-${Date.now()}`, filename: file.name, file, asset_type});
+
+            // Only allow xlsx files
+            if (!manifestExtensions.includes(extension))
+            {
+                console.warn(`Skipping file "${file.name}" - only .xlsx files are allowed`);
+                continue;
+            }
+
+            newItems.push({
+                key: `${file.name}-${Date.now()}`,
+                filename: file.name,
+                file,
+                asset_type: UploadFileType.Manifest
+            });
         }
 
         if (newItems.length > 0)
@@ -89,6 +99,7 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
                 ref={fileInputRef}
                 type="file"
                 multiple
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 className="hidden"
                 onChange={handleInputChange}
             />
@@ -106,12 +117,10 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
                 <Icon icon="tabler:cloud-upload" width={40} height={40} className="text-default-400"/>
                 <p className={"font-headers text-xl font-bold"}>Drag & drop files here or click to browse</p>
                 <div className={"flex gap-2 items-center"}>
-                    <span className="text-sm text-default-500">Manifest formats:</span>
+                    <span className="text-sm text-default-500">Accepted format:</span>
                     <Chip size="sm" color={"primary"}>XLSX</Chip>
-                    <Chip size="sm" color={"primary"}>CSV</Chip>
-                    <Chip size="sm" color={"primary"}>PDF</Chip>
                 </div>
-                <p className="text-xs text-default-400">All other file formats will be uploaded as a generic asset.</p>
+                <p className="text-xs text-default-400">Upload a PO Template Excel file (.xlsx) to import line items.</p>
             </div>
             <div className={"flex flex-row mx-auto gap-2"}>
                 <Button
