@@ -33,6 +33,10 @@ pub async fn run() -> Result<()> {
 
     app_db::initialize_database().await?;
 
+    // Initialize JWT secrets and start rotation scheduler
+    auth::auth_service::init_jwt_secrets();
+    auth::auth_service::start_jwt_rotation_scheduler();
+
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:1420")
