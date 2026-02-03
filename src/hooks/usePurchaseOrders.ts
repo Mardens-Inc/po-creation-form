@@ -2,6 +2,35 @@ import {useCallback, useEffect, useState} from "react";
 import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
 import {DashboardStats, MonthlyPOData, POStatus, PurchaseOrder, YearlyPOData} from "../types/po.ts";
 
+interface POFile {
+    id: number | null;
+    po_id: number;
+    filename: string;
+    asset_type: number; // 0 = Asset, 1 = Manifest
+    disk_path: string;
+    uploaded_at: string | null;
+    uploaded_by: number;
+}
+
+interface POLineItem {
+    id: number | null;
+    po_id: number;
+    item_number: string;
+    upc: string;
+    description: string;
+    case_pack: string;
+    cases: string;
+    qty: number;
+    mardens_cost: number;
+    mardens_price: number;
+    comp_retail: number;
+    department: string;
+    category: string;
+    sub_category: string;
+    season: string;
+    buyer_notes: string | null;
+}
+
 interface BackendPO {
     id: number;
     po_number: string;
@@ -22,8 +51,8 @@ interface BackendPO {
     created_at: string | null;
     vendor_name: string;
     buyer_name: string;
-    files: unknown[];
-    line_items: unknown[];
+    files: POFile[];
+    line_items: POLineItem[];
 }
 
 function mapBackendPO(po: BackendPO): PurchaseOrder {
