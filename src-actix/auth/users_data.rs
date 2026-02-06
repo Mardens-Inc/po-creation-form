@@ -64,7 +64,11 @@ impl User {
             self.first_name, self.last_name, self.role
         );
 
-        let hashed_password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST)?;
+        let password = self.password.clone();
+        let hashed_password = tokio::task::spawn_blocking(move || {
+            bcrypt::hash(password, bcrypt::DEFAULT_COST)
+        })
+        .await??;
         trace!("Password hashed successfully");
 
         let pool = crate::app_db::get_or_init_pool().await?;
@@ -90,7 +94,6 @@ impl User {
 
         // Submit and clean up the transaction
         transaction.commit().await?;
-        pool.close().await;
         debug!("Database transaction committed for user ID: {}", user_id);
 
         let email_service = crate::auth::email_service::EmailService::new()?;
@@ -133,7 +136,6 @@ impl User {
                     }
 
                     transaction.commit().await?;
-                    pool.close().await;
                     debug!("Cleanup transaction committed for user ID: {}", user_id);
                     Ok(())
                 }
@@ -195,7 +197,13 @@ impl User {
     }
 
     pub async fn validate_password(&self, password: &str) -> Result<bool> {
-        Ok(bcrypt::verify(password, &self.password)?)
+        let password = password.to_string();
+        let hash = self.password.clone();
+        let result = tokio::task::spawn_blocking(move || {
+            bcrypt::verify(password, &hash)
+        })
+        .await??;
+        Ok(result)
     }
     pub async fn get_user_from_request(req: &actix_web::HttpRequest) -> Result<User> {
         let claims = req
