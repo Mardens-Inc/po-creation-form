@@ -14,8 +14,13 @@ struct JwtSecrets {
 
 impl JwtSecrets {
     fn new() -> Self {
+        let current = if cfg!(debug_assertions) {
+            "development-jwt-secret".to_string()
+        } else {
+            generate_random_secret()
+        };
         Self {
-            current: generate_random_secret(),
+            current,
             previous: None,
         }
     }
@@ -50,6 +55,11 @@ pub fn rotate_jwt_secret() {
 
 /// Start the JWT secret rotation scheduler (30-day interval)
 pub fn start_jwt_rotation_scheduler() {
+    if cfg!(debug_assertions) {
+        info!("JWT secret rotation scheduler skipped (debug mode)");
+        return;
+    }
+
     use obsidian_scheduler::callback::CallbackTimer;
     use obsidian_scheduler::timer_trait::Timer;
     use std::time::Duration;
