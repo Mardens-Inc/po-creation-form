@@ -17,7 +17,7 @@ config:
 request:
   auth:
     type: bearer
-    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MjYzNjU4OCwiaWF0IjoxNzcwMDQ0NTg4fQ.01UYJ-ccoBhXEGAloFB1rgOZTUWUcLdExNqQJedfmts
+    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjIsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MzAwMTgyMiwiaWF0IjoxNzcwNDA5ODIyfQ.pKQ67iSB0o7HcUy7xpv4rgNGufwVxmZCNM5x2GGZP5Y
   variables:
     - name: base_url
       value: http://localhost:8522/api

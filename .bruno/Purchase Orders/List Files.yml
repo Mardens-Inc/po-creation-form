@@ -10,9 +10,7 @@ http:
     - name: po_id
       value: ""
       type: path
-  auth:
-    type: bearer
-    token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjcsImVtYWlsIjoiZHJldy5jaGFzZUBtYXJkZW5zLmNvbSIsImV4cCI6MTc3MjIxNTU1MCwiaWF0IjoxNzY5NjIzNTUwfQ.g6YxkvAL1yxhIbB0rgw5jLp0GkGbO3s2g9rQXCY85KA
+    auth: inherit
 
 settings:
   encodeUrl: true
