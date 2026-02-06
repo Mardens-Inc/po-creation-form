@@ -22,6 +22,7 @@ pub struct User {
     pub role: UserRole,
     pub has_confirmed_email: bool,
     pub needs_password_reset: bool,
+    #[serde(skip_serializing)]
     pub mfa_secret: Option<String>,
     pub mfa_enabled: bool,
 }
