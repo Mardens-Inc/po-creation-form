@@ -53,6 +53,7 @@ pub fn configure(cfg: &mut actix_web::web::ServiceConfig) {
             .wrap(auth)
             .service(get_link_qrcode)
             .service(disable_mfa)
+            .service(enable_mfa)
             .service(verify_code)
             .default_service(actix_web::web::to(|| async {
                 HttpResponse::NotFound().json(json!({
