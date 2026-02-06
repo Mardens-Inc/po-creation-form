@@ -63,7 +63,6 @@ pub async fn get_all_departments() -> Result<Vec<Department>> {
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(departments)
 }
 
@@ -76,7 +75,6 @@ pub async fn get_categories_by_department(department_id: u32) -> Result<Vec<Cate
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(categories)
 }
 
@@ -89,7 +87,6 @@ pub async fn get_subcategories_by_category(category_id: u32) -> Result<Vec<Subca
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(subcategories)
 }
 
@@ -101,6 +98,5 @@ pub async fn get_all_seasons() -> Result<Vec<Season>> {
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(seasons)
 }

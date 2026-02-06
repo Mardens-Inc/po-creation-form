@@ -139,7 +139,6 @@ pub async fn create_purchase_order(
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
-    pool.close().await;
 
     match build_po_response(po_id).await? {
         Some(response) => Ok(HttpResponse::Ok().json(response)),
@@ -199,7 +198,6 @@ pub async fn update_purchase_order(
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
-    pool.close().await;
 
     match build_po_response(id).await? {
         Some(response) => Ok(HttpResponse::Ok().json(response)),
@@ -381,7 +379,6 @@ pub async fn upload_file(
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
-    pool.close().await;
 
     // Return the full updated PO response
     match build_po_response(po_id).await? {

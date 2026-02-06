@@ -52,7 +52,6 @@ pub async fn insert_vendor(
     let mut transaction = pool.begin().await?;
     let id = insert_vendor_with_transaction(&mut transaction, name, code, status, created_by).await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(id)
 }
 
@@ -108,7 +107,6 @@ pub async fn get_all_vendors() -> Result<Vec<Vendor>> {
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(vendors)
 }
 
@@ -121,7 +119,6 @@ pub async fn get_vendor_by_id(id: u32) -> Result<Option<Vendor>> {
             .fetch_optional(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(vendor)
 }
 
@@ -134,7 +131,6 @@ pub async fn get_contacts_by_vendor_id(vendor_id: u32) -> Result<Vec<VendorConta
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(contacts)
 }
 
@@ -147,7 +143,6 @@ pub async fn get_ship_locations_by_vendor_id(vendor_id: u32) -> Result<Vec<Vendo
             .fetch_all(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(locations)
 }
 
@@ -194,7 +189,6 @@ pub async fn update_vendor(
     let mut transaction = pool.begin().await?;
     update_vendor_with_transaction(&mut transaction, id, name, code, status).await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(())
 }
 
@@ -216,7 +210,6 @@ pub async fn delete_vendor(id: u32) -> Result<()> {
     let mut transaction = pool.begin().await?;
     delete_vendor_with_transaction(&mut transaction, id).await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(())
 }
 

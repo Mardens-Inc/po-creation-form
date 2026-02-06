@@ -115,7 +115,6 @@ pub async fn create_vendor(
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
-    pool.close().await;
 
     // Fetch the created vendor with relations
     let vendor = vendors_db::get_vendor_by_id(vendor_id)
@@ -215,7 +214,6 @@ pub async fn update_vendor(
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
-    pool.close().await;
 
     // Fetch updated vendor with relations
     let vendor = vendors_db::get_vendor_by_id(id)

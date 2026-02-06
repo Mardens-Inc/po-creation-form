@@ -61,7 +61,6 @@ pub async fn register_user(body: Json<UserRegistrationBody>) -> Result<impl Resp
                 error!("Failed to commit cleanup transaction: {e}");
                 return;
             }
-            pool.close().await;
         }
 
         cleanup(user.email.clone()).await;

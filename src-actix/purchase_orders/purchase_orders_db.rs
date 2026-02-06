@@ -98,7 +98,6 @@ pub async fn insert_po(
     )
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(id)
 }
 
@@ -114,7 +113,6 @@ pub async fn get_all_pos() -> Result<Vec<PurchaseOrder>> {
     .fetch_all(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(pos)
 }
 
@@ -131,7 +129,6 @@ pub async fn get_po_by_id(id: u32) -> Result<Option<PurchaseOrder>> {
     .fetch_optional(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(po)
 }
 
@@ -144,7 +141,6 @@ pub async fn get_vendor_name(vendor_id: u32) -> Result<String> {
             .fetch_optional(&mut *transaction)
             .await?;
     transaction.commit().await?;
-    pool.close().await;
     name.map(|n| n.0)
         .ok_or_else(|| anyhow::anyhow!("Vendor with id {} not found", vendor_id))
 }
@@ -159,7 +155,6 @@ pub async fn get_buyer_name(buyer_id: u32) -> Result<String> {
     .fetch_optional(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     name.map(|n| n.0)
         .ok_or_else(|| anyhow::anyhow!("Buyer with id {} not found", buyer_id))
 }
@@ -322,7 +317,6 @@ pub async fn update_po(
     )
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(())
 }
 
@@ -342,7 +336,6 @@ pub async fn delete_po(id: u32) -> Result<()> {
     let mut transaction = pool.begin().await?;
     delete_po_with_transaction(&mut transaction, id).await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(())
 }
 
@@ -382,7 +375,6 @@ pub async fn get_files_by_po_id(po_id: u32) -> Result<Vec<POFile>> {
     .fetch_all(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(files)
 }
 
@@ -397,7 +389,6 @@ pub async fn get_file_by_id(file_id: u32) -> Result<Option<POFile>> {
     .fetch_optional(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(file)
 }
 
@@ -417,7 +408,6 @@ pub async fn delete_file(file_id: u32) -> Result<()> {
     let mut transaction = pool.begin().await?;
     delete_file_with_transaction(&mut transaction, file_id).await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(())
 }
 
@@ -494,7 +484,6 @@ pub async fn get_line_items_by_po_id(po_id: u32) -> Result<Vec<POLineItem>> {
     .fetch_all(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(items)
 }
 
@@ -511,7 +500,6 @@ pub async fn get_line_item_by_id(item_id: u32) -> Result<Option<POLineItem>> {
     .fetch_optional(&mut *transaction)
     .await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(item)
 }
 
@@ -542,6 +530,5 @@ pub async fn delete_line_item(item_id: u32) -> Result<()> {
     let mut transaction = pool.begin().await?;
     delete_line_item_with_transaction(&mut transaction, item_id).await?;
     transaction.commit().await?;
-    pool.close().await;
     Ok(())
 }
