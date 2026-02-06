@@ -14,7 +14,8 @@ export type User = {
     email: string;
     first_name?: string;
     last_name?: string;
-    role?: string; // Backend sends "Admin", "Buyer", or "Warehouse"
+    role?: "Admin" | "Buyer" | "Warehouse"; // Backend sends "Admin", "Buyer", or "Warehouse"
+    mfa_enabled: boolean;
 }
 
 export type UserRegistrationRequest = {
@@ -98,7 +99,8 @@ function getUserFromToken(token: string): User | null
 
     return {
         id: claims.sub,
-        email: claims.email
+        email: claims.email,
+        mfa_enabled: false
     };
 }
 
@@ -114,6 +116,10 @@ interface AuthenticationContextType
     logout: () => void;
     me: () => Promise<User | undefined>;
     getToken: () => string | null;
+    enableMFA: () => Promise<void>;
+    disableMFA: () => Promise<void>;
+    validateMFA: (code: string) => Promise<boolean>;
+    getMFAQRCode: () => Promise<string>;
 }
 
 const AuthenticationContext = createContext<AuthenticationContextType | undefined>(undefined);
@@ -309,6 +315,87 @@ export function AuthenticationProvider({children}: { children: ReactNode })
         return getStoredToken();
     }, []);
 
+    const enableMFA = async () =>
+    {
+        try
+        {
+            await fetch(`/api/auth/mfa/enable`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            // Refresh the current user.
+            await me();
+        } catch (e: Error | any)
+        {
+            console.error("MFA Enable Error:", e);
+            throw e;
+        }
+    };
+
+    const disableMFA = async () =>
+    {
+        try
+        {
+            await fetch(`/api/auth/mfa/disable`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`,
+                    "Content-Type": "application/json"
+                }
+            });
+        } catch (e: Error | any)
+        {
+            console.error("MFA Disable Error:", e);
+            throw e;
+        }
+    };
+
+    const validateMFA = async (code: string) =>
+    {
+        try
+        {
+            const response = await fetch(`/api/auth/mfa/verify-code?code=${code}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            return response.ok;
+        } catch (e: Error | any)
+        {
+            console.error("MFA Validation Error:", e);
+            throw e;
+        }
+    };
+
+    const getMFAQRCode = async () =>
+    {
+        try
+        {
+            const response = await fetch(`/api/auth/mfa/link-qrcode.svg`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${getToken()}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            if (!response.ok)
+            {
+                throw new Error(`Failed to fetch MFA QR code: ${response.status} ${response.statusText}`);
+            }
+            return await response.text();
+        } catch (e: Error | any)
+        {
+            console.error("MFA QR Code Fetch Error:", e);
+            throw e;
+        }
+    };
+
 
     return (
         <AuthenticationContext.Provider value={{
@@ -319,7 +406,11 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             register,
             logout,
             me,
-            getToken
+            getToken,
+            enableMFA,
+            disableMFA,
+            validateMFA,
+            getMFAQRCode
         }}>
             {children}
         </AuthenticationContext.Provider>

@@ -24,7 +24,7 @@ pub fn generate_qrcode_svg(secret: &str, account: &str) -> Result<String> {
 }
 
 pub fn generate_qr_uri(secret: &str, account: &str) -> String {
-	let issuer = "mfa_example";
+	let issuer = "po_tracker_dashboard";
 	format!("otpauth://totp/{issuer}:{account}?secret={secret}&issuer={issuer}")
 }
 

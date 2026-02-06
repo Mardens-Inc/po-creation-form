@@ -12,7 +12,7 @@ import {VendorsProvider} from "../providers/VendorsProvider.tsx";
 
 export function ProtectedRoute()
 {
-    const {isAuthenticated, isLoading} = useAuthentication();
+    const {isAuthenticated, isLoading, currentUser} = useAuthentication();
 
     // Show loading spinner while checking authentication
     if (isLoading)
@@ -26,6 +26,7 @@ export function ProtectedRoute()
 
     // Redirect to login if not authenticated
     if (!isAuthenticated) return <Navigate to="/login" replace/>;
+    if (!currentUser?.mfa_enabled) return <Navigate to="/mfa" replace/>;
 
     return (
         <ErrorBoundary>
@@ -43,7 +44,8 @@ export function ProtectedRoute()
 }
 
 // Separate component to access PurchaseOrdersContext for the onSaved callback
-function ProtectedRouteContent() {
+function ProtectedRouteContent()
+{
     const {refetch} = usePurchaseOrdersContext();
 
     return (

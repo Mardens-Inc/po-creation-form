@@ -42,7 +42,10 @@ struct VerifyCodeQuery{
 #[post("/verify-code")]
 pub async fn verify_code(query: Query<VerifyCodeQuery>, req: HttpRequest) -> Result<impl Responder> {
     let user = req.get_user().await?;
-    user.verify_code(query.code.as_str()).map_err(actix_web::error::ErrorBadRequest)?;
+    let result = user.verify_code(query.code.as_str()).map_err(actix_web::error::ErrorBadRequest)?;
+    if !result {
+        return Err(actix_web::error::ErrorUnauthorized("Invalid code"));
+    }
     Ok(HttpResponse::Ok().finish())
 }
 
