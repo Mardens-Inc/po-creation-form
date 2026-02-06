@@ -5,10 +5,10 @@ info:
 
 http:
   method: POST
-  url: "{{base_url}}/auth/mfa/verify-code?code="
+  url: "{{base_url}}/auth/mfa/verify-code?code=123456"
   params:
     - name: code
-      value: ""
+      value: "123456"
       type: query
   auth: inherit
 
