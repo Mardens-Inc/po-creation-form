@@ -29,7 +29,8 @@ pub async fn get_or_init_pool() -> Result<MySqlPool> {
     let pool_options = MySqlPoolOptions::new()
         .max_connections(50)
         .min_connections(5)
-        .idle_timeout(std::time::Duration::from_secs(60));
+        .acquire_timeout(std::time::Duration::from_secs(10))
+        .idle_timeout(std::time::Duration::from_secs(300));
 
     let connection = pool_options.connect_with(connection_options).await?;
 
