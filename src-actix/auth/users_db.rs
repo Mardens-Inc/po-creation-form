@@ -79,7 +79,7 @@ pub async fn register_with_transaction<'a>(
         .bind(&user.last_name)
         .bind(&user.email)
         .bind(hashed_password)
-        .bind(&user.role)
+        .bind(user.role)
         .execute(&mut **transaction)
         .await?
         .last_insert_id();
@@ -125,3 +125,45 @@ pub async fn delete_user(uid: u32) -> Result<()> {
     Ok(())
 }
 
+pub async fn update_last_online_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, uid: u32) -> Result<()> {
+    sqlx::query("UPDATE users SET last_online = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(uid)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}
+pub async fn update_last_online(uid: u32) -> Result<()> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    update_last_online_with_transaction(&mut transaction, uid).await?;
+    transaction.commit().await?;
+    pool.close().await;
+    Ok(())
+}
+
+pub async fn update_user_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, user: User)->Result<()>
+{
+    sqlx::query(r#"UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, has_confirmed_email = ?, needs_password_reset = ?, mfa_enabled = ?, mfa_secret = ? WHERE id = ?"#)
+        .bind(&user.first_name)
+        .bind(&user.last_name)
+        .bind(&user.email)
+        .bind(user.role)
+        .bind(user.has_confirmed_email)
+        .bind(user.needs_password_reset)
+        .bind(user.mfa_enabled)
+        .bind(&user.mfa_secret)
+        .bind(user.id)
+        .execute(&mut **transaction)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn update_user(user: User) -> Result<()> {
+    let pool = crate::app_db::create_pool().await?;
+    let mut transaction = pool.begin().await?;
+    update_user_with_transaction(&mut transaction, user).await?;
+    transaction.commit().await?;
+    pool.close().await;
+    Ok(())
+}

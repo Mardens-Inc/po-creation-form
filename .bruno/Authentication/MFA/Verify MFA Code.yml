@@ -1,0 +1,19 @@
+info:
+  name: Verify MFA Code
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base_url}}/auth/mfa/verify-code?code="
+  params:
+    - name: code
+      value: ""
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

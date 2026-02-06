@@ -1,12 +1,14 @@
 use crate::auth::auth_service::generate_jwt_token;
-use crate::auth::jwt_data::AuthResponse;
+use crate::auth::jwt_data::{AuthResponse, Claims};
 use crate::auth::user_role::UserRole;
 use crate::auth::users_db;
+use actix_web::{HttpMessage, HttpResponse};
 use anyhow::{anyhow, Result};
 use log::{error, info};
 use obsidian_scheduler::timer_trait::Timer;
 use serde::{Deserialize, Serialize};
-use sqlx::MySqlTransaction;
+use serde_json::json;
+use sqlx::{Connection, MySqlTransaction};
 use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
@@ -21,6 +23,8 @@ pub struct User {
     pub role: UserRole,
     pub has_confirmed_email: bool,
     pub needs_password_reset: bool,
+    pub mfa_secret: Option<String>,
+    pub mfa_enabled: bool,
 }
 
 impl PartialEq for User {
@@ -31,7 +35,7 @@ impl PartialEq for User {
 
 impl User {
     pub async fn get_users() -> Result<Vec<User>> {
-        crate::auth::users_db::get_users().await
+        users_db::get_users().await
     }
 
     pub fn id(&self) -> Result<u32> {
@@ -40,7 +44,7 @@ impl User {
     }
 
     pub async fn get_user_by_id(uid: u32) -> Result<Option<Self>> {
-        Ok(crate::auth::users_db::get_user_by_id(uid).await?)
+        Ok(users_db::get_user_by_id(uid).await?)
     }
 
     pub async fn drop_unconfirmed_user_by_email_with_transaction<'a>(
@@ -123,7 +127,8 @@ impl User {
     }
 
     pub async fn login(email: &str, password: &str) -> Result<AuthResponse> {
-        let user: User = match users_db::get_user_by_email(email).await? {
+        let mut transaction = crate::app_db::create_pool().await?.begin().await?;
+        let user: User = match users_db::get_user_by_email_with_transaction(&mut transaction, email).await? {
             Some(user) => user,
             None => {
                 return Err(anyhow!(
@@ -132,6 +137,7 @@ impl User {
                 ));
             }
         };
+
 
         if !user.validate_password(password).await? {
             return Err(anyhow!("Invalid password"));
@@ -150,6 +156,10 @@ impl User {
         let token = generate_jwt_token(user.id()?, &user.email)
             .map_err(|e| anyhow!("Failed to generate JWT token: {e}"))?;
 
+        users_db::update_last_online_with_transaction(&mut transaction, user.id()?).await?;
+        transaction.commit().await?;
+
+
         Ok(AuthResponse {
             token,
             token_type: "Bearer".to_string(),
@@ -158,5 +168,27 @@ impl User {
 
     pub async fn validate_password(&self, password: &str) -> Result<bool> {
         Ok(bcrypt::verify(password, &self.password)?)
+    }
+    pub async fn get_user_from_request(req: &actix_web::HttpRequest) -> Result<User> {
+        let claims = req
+            .extensions()
+            .get::<Claims>()
+            .cloned()
+            .ok_or_else(|| anyhow!("Unauthorized"))?;
+
+        users_db::get_user_by_id(claims.sub as u32)
+            .await?
+            .ok_or_else(|| anyhow!("User not found"))
+    }
+}
+
+pub trait RequestExt {
+    async fn get_user(&self) -> actix_web::Result<User>;
+}
+impl RequestExt for actix_web::HttpRequest {
+    async fn get_user(&self) -> actix_web::Result<User> {
+        User::get_user_from_request(self)
+            .await
+            .map_err(actix_web::error::ErrorUnauthorized)
     }
 }

@@ -8,6 +8,7 @@ pub(crate) mod auth_service;
 pub(crate) mod auth_middleware;
 mod registration_db;
 mod email_service;
+mod mfa;
 
 use sqlx::MySqlTransaction;
 pub use auth_endpoint::configure;

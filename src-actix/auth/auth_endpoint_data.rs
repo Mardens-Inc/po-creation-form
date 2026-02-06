@@ -22,7 +22,9 @@ impl From<UserRegistrationBody> for User {
 			password: val.password,
 			role: val.role,
 			has_confirmed_email: false,
-			needs_password_reset: false
+			needs_password_reset: false,
+			mfa_enabled: false,
+			mfa_secret: None
 		}
 	}
 }
