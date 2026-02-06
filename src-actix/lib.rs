@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-
 use crate::util::asset_endpoint::AssetsAppConfig;
 use actix_cors::Cors;
 use actix_web::{http::header, middleware, web, App, HttpResponse, HttpServer};
@@ -12,23 +11,17 @@ use vite_actix::start_vite_server;
 
 mod app_db;
 mod auth;
+mod data;
+mod purchase_orders;
 mod status_endpoint;
 mod util;
-mod data;
 mod vendors;
-mod purchase_orders;
 
 pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
 
 pub async fn run() -> Result<()> {
     pretty_env_logger::env_logger::builder()
-        .filter_level(if DEBUG {
-            LevelFilter::Debug
-        } else {
-            LevelFilter::Info
-        })
-        .format_timestamp(None)
         .init();
 
     app_db::initialize_database().await?;
@@ -48,7 +41,7 @@ pub async fn run() -> Result<()> {
                 header::AUTHORIZATION,
                 header::CONTENT_TYPE,
                 header::ACCEPT,
-                header::ACCESS_CONTROL_ALLOW_ORIGIN
+                header::ACCESS_CONTROL_ALLOW_ORIGIN,
             ])
             .supports_credentials()
             .max_age(3600);
@@ -90,8 +83,7 @@ pub async fn run() -> Result<()> {
 
     if DEBUG {
         tokio::spawn(async move {
-            ProxyViteOptions::default()
-                .build()?;
+            ProxyViteOptions::default().build()?;
             start_vite_server()
                 .expect("Failed to start vite server")
                 .wait()?;

@@ -108,7 +108,7 @@ pub async fn create_purchase_order(
     };
 
     let body = body.into_inner();
-    let pool = crate::app_db::create_pool()
+    let pool = crate::app_db::get_or_init_pool()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     let mut transaction = pool
@@ -166,7 +166,7 @@ pub async fn update_purchase_order(
         })));
     }
 
-    let pool = crate::app_db::create_pool()
+    let pool = crate::app_db::get_or_init_pool()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     let mut transaction = pool
@@ -289,7 +289,7 @@ pub async fn upload_file(
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
     // Insert DB record
-    let pool = crate::app_db::create_pool()
+    let pool = crate::app_db::get_or_init_pool()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     let mut transaction = pool

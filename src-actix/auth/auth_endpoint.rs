@@ -33,7 +33,7 @@ pub async fn register_user(body: Json<UserRegistrationBody>) -> Result<impl Resp
     if let Err(e) = user.register().await {
         // Cleanup on failure
         async fn cleanup(email: String) {
-            let Ok(pool) = crate::app_db::create_pool().await else {
+            let Ok(pool) = crate::app_db::get_or_init_pool().await else {
                 error!("Failed to create pool for cleanup");
                 return;
             };

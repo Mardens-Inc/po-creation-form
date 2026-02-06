@@ -28,7 +28,7 @@ pub async fn insert_request_with_transaction<'a>(
 }
 
 pub async fn insert_request(email: &str, token: &str, user_id: u32) -> Result<u32> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let request_id =
         insert_request_with_transaction(&mut transaction, email, token, user_id).await?;
@@ -52,7 +52,7 @@ pub async fn get_request_from_token_with_transaction<'a>(
 }
 
 pub async fn get_request_from_token(token: &str, email: &str) -> Result<Option<u32>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let request_id =
         get_request_from_token_with_transaction(&mut transaction, token, email).await?;
@@ -72,7 +72,7 @@ pub async fn remove_request_with_transaction<'a>(
 }
 
 pub async fn remove_request(request_id: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     remove_request_with_transaction(&mut transaction, request_id).await?;
     transaction.commit().await?;
@@ -91,7 +91,7 @@ pub async fn remove_request_by_email_with_transaction<'a>(
 }
 
 pub async fn confirm_request(email: &str, token: &str) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     confirm_request_with_transaction(&mut transaction, email, token).await?;
     transaction.commit().await?;

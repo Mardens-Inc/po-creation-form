@@ -70,7 +70,7 @@ pub async fn create_vendor(
     };
 
     let body = body.into_inner();
-    let pool = crate::app_db::create_pool()
+    let pool = crate::app_db::get_or_init_pool()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     let mut transaction = pool
@@ -158,7 +158,7 @@ pub async fn update_vendor(
         })));
     }
 
-    let pool = crate::app_db::create_pool()
+    let pool = crate::app_db::get_or_init_pool()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     let mut transaction = pool

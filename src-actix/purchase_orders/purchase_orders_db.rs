@@ -78,7 +78,7 @@ pub async fn insert_po(
     fob_point: &str,
     notes: Option<&str>,
 ) -> Result<u32> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let id = insert_po_with_transaction(
         &mut transaction,
@@ -103,7 +103,7 @@ pub async fn insert_po(
 }
 
 pub async fn get_all_pos() -> Result<Vec<PurchaseOrder>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let pos: Vec<PurchaseOrder> = sqlx::query_as(
         r#"SELECT id, po_number, vendor_id, buyer_id, status, description, order_date,
@@ -119,7 +119,7 @@ pub async fn get_all_pos() -> Result<Vec<PurchaseOrder>> {
 }
 
 pub async fn get_po_by_id(id: u32) -> Result<Option<PurchaseOrder>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let po: Option<PurchaseOrder> = sqlx::query_as(
         r#"SELECT id, po_number, vendor_id, buyer_id, status, description, order_date,
@@ -136,7 +136,7 @@ pub async fn get_po_by_id(id: u32) -> Result<Option<PurchaseOrder>> {
 }
 
 pub async fn get_vendor_name(vendor_id: u32) -> Result<String> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let name: Option<(String,)> =
         sqlx::query_as(r#"SELECT name FROM vendors WHERE id = ? LIMIT 1"#)
@@ -150,7 +150,7 @@ pub async fn get_vendor_name(vendor_id: u32) -> Result<String> {
 }
 
 pub async fn get_buyer_name(buyer_id: u32) -> Result<String> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let name: Option<(String,)> = sqlx::query_as(
         r#"SELECT CONCAT(first_name, ' ', last_name) FROM users WHERE id = ? LIMIT 1"#,
@@ -300,7 +300,7 @@ pub async fn update_po(
     notes: Option<&str>,
     total_amount: Option<f64>,
 ) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     update_po_with_transaction(
         &mut transaction,
@@ -338,7 +338,7 @@ pub async fn delete_po_with_transaction<'a>(
 }
 
 pub async fn delete_po(id: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     delete_po_with_transaction(&mut transaction, id).await?;
     transaction.commit().await?;
@@ -372,7 +372,7 @@ pub async fn insert_po_file_with_transaction<'a>(
 }
 
 pub async fn get_files_by_po_id(po_id: u32) -> Result<Vec<POFile>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let files: Vec<POFile> = sqlx::query_as(
         r#"SELECT id, po_id, filename, asset_type, disk_path, uploaded_at, uploaded_by
@@ -387,7 +387,7 @@ pub async fn get_files_by_po_id(po_id: u32) -> Result<Vec<POFile>> {
 }
 
 pub async fn get_file_by_id(file_id: u32) -> Result<Option<POFile>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let file: Option<POFile> = sqlx::query_as(
         r#"SELECT id, po_id, filename, asset_type, disk_path, uploaded_at, uploaded_by
@@ -413,7 +413,7 @@ pub async fn delete_file_with_transaction<'a>(
 }
 
 pub async fn delete_file(file_id: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     delete_file_with_transaction(&mut transaction, file_id).await?;
     transaction.commit().await?;
@@ -482,7 +482,7 @@ pub async fn insert_line_item_with_transaction<'a>(
 }
 
 pub async fn get_line_items_by_po_id(po_id: u32) -> Result<Vec<POLineItem>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let items: Vec<POLineItem> = sqlx::query_as(
         r#"SELECT id, po_id, item_number, upc, description, case_pack, cases, qty,
@@ -499,7 +499,7 @@ pub async fn get_line_items_by_po_id(po_id: u32) -> Result<Vec<POLineItem>> {
 }
 
 pub async fn get_line_item_by_id(item_id: u32) -> Result<Option<POLineItem>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let item: Option<POLineItem> = sqlx::query_as(
         r#"SELECT id, po_id, item_number, upc, description, case_pack, cases, qty,
@@ -538,7 +538,7 @@ pub async fn delete_line_item_with_transaction<'a>(
 }
 
 pub async fn delete_line_item(item_id: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     delete_line_item_with_transaction(&mut transaction, item_id).await?;
     transaction.commit().await?;

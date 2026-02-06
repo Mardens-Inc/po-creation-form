@@ -2,13 +2,12 @@ use crate::auth::auth_service::generate_jwt_token;
 use crate::auth::jwt_data::{AuthResponse, Claims};
 use crate::auth::user_role::UserRole;
 use crate::auth::users_db;
-use actix_web::{HttpMessage, HttpResponse};
+use actix_web::HttpMessage;
 use anyhow::{anyhow, Result};
-use log::{error, info};
+use log::{debug, error, info, trace};
 use obsidian_scheduler::timer_trait::Timer;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
-use sqlx::{Connection, MySqlTransaction};
+use sqlx::MySqlTransaction;
 use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
@@ -59,14 +58,27 @@ impl User {
     }
 
     pub async fn register(&mut self) -> Result<u32> {
+        debug!("Starting registration for user: {}", self.email);
+        trace!(
+            "User details: first_name={}, last_name={}, role={:?}",
+            self.first_name, self.last_name, self.role
+        );
+
         let hashed_password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST)?;
-        let pool = crate::app_db::create_pool().await?;
+        trace!("Password hashed successfully");
+
+        let pool = crate::app_db::get_or_init_pool().await?;
         let mut transaction = pool.begin().await?;
+        trace!("Database transaction started");
 
         let user_id =
             users_db::register_with_transaction(&mut transaction, self, hashed_password.as_str())
                 .await?;
+        debug!("User registered with ID: {}", user_id);
+
         let token = uuid::Uuid::new_v4().to_string();
+        trace!("Generated registration token: {}", token);
+
         crate::auth::registration_db::insert_request_with_transaction(
             &mut transaction,
             self.email.as_str(),
@@ -74,12 +86,15 @@ impl User {
             user_id,
         )
         .await?;
+        trace!("Registration request inserted");
 
         // Submit and clean up the transaction
         transaction.commit().await?;
         pool.close().await;
+        debug!("Database transaction committed for user ID: {}", user_id);
 
         let email_service = crate::auth::email_service::EmailService::new()?;
+        debug!("Sending confirmation email to: {}", self.email);
         email_service
             .send_confirmation_email(
                 self.email.as_str(),
@@ -87,16 +102,22 @@ impl User {
                 self.first_name.as_str(),
             )
             .await?;
+        debug!("Confirmation email sent to: {}", self.email);
 
         // Start a 1-hour timer to clean up the request
+        debug!("Starting 1-hour cleanup timer for user ID: {}", user_id);
         let timer = obsidian_scheduler::callback::CallbackTimer::new(
             move |handler| {
                 let user_id = user_id;
                 async move {
-                    let pool = crate::app_db::create_pool().await?;
+                    debug!("Cleanup timer triggered for user ID: {}", user_id);
+                    let pool = crate::app_db::get_or_init_pool().await?;
                     let mut transaction = pool.begin().await?;
+                    trace!("Cleanup transaction started for user ID: {}", user_id);
 
                     users_db::delete_user_with_transaction(&mut transaction, user_id).await?;
+                    trace!("User deleted in cleanup: {}", user_id);
+
                     if let Err(e) = crate::auth::registration_db::remove_request_with_transaction(
                         &mut transaction,
                         user_id,
@@ -105,19 +126,27 @@ impl User {
                     {
                         error!("Failed to cleanup expired registration request: {e}")
                     } else {
+                        debug!("Registration request cleaned up for user ID: {}", user_id);
                         // Stop the timer from repeating
                         handler.stop();
+                        trace!("Cleanup timer stopped for user ID: {}", user_id);
                     }
 
                     transaction.commit().await?;
                     pool.close().await;
+                    debug!("Cleanup transaction committed for user ID: {}", user_id);
                     Ok(())
                 }
             },
             Duration::from_hours(1),
         );
         timer.start().await?;
+        trace!("Cleanup timer started successfully");
 
+        debug!(
+            "Registration completed successfully for user: {} (ID: {})",
+            self.email, user_id
+        );
         Ok(user_id)
     }
 
@@ -127,17 +156,17 @@ impl User {
     }
 
     pub async fn login(email: &str, password: &str) -> Result<AuthResponse> {
-        let mut transaction = crate::app_db::create_pool().await?.begin().await?;
-        let user: User = match users_db::get_user_by_email_with_transaction(&mut transaction, email).await? {
-            Some(user) => user,
-            None => {
-                return Err(anyhow!(
-                    "User with email {} not found",
-                    email.replace("\n", "")
-                ));
-            }
-        };
-
+        let mut transaction = crate::app_db::get_or_init_pool().await?.begin().await?;
+        let user: User =
+            match users_db::get_user_by_email_with_transaction(&mut transaction, email).await? {
+                Some(user) => user,
+                None => {
+                    return Err(anyhow!(
+                        "User with email {} not found",
+                        email.replace("\n", "")
+                    ));
+                }
+            };
 
         if !user.validate_password(password).await? {
             return Err(anyhow!("Invalid password"));
@@ -158,7 +187,6 @@ impl User {
 
         users_db::update_last_online_with_transaction(&mut transaction, user.id()?).await?;
         transaction.commit().await?;
-
 
         Ok(AuthResponse {
             token,

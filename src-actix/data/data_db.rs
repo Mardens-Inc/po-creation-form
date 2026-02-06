@@ -56,7 +56,7 @@ pub async fn initialize_table<'a>(transaction: &mut MySqlTransaction<'a>) -> any
 // -- Query functions (standalone pool pattern) --
 
 pub async fn get_all_departments() -> Result<Vec<Department>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let departments: Vec<Department> =
         sqlx::query_as(r#"SELECT id, name, code FROM departments ORDER BY name"#)
@@ -68,7 +68,7 @@ pub async fn get_all_departments() -> Result<Vec<Department>> {
 }
 
 pub async fn get_categories_by_department(department_id: u32) -> Result<Vec<Category>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let categories: Vec<Category> =
         sqlx::query_as(r#"SELECT id, name, code, department_id FROM categories WHERE department_id = ? ORDER BY name"#)
@@ -81,7 +81,7 @@ pub async fn get_categories_by_department(department_id: u32) -> Result<Vec<Cate
 }
 
 pub async fn get_subcategories_by_category(category_id: u32) -> Result<Vec<Subcategory>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let subcategories: Vec<Subcategory> =
         sqlx::query_as(r#"SELECT id, name, code, category_id FROM subcategories WHERE category_id = ? ORDER BY name"#)
@@ -94,7 +94,7 @@ pub async fn get_subcategories_by_category(category_id: u32) -> Result<Vec<Subca
 }
 
 pub async fn get_all_seasons() -> Result<Vec<Season>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let seasons: Vec<Season> =
         sqlx::query_as(r#"SELECT id, name FROM seasons ORDER BY id"#)

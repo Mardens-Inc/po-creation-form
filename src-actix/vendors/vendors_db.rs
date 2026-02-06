@@ -48,7 +48,7 @@ pub async fn insert_vendor(
     status: VendorStatus,
     created_by: u32,
 ) -> Result<u32> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let id = insert_vendor_with_transaction(&mut transaction, name, code, status, created_by).await?;
     transaction.commit().await?;
@@ -101,7 +101,7 @@ pub async fn insert_ship_location_with_transaction<'a>(
 // -- Query functions --
 
 pub async fn get_all_vendors() -> Result<Vec<Vendor>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let vendors: Vec<Vendor> =
         sqlx::query_as(r#"SELECT id, name, code, status, created_at, created_by FROM vendors ORDER BY name"#)
@@ -113,7 +113,7 @@ pub async fn get_all_vendors() -> Result<Vec<Vendor>> {
 }
 
 pub async fn get_vendor_by_id(id: u32) -> Result<Option<Vendor>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let vendor: Option<Vendor> =
         sqlx::query_as(r#"SELECT id, name, code, status, created_at, created_by FROM vendors WHERE id = ? LIMIT 1"#)
@@ -126,7 +126,7 @@ pub async fn get_vendor_by_id(id: u32) -> Result<Option<Vendor>> {
 }
 
 pub async fn get_contacts_by_vendor_id(vendor_id: u32) -> Result<Vec<VendorContact>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let contacts: Vec<VendorContact> =
         sqlx::query_as(r#"SELECT id, vendor_id, first_name, last_name, email, phone FROM vendor_contacts WHERE vendor_id = ? ORDER BY last_name, first_name"#)
@@ -139,7 +139,7 @@ pub async fn get_contacts_by_vendor_id(vendor_id: u32) -> Result<Vec<VendorConta
 }
 
 pub async fn get_ship_locations_by_vendor_id(vendor_id: u32) -> Result<Vec<VendorShipLocation>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let locations: Vec<VendorShipLocation> =
         sqlx::query_as(r#"SELECT id, vendor_id, address FROM vendor_ship_locations WHERE vendor_id = ? ORDER BY address"#)
@@ -190,7 +190,7 @@ pub async fn update_vendor(
     code: Option<&str>,
     status: Option<VendorStatus>,
 ) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     update_vendor_with_transaction(&mut transaction, id, name, code, status).await?;
     transaction.commit().await?;
@@ -212,7 +212,7 @@ pub async fn delete_vendor_with_transaction<'a>(
 }
 
 pub async fn delete_vendor(id: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     delete_vendor_with_transaction(&mut transaction, id).await?;
     transaction.commit().await?;

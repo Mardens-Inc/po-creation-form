@@ -23,7 +23,7 @@ pub async fn get_user_by_id_with_transaction<'a>(
 }
 
 pub async fn get_user_by_id(uid: u32) -> Result<Option<User>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let user = get_user_by_id_with_transaction(&mut transaction, uid).await?;
     transaction.commit().await?;
@@ -43,7 +43,7 @@ pub async fn get_user_by_email_with_transaction<'a>(
 }
 
 pub async fn get_user_by_email(email: &str) -> Result<Option<User>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let user = get_user_by_email_with_transaction(&mut transaction, email).await?;
     transaction.commit().await?;
@@ -61,7 +61,7 @@ pub async fn get_users_with_transaction<'a>(
 }
 
 pub async fn get_users() -> Result<Vec<User>> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let users = get_users_with_transaction(&mut transaction).await?;
     transaction.commit().await?;
@@ -88,7 +88,7 @@ pub async fn register_with_transaction<'a>(
 }
 
 pub async fn register(user: &User, hashed_password: &str) -> Result<u32> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     let uid = register_with_transaction(&mut transaction, user, hashed_password).await?;
     transaction.commit().await?;
@@ -117,7 +117,7 @@ pub async fn delete_user_with_transaction<'a>(
 }
 
 pub async fn delete_user(uid: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     delete_user_with_transaction(&mut transaction, uid).await?;
     transaction.commit().await?;
@@ -133,7 +133,7 @@ pub async fn update_last_online_with_transaction<'a>(transaction: &mut MySqlTran
     Ok(())
 }
 pub async fn update_last_online(uid: u32) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     update_last_online_with_transaction(&mut transaction, uid).await?;
     transaction.commit().await?;
@@ -160,7 +160,7 @@ pub async fn update_user_with_transaction<'a>(transaction: &mut MySqlTransaction
 }
 
 pub async fn update_user(user: User) -> Result<()> {
-    let pool = crate::app_db::create_pool().await?;
+    let pool = crate::app_db::get_or_init_pool().await?;
     let mut transaction = pool.begin().await?;
     update_user_with_transaction(&mut transaction, user).await?;
     transaction.commit().await?;
