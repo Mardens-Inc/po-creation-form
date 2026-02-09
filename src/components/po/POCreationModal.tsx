@@ -3,7 +3,7 @@ import {Icon} from "@iconify-icon/react";
 import {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {CalendarDate, getLocalTimeZone, today} from "@internationalized/date";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
-import {useVendors} from "../../hooks/useVendors.ts";
+import {useVendorsContext} from "../../providers/VendorsProvider.tsx";
 import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection} from "./po-information";
 
 type POCreationProperties = {
@@ -43,7 +43,7 @@ export function POCreationModal(props: POCreationProperties)
 {
     const {currentUser, getToken} = useAuthentication();
     const buyerId = currentUser?.id ?? 0;
-    const {vendors, isLoading: isLoadingVendors} = useVendors();
+    const {vendors, isLoading: isLoadingVendors} = useVendorsContext();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const vendorOptions = useMemo(() =>
