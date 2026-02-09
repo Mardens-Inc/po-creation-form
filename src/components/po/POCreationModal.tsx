@@ -160,8 +160,8 @@ export function POCreationModal(props: POCreationProperties)
 
             if (!createResponse.ok)
             {
-                const errorData = await createResponse.json().catch(() => ({}));
-                throw new Error(errorData.error || `Failed to create PO: ${createResponse.status}`);
+                const errorData = await createResponse.text().catch(() => ("Unknown error creating PO."));
+                throw new Error(errorData);
             }
 
             const createdPO = await createResponse.json();
