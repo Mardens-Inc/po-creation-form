@@ -1,9 +1,9 @@
 export enum POStatus {
-    Draft,
-    Submitted,
-    Approved,
-    Received,
-    Cancelled,
+    Draft = "Draft",
+    Submitted = "Submitted",
+    Approved = "Approved",
+    Received = "Received",
+    Cancelled = "Cancelled",
 }
 
 export interface PurchaseOrder {
