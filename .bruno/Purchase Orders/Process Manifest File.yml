@@ -1,0 +1,25 @@
+info:
+  name: Process Manifest File
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{base_url}}/purchase-orders/process-manifest?limit_line_items=5"
+  params:
+    - name: limit_line_items
+      value: "5"
+      type: query
+  body:
+    type: file
+    data:
+      - filePath: ..\examples\PO Template V1 (modified).xlsx
+        contentType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        selected: true
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

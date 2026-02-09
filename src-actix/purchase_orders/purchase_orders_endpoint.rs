@@ -1,16 +1,19 @@
-use crate::auth::auth_middleware::validator;
-use crate::auth::jwt_data::Claims;
-use actix_web::web::{Bytes, Json, Query};
-use actix_web::{delete, get, post, put, web, HttpMessage, HttpRequest, HttpResponse, Responder, Result};
-use actix_web_httpauth::middleware::HttpAuthentication;
-use serde_json::json;
-use crate::purchase_orders::purchase_order_response::PurchaseOrderResponse;
-use crate::purchase_orders::upload_file_type::UploadFileType;
 use super::manifest_parser;
 use super::purchase_orders_data::{
     CreatePurchaseOrderRequest, FileUploadQuery, UpdatePurchaseOrderRequest,
 };
 use super::purchase_orders_db;
+use crate::auth::auth_middleware::validator;
+use crate::auth::jwt_data::Claims;
+use crate::purchase_orders::purchase_order_response::PurchaseOrderResponse;
+use crate::purchase_orders::upload_file_type::UploadFileType;
+use actix_web::web::{Bytes, Json, Query};
+use actix_web::{
+    delete, get, post, put, web, HttpMessage, HttpRequest, HttpResponse, Responder, Result,
+};
+use actix_web_httpauth::middleware::HttpAuthentication;
+use serde::Deserialize;
+use serde_json::json;
 
 const UPLOAD_DIR: &str = env!("PO_UPLOAD_DIR");
 
@@ -102,7 +105,7 @@ pub async fn create_purchase_order(
         None => {
             return Ok(HttpResponse::Unauthorized().json(json!({
                 "error": "Unauthorized",
-            })))
+            })));
         }
         Some(claims) => claims.sub as u32,
     };
@@ -254,7 +257,7 @@ pub async fn upload_file(
         None => {
             return Ok(HttpResponse::Unauthorized().json(json!({
                 "error": "Unauthorized",
-            })))
+            })));
         }
         Some(claims) => claims.sub as u32,
     };
@@ -308,8 +311,8 @@ pub async fn upload_file(
 
     // If this is a manifest file, parse it and update the PO
     if query.asset_type == UploadFileType::Manifest {
-        let manifest = manifest_parser::parse_manifest(&body)
-            .map_err(actix_web::error::ErrorBadRequest)?;
+        let manifest =
+            manifest_parser::parse_manifest(&body).map_err(actix_web::error::ErrorBadRequest)?;
 
         // Update PO header fields from manifest
         purchase_orders_db::update_po_with_transaction(
@@ -368,7 +371,19 @@ pub async fn upload_file(
         purchase_orders_db::update_po_with_transaction(
             &mut transaction,
             po_id,
-            None, None, None, None, None, None, None, None, None, None, None, None, None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             Some(total_amount),
         )
         .await
@@ -510,6 +525,23 @@ pub async fn delete_line_item_endpoint(path: web::Path<(u32, u32)>) -> Result<im
     }
 }
 
+#[derive(Deserialize)]
+struct ProcessManifestFileQuery{
+    limit_line_items: Option<usize>,
+}
+
+#[post("/process-manifest")]
+pub async fn process_manifest_file(body: Bytes, query: Query<ProcessManifestFileQuery>) -> Result<impl Responder> {
+    let bytes = body.to_vec();
+    let mut manifest =
+        manifest_parser::parse_manifest(&bytes).map_err(actix_web::error::ErrorBadRequest)?;
+    if let Some(limit_line_items) = query.limit_line_items{
+        manifest.line_items.truncate(limit_line_items);
+    }
+
+    Ok(HttpResponse::Ok().json(manifest))
+}
+
 // ── Configure ─────────────────────────────────────────────────────────────────
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
@@ -523,6 +555,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .service(update_purchase_order)
             .service(delete_purchase_order)
             .service(upload_file)
+            .service(process_manifest_file)
             .service(list_files)
             .service(download_file)
             .service(delete_file_endpoint)
