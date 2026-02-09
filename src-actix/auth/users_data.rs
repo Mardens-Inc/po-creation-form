@@ -164,6 +164,99 @@ impl User {
         Ok(())
     }
 
+    pub async fn request_password_reset(email: &str) -> Result<()> {
+        let pool = crate::app_db::get_or_init_pool().await?;
+        let mut transaction = pool.begin().await?;
+
+        let user = match users_db::get_user_by_email_with_transaction(&mut transaction, email).await? {
+            Some(user) => user,
+            None => {
+                // Return Ok to prevent email enumeration
+                debug!("Password reset requested for non-existent email: {}", email);
+                transaction.commit().await?;
+                return Ok(());
+            }
+        };
+
+        let user_id = user.id()?;
+
+        // Remove any existing reset requests for this email
+        crate::auth::password_reset_db::remove_request_by_email_with_transaction(&mut transaction, email).await?;
+
+        let token = uuid::Uuid::new_v4().to_string();
+        trace!("Generated password reset token for user: {}", email);
+
+        crate::auth::password_reset_db::insert_request_with_transaction(
+            &mut transaction,
+            email,
+            token.as_str(),
+            user_id,
+        )
+        .await?;
+
+        transaction.commit().await?;
+
+        let email_service = crate::auth::email_service::EmailService::new()?;
+        email_service
+            .send_reset_password_email(email, token.as_str(), user.first_name.as_str())
+            .await?;
+        debug!("Password reset email sent to: {}", email);
+
+        // Start a 1-hour timer to clean up the request
+        let email_owned = email.to_string();
+        let timer = obsidian_scheduler::callback::CallbackTimer::new(
+            move |handler| {
+                let email_owned = email_owned.clone();
+                async move {
+                    debug!("Password reset cleanup timer triggered for: {}", email_owned);
+                    let pool = crate::app_db::get_or_init_pool().await?;
+                    let mut transaction = pool.begin().await?;
+
+                    crate::auth::password_reset_db::remove_request_by_email_with_transaction(
+                        &mut transaction,
+                        &email_owned,
+                    )
+                    .await?;
+
+                    transaction.commit().await?;
+                    handler.stop();
+                    debug!("Password reset request cleaned up for: {}", email_owned);
+                    Ok(())
+                }
+            },
+            Duration::from_hours(1),
+        );
+        timer.start().await?;
+
+        Ok(())
+    }
+
+    pub async fn reset_password(email: &str, token: &str, new_password: &str) -> Result<()> {
+        let pool = crate::app_db::get_or_init_pool().await?;
+        let mut transaction = pool.begin().await?;
+
+        let (request_id, user_id) = crate::auth::password_reset_db::get_request_from_token_with_transaction(
+            &mut transaction,
+            token,
+            email,
+        )
+        .await?
+        .ok_or_else(|| anyhow!("Invalid or expired reset token"))?;
+
+        let password = new_password.to_string();
+        let hashed_password = tokio::task::spawn_blocking(move || {
+            bcrypt::hash(password, bcrypt::DEFAULT_COST)
+        })
+        .await??;
+
+        users_db::update_password_with_transaction(&mut transaction, user_id, &hashed_password).await?;
+        crate::auth::password_reset_db::remove_request_with_transaction(&mut transaction, request_id).await?;
+
+        transaction.commit().await?;
+        info!("Password reset successfully for user: {}", email);
+        Ok(())
+    }
+
     pub fn get_client_ip(req: &HttpRequest) -> Option<String> {
         req.connection_info()
             .realip_remote_addr()

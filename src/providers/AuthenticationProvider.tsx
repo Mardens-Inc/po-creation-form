@@ -208,6 +208,10 @@ export function AuthenticationProvider({children}: { children: ReactNode })
             if (!response.ok)
             {
                 const errorData = await response.json().catch(() => ({}));
+                if (response.status === 403 && errorData.error === "password_reset_required")
+                {
+                    throw new Error(errorData.message || "Password reset required");
+                }
                 throw new Error(errorData.message || "Login failed");
             }
 

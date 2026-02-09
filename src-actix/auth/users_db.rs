@@ -180,3 +180,16 @@ pub async fn update_user(user: User) -> Result<()> {
     transaction.commit().await?;
     Ok(())
 }
+
+pub async fn update_password_with_transaction<'a>(
+    transaction: &mut MySqlTransaction<'a>,
+    user_id: u32,
+    hashed_password: &str,
+) -> Result<()> {
+    sqlx::query("UPDATE users SET password = ?, needs_password_reset = FALSE WHERE id = ?")
+        .bind(hashed_password)
+        .bind(user_id)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}

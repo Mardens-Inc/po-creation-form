@@ -43,3 +43,15 @@ pub struct LoginRequestBody{
 	pub email: String,
 	pub password: String
 }
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct RequestPasswordResetBody{
+	pub email: String
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct ResetPasswordBody{
+	pub email: String,
+	pub token: String,
+	pub password: String
+}

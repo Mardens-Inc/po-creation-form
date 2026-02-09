@@ -15,6 +15,8 @@ import {AuthenticationProvider} from "./providers/AuthenticationProvider.tsx";
 import {MFA} from "./pages/MFA.tsx";
 import {MFALinkAndVerify} from "./pages/protected/MFALinkAndVerify.tsx";
 import {MFAVerify} from "./pages/MFAVerify.tsx";
+import {ForgotPassword} from "./pages/ForgotPassword.tsx";
+import {ResetPassword} from "./pages/ResetPassword.tsx";
 
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -37,6 +39,8 @@ export function MainContentRenderer()
                 <Route path={"/login"} element={<Login/>}/>
                 <Route path={"/register"} element={<Register/>}/>
                 <Route path={"/confirm-email"} element={<ConfirmEmail/>}/>
+                <Route path={"/forgot-password"} element={<ForgotPassword/>}/>
+                <Route path={"/reset-password"} element={<ResetPassword/>}/>
                 <Route path={"/mfa"} element={<MFA/>}/>
                 <Route path={"/mfa/verify"} element={<MFAVerify/>}/>
                 <Route path={"/account/mfa/link"} element={<MFALinkAndVerify/>}/>

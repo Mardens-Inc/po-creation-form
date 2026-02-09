@@ -1,4 +1,4 @@
-use crate::auth::auth_endpoint_data::{ConfirmEmailBody, LoginRequestBody, UserRegistrationBody};
+use crate::auth::auth_endpoint_data::{ConfirmEmailBody, LoginRequestBody, RequestPasswordResetBody, ResetPasswordBody, UserRegistrationBody};
 use crate::auth::auth_middleware::validator;
 use crate::auth::mfa;
 use crate::auth::users_data::{RequestExt, User};
@@ -22,10 +22,16 @@ pub async fn login(req: HttpRequest, body: Json<LoginRequestBody>) -> Result<imp
     let email = body.email.as_str();
     let password = body.password.as_str();
     let client_ip = User::get_client_ip(&req);
-    let response = User::login(email, password, client_ip.as_deref())
-        .await
-        .map_err(actix_web::error::ErrorInternalServerError)?;
-    Ok(HttpResponse::Ok().json(response))
+    match User::login(email, password, client_ip.as_deref()).await {
+        Ok(response) => Ok(HttpResponse::Ok().json(response)),
+        Err(e) if e.to_string().contains("Password reset required") => {
+            Ok(HttpResponse::Forbidden().json(json!({
+                "error": "password_reset_required",
+                "message": "Password reset required. Please reset your password."
+            })))
+        }
+        Err(e) => Err(actix_web::error::ErrorInternalServerError(e)),
+    }
 }
 
 #[post("/register")]
@@ -84,6 +90,29 @@ pub async fn confirm_email(body: Json<ConfirmEmailBody>) -> Result<impl Responde
     Ok(HttpResponse::Ok().finish())
 }
 
+#[post("/request-password-reset")]
+pub async fn request_password_reset(body: Json<RequestPasswordResetBody>) -> Result<impl Responder> {
+    let body = body.into_inner();
+    if let Err(e) = User::request_password_reset(&body.email).await {
+        error!("Password reset request error: {e}");
+    }
+    // Always return success to prevent email enumeration
+    Ok(HttpResponse::Ok().json(json!({
+        "message": "If an account with that email exists, a password reset link has been sent."
+    })))
+}
+
+#[post("/reset-password")]
+pub async fn reset_password(body: Json<ResetPasswordBody>) -> Result<impl Responder> {
+    let body = body.into_inner();
+    User::reset_password(&body.email, &body.token, &body.password)
+        .await
+        .map_err(actix_web::error::ErrorBadRequest)?;
+    Ok(HttpResponse::Ok().json(json!({
+        "message": "Password has been reset successfully."
+    })))
+}
+
 #[get("/me")]
 pub async fn get_current_user(req: HttpRequest) -> Result<impl Responder> {
     let mut user = req.get_user().await?;
@@ -106,6 +135,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
             .service(login)
             .service(register_user)
             .service(confirm_email)
+            .service(request_password_reset)
+            .service(reset_password)
             .configure(mfa::configure)
             .service(web::scope("").wrap(auth).service(get_current_user))
             .default_service(web::to(|| async {

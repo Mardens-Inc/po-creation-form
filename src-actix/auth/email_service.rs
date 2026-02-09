@@ -61,4 +61,40 @@ impl EmailService {
                       })?;
         Ok(())
     }
+
+    pub async fn send_reset_password_email(
+        &self,
+        email_address: &str,
+        token: &str,
+        first_name: &str,
+    ) -> Result<()> {
+        debug!("Sending password reset email to {}", email_address);
+        let mut context = tera::Context::new();
+        context.insert("email", email_address);
+        context.insert("token", token);
+        context.insert("first_name", first_name);
+        let url = if cfg!(debug_assertions) {
+            format!("http://localhost:{}", crate::PORT)
+        } else {
+            "https://potracker.mardens.com".to_string()
+        };
+        context.insert("url", &url);
+        let body = tera::Tera::one_off(RESET_PASSWORD_TEMPLATE, &context, true)?;
+        let email = lettre::Message::builder()
+            .from(SMTP_USERNAME.parse()?)
+            .to(email_address.parse()?)
+            .subject("Reset Your Password")
+            .header(ContentType::TEXT_HTML)
+            .body(body)
+            .map_err(|e| {
+                error!("Failed to build reset password email message: {}", e);
+                anyhow::Error::from(e)
+            })?;
+        self.transport.send(&email)
+            .map_err(|e| {
+                error!("Failed to send reset password email to recipient");
+                anyhow::Error::from(e)
+            })?;
+        Ok(())
+    }
 }
