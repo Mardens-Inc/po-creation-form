@@ -16,6 +16,8 @@ export type User = {
     last_name?: string;
     role?: "Admin" | "Buyer" | "Warehouse"; // Backend sends "Admin", "Buyer", or "Warehouse"
     mfa_enabled: boolean;
+    has_validated_mfa: boolean;
+    requires_mfa_verification: boolean;
 }
 
 export type UserRegistrationRequest = {
@@ -100,7 +102,9 @@ function getUserFromToken(token: string): User | null
     return {
         id: claims.sub,
         email: claims.email,
-        mfa_enabled: false
+        mfa_enabled: false,
+        has_validated_mfa: false,
+        requires_mfa_verification: false,
     };
 }
 
@@ -365,6 +369,10 @@ export function AuthenticationProvider({children}: { children: ReactNode })
                     "Content-Type": "application/json"
                 }
             });
+            if (response.ok)
+            {
+                await me();
+            }
             return response.ok;
         } catch (e: Error | any)
         {

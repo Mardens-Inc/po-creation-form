@@ -137,7 +137,7 @@ pub async fn update_last_online(uid: u32) -> Result<()> {
 
 pub async fn update_user_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, user: User)->Result<()>
 {
-    sqlx::query(r#"UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, has_confirmed_email = ?, needs_password_reset = ?, mfa_enabled = ?, mfa_secret = ? WHERE id = ?"#)
+    sqlx::query(r#"UPDATE users SET first_name = ?, last_name = ?, email = ?, role = ?, has_confirmed_email = ?, needs_password_reset = ?, mfa_enabled = ?, mfa_secret = ?, has_validated_mfa = ?, last_ip = ? WHERE id = ?"#)
         .bind(&user.first_name)
         .bind(&user.last_name)
         .bind(&user.email)
@@ -146,10 +146,30 @@ pub async fn update_user_with_transaction<'a>(transaction: &mut MySqlTransaction
         .bind(user.needs_password_reset)
         .bind(user.mfa_enabled)
         .bind(&user.mfa_secret)
+        .bind(user.has_validated_mfa)
+        .bind(&user.last_ip)
         .bind(user.id)
         .execute(&mut **transaction)
         .await?;
 
+    Ok(())
+}
+
+pub async fn update_last_ip_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, uid: u32, ip: &str) -> Result<()> {
+    sqlx::query("UPDATE users SET last_ip = ? WHERE id = ?")
+        .bind(ip)
+        .bind(uid)
+        .execute(&mut **transaction)
+        .await?;
+    Ok(())
+}
+
+pub async fn set_has_validated_mfa_with_transaction<'a>(transaction: &mut MySqlTransaction<'a>, uid: u32, validated: bool) -> Result<()> {
+    sqlx::query("UPDATE users SET has_validated_mfa = ? WHERE id = ?")
+        .bind(validated)
+        .bind(uid)
+        .execute(&mut **transaction)
+        .await?;
     Ok(())
 }
 

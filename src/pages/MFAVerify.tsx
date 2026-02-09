@@ -1,11 +1,10 @@
-import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
+import {useAuthentication} from "../providers/AuthenticationProvider.tsx";
 import {addToast, Image, InputOtp} from "@heroui/react";
-import Logo from "../../images/favicon.ico";
-import {MFAQRCode} from "../../components/MFAQRCode.tsx";
+import Logo from "../images/favicon.ico";
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 
-export function MFALinkAndVerify()
+export function MFAVerify()
 {
     const {currentUser, validateMFA} = useAuthentication();
     const navigate = useNavigate();
@@ -56,15 +55,14 @@ export function MFALinkAndVerify()
                 {/* Header */}
                 <div className="flex flex-col items-center mb-8">
                     <h1 className="font-headers font-black text-5xl text-primary uppercase tracking-wide">
-                        Scan the QR Code
+                        Verify Your Identity
                     </h1>
                     <p className="font-text text-lg text-foreground/70 mt-2">
-                        Scan the QR code below with your authenticator app to enable multi-factor authentication.
+                        We detected a login from a new location. Please enter the code from your authenticator app.
                     </p>
                 </div>
                 <div className="flex flex-col items-center gap-4">
                     <div className="flex flex-col items-center gap-2">
-                        <MFAQRCode/>
                         <InputOtp
                             length={6}
                             radius={"none"}

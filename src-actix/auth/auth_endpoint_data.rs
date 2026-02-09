@@ -24,7 +24,10 @@ impl From<UserRegistrationBody> for User {
 			has_confirmed_email: false,
 			needs_password_reset: false,
 			mfa_enabled: false,
-			mfa_secret: None
+			mfa_secret: None,
+			has_validated_mfa: false,
+			last_ip: None,
+			requires_mfa_verification: false,
 		}
 	}
 }

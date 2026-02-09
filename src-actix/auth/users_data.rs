@@ -2,7 +2,7 @@ use crate::auth::auth_service::generate_jwt_token;
 use crate::auth::jwt_data::{AuthResponse, Claims};
 use crate::auth::user_role::UserRole;
 use crate::auth::users_db;
-use actix_web::HttpMessage;
+use actix_web::{HttpMessage, HttpRequest};
 use anyhow::{anyhow, Result};
 use log::{debug, error, info, trace};
 use obsidian_scheduler::timer_trait::Timer;
@@ -25,6 +25,12 @@ pub struct User {
     #[serde(skip_serializing)]
     pub mfa_secret: Option<String>,
     pub mfa_enabled: bool,
+    pub has_validated_mfa: bool,
+    #[serde(skip_serializing)]
+    pub last_ip: Option<String>,
+    #[sqlx(skip)]
+    #[serde(default)]
+    pub requires_mfa_verification: bool,
 }
 
 impl PartialEq for User {
@@ -158,7 +164,13 @@ impl User {
         Ok(())
     }
 
-    pub async fn login(email: &str, password: &str) -> Result<AuthResponse> {
+    pub fn get_client_ip(req: &HttpRequest) -> Option<String> {
+        req.connection_info()
+            .realip_remote_addr()
+            .map(|s| s.to_string())
+    }
+
+    pub async fn login(email: &str, password: &str, client_ip: Option<&str>) -> Result<AuthResponse> {
         let mut transaction = crate::app_db::get_or_init_pool().await?.begin().await?;
         let user: User =
             match users_db::get_user_by_email_with_transaction(&mut transaction, email).await? {
@@ -189,6 +201,18 @@ impl User {
             .map_err(|e| anyhow!("Failed to generate JWT token: {e}"))?;
 
         users_db::update_last_online_with_transaction(&mut transaction, user.id()?).await?;
+
+        // Update last_ip unless MFA is enabled+validated and IP differs (forces re-verification)
+        if let Some(ip) = client_ip {
+            let should_update_ip = !user.mfa_enabled
+                || !user.has_validated_mfa
+                || user.last_ip.is_none()
+                || user.last_ip.as_deref() == Some(ip);
+            if should_update_ip {
+                users_db::update_last_ip_with_transaction(&mut transaction, user.id()?, ip).await?;
+            }
+        }
+
         transaction.commit().await?;
 
         Ok(AuthResponse {

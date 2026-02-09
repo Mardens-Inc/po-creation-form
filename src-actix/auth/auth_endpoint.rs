@@ -17,11 +17,12 @@ pub async fn get_users() -> Result<impl Responder> {
 }
 
 #[post("/login")]
-pub async fn login(body: Json<LoginRequestBody>) -> Result<impl Responder> {
+pub async fn login(req: HttpRequest, body: Json<LoginRequestBody>) -> Result<impl Responder> {
     let body = body.into_inner();
     let email = body.email.as_str();
     let password = body.password.as_str();
-    let response = User::login(email, password)
+    let client_ip = User::get_client_ip(&req);
+    let response = User::login(email, password, client_ip.as_deref())
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     Ok(HttpResponse::Ok().json(response))
@@ -85,7 +86,15 @@ pub async fn confirm_email(body: Json<ConfirmEmailBody>) -> Result<impl Responde
 
 #[get("/me")]
 pub async fn get_current_user(req: HttpRequest) -> Result<impl Responder> {
-    let user = req.get_user().await?;
+    let mut user = req.get_user().await?;
+    let client_ip = User::get_client_ip(&req);
+    if user.mfa_enabled
+        && user.has_validated_mfa
+        && let Some(ref current_ip) = client_ip
+        && user.last_ip.as_deref() != Some(current_ip.as_str())
+    {
+        user.requires_mfa_verification = true;
+    }
     Ok(HttpResponse::Ok().json(user))
 }
 

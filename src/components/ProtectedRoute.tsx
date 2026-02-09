@@ -27,6 +27,8 @@ export function ProtectedRoute()
     // Redirect to login if not authenticated
     if (!isAuthenticated) return <Navigate to="/login" replace/>;
     if (!currentUser?.mfa_enabled) return <Navigate to="/mfa" replace/>;
+    if (currentUser?.mfa_enabled && !currentUser?.has_validated_mfa) return <Navigate to="/account/mfa/link" replace/>;
+    if (currentUser?.requires_mfa_verification) return <Navigate to="/mfa/verify" replace/>;
 
     return (
         <ErrorBoundary>

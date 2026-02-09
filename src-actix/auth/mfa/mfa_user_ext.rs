@@ -13,6 +13,7 @@ impl User {
     pub async fn disable_mfa(&mut self) -> Result<()> {
         self.mfa_enabled = false;
         self.mfa_secret = None;
+        self.has_validated_mfa = false;
         crate::auth::users_db::update_user(self.clone()).await?;
         Ok(())
     }

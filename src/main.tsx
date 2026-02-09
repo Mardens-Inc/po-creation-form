@@ -14,6 +14,7 @@ import {ManageVendors} from "./pages/protected/ManageVendors.tsx";
 import {AuthenticationProvider} from "./providers/AuthenticationProvider.tsx";
 import {MFA} from "./pages/MFA.tsx";
 import {MFALinkAndVerify} from "./pages/protected/MFALinkAndVerify.tsx";
+import {MFAVerify} from "./pages/MFAVerify.tsx";
 
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -37,6 +38,7 @@ export function MainContentRenderer()
                 <Route path={"/register"} element={<Register/>}/>
                 <Route path={"/confirm-email"} element={<ConfirmEmail/>}/>
                 <Route path={"/mfa"} element={<MFA/>}/>
+                <Route path={"/mfa/verify"} element={<MFAVerify/>}/>
                 <Route path={"/account/mfa/link"} element={<MFALinkAndVerify/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/"} element={<Dashboard/>}/>

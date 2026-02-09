@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users
     has_confirmed_email  BOOLEAN          DEFAULT FALSE,
     mfa_secret           VARCHAR(255)     DEFAULT NULL,
     mfa_enabled          BOOLEAN          DEFAULT FALSE,
+    has_validated_mfa    BOOLEAN          DEFAULT FALSE,
+    last_ip              VARCHAR(255)     DEFAULT NULL,
     created_at           TIMESTAMP        DEFAULT CURRENT_TIMESTAMP NOT NULL,
     last_online          TIMESTAMP        DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (id)

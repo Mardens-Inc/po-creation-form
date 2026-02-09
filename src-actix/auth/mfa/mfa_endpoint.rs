@@ -1,5 +1,6 @@
 use crate::auth::auth_middleware::validator;
-use crate::auth::users_data::RequestExt;
+use crate::auth::users_data::{RequestExt, User};
+use crate::auth::users_db;
 use actix_web::{get, post, HttpRequest, HttpResponse, Responder, Result};
 use actix_web::web::Query;
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -46,6 +47,33 @@ pub async fn verify_code(query: Query<VerifyCodeQuery>, req: HttpRequest) -> Res
     if !result {
         return Err(actix_web::error::ErrorUnauthorized("Invalid code"));
     }
+
+    let uid = user.id().map_err(actix_web::error::ErrorInternalServerError)?;
+    let pool = crate::app_db::get_or_init_pool()
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+    let mut transaction = pool
+        .begin()
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    if !user.has_validated_mfa {
+        users_db::set_has_validated_mfa_with_transaction(&mut transaction, uid, true)
+            .await
+            .map_err(actix_web::error::ErrorInternalServerError)?;
+    }
+
+    if let Some(ip) = User::get_client_ip(&req) {
+        users_db::update_last_ip_with_transaction(&mut transaction, uid, &ip)
+            .await
+            .map_err(actix_web::error::ErrorInternalServerError)?;
+    }
+
+    transaction
+        .commit()
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
     Ok(HttpResponse::Ok().finish())
 }
 
