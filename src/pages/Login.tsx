@@ -127,7 +127,7 @@ export function Login()
                         placeholder="you@mardens.com"
                         value={email}
                         onValueChange={setEmail}
-                        autoComplete="one-time-code"
+                        autoComplete="work email webauthn"
                         isRequired
                         validate={validateEmail}
                         startContent={
@@ -152,7 +152,7 @@ export function Login()
                         placeholder="Enter your password"
                         value={password}
                         onValueChange={setPassword}
-                        autoComplete="one-time-code"
+                        autoComplete="work webauthn password"
                         isRequired
                         errorMessage="Password is required"
                         startContent={
