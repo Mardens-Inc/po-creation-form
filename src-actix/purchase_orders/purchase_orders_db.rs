@@ -1,9 +1,10 @@
 use anyhow::Result;
 use sqlx::MySqlTransaction;
 use crate::purchase_orders::fob_type::FOBType;
+use crate::purchase_orders::manifest_parser::POLineItem;
 use crate::purchase_orders::po_status::POStatus;
 use crate::purchase_orders::upload_file_type::UploadFileType;
-use super::purchase_orders_data::{POFile, POLineItem, PurchaseOrder};
+use super::purchase_orders_data::{POFile,  PurchaseOrder};
 
 const PURCHASE_ORDERS_TABLE: &str = include_str!("../../sql/purchase_orders.sql");
 const PO_FILES_TABLE: &str = include_str!("../../sql/po_files.sql");

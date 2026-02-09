@@ -1,11 +1,42 @@
+use std::fmt::{Debug, Formatter};
 use std::io::Cursor;
 
 use anyhow::{Context, Result};
 use calamine::{Reader, Xlsx};
+use serde::{Deserialize, Serialize};
 
-use super::purchase_orders_data::{ManifestParseResult, POLineItem};
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ManifestParseResult {
+    pub buyer_name: String,
+    pub po_number: String,
+    pub vendor_name: String,
+    pub terms: String,
+    pub ship_to_address: String,
+    pub ship_from_address: String,
+    pub notes: String,
+    pub line_items: Vec<POLineItem>,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
+pub struct POLineItem {
+    pub id: Option<u32>,
+    pub po_id: u32,
+    pub item_number: String,
+    pub upc: String,
+    pub description: String,
+    pub case_pack: String,
+    pub cases: String,
+    pub qty: u32,
+    pub mardens_cost: f64,
+    pub mardens_price: f64,
+    pub comp_retail: f64,
+    pub department: String,
+    pub category: String,
+    pub sub_category: String,
+    pub season: String,
+    pub buyer_notes: Option<String>,
+}
 
-/// Parse an xlsx manifest file and extract header fields and line items.
+/// Parse the xlsx manifest file and extract header fields and line items.
 pub fn parse_manifest(bytes: &[u8]) -> Result<ManifestParseResult> {
     let cursor = Cursor::new(bytes);
     let mut workbook: Xlsx<_> =
@@ -32,9 +63,11 @@ pub fn parse_manifest(bytes: &[u8]) -> Result<ManifestParseResult> {
     // Extract header fields (0-indexed rows)
     // Row 1 (0-indexed row 1): PO # at col B (1), SHIP TO at col G (6)
     // Row 2 (0-indexed row 2): VENDOR at col B (1), TERMS at col G (6), NOTES at col J (9)
+    let buyer_name = get_cell_str(0, 1);
     let po_number = get_cell_str(1, 1);
     let vendor_name = get_cell_str(2, 1);
     let ship_to_address = get_cell_str(1, 6);
+    let ship_from_address = get_cell_str(1, 9);
     let terms = get_cell_str(2, 6);
     let notes = get_cell_str(2, 9);
 
@@ -91,10 +124,12 @@ pub fn parse_manifest(bytes: &[u8]) -> Result<ManifestParseResult> {
     }
 
     Ok(ManifestParseResult {
+        buyer_name,
         po_number,
         vendor_name,
         terms,
         ship_to_address,
+        ship_from_address,
         notes,
         line_items,
     })
@@ -102,10 +137,7 @@ pub fn parse_manifest(bytes: &[u8]) -> Result<ManifestParseResult> {
 
 fn parse_u32(s: &str) -> u32 {
     // Remove currency symbols, commas, and whitespace
-    let cleaned: String = s
-        .chars()
-        .filter(|c| c.is_ascii_digit())
-        .collect();
+    let cleaned: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
     cleaned.parse().unwrap_or(0)
 }
 
@@ -116,4 +148,48 @@ fn parse_f64(s: &str) -> f64 {
         .filter(|c| c.is_ascii_digit() || *c == '.' || *c == '-')
         .collect();
     cleaned.parse().unwrap_or(0.0)
+}
+
+impl Debug for ManifestParseResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let items: Vec<String> = self
+            .line_items
+            .iter()
+            .map(|i| {
+                format!(
+                    r#"| {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |"#,
+                    i.item_number,
+                    i.upc,
+                    i.description,
+                    i.case_pack,
+                    i.cases,
+                    i.qty,
+                    i.mardens_cost,
+                    i.mardens_price,
+                    i.comp_retail,
+                    i.department,
+                    i.category,
+                    i.sub_category,
+                    i.season,
+                    i.buyer_notes.as_ref().unwrap_or(&String::new())
+                )
+            })
+            .collect();
+        let result = format!(
+			r#"
+PO#:        {},
+Vendor:     {},
+Ships To:   {},
+Ships From: {},
+Terms:      {},
+Notes:      {},
+
+| Item # | UPC | Description | Case Pack | Cases | Qty | Mardens Cost | Mardens Price | Comp Retail | Department | Category | Sub Category | Season | Buyer Notes |
+|--------|-----|-------------|-----------|-------|-----|--------------|---------------|-------------|------------|----------|--------------|--------|---------------|
+{}
+        "#,
+			self.po_number, self.vendor_name, self.ship_to_address, self.ship_from_address, self.terms, self.notes, items.join("\n")
+		);
+        f.write_str(&result)
+    }
 }

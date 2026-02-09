@@ -36,34 +36,7 @@ pub struct POFile {
     pub uploaded_by: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
-pub struct POLineItem {
-    pub id: Option<u32>,
-    pub po_id: u32,
-    pub item_number: String,
-    pub upc: String,
-    pub description: String,
-    pub case_pack: String,
-    pub cases: String,
-    pub qty: u32,
-    pub mardens_cost: f64,
-    pub mardens_price: f64,
-    pub comp_retail: f64,
-    pub department: String,
-    pub category: String,
-    pub sub_category: String,
-    pub season: String,
-    pub buyer_notes: Option<String>,
-}
 
-pub struct ManifestParseResult {
-    pub po_number: String,
-    pub vendor_name: String,
-    pub terms: String,
-    pub ship_to_address: String,
-    pub notes: String,
-    pub line_items: Vec<POLineItem>,
-}
 
 #[derive(Debug, Deserialize)]
 pub struct CreatePurchaseOrderRequest {

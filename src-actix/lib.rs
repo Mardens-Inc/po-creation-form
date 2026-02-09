@@ -12,7 +12,7 @@ use vite_actix::start_vite_server;
 mod app_db;
 mod auth;
 mod data;
-mod purchase_orders;
+pub mod purchase_orders;
 mod status_endpoint;
 mod util;
 mod vendors;

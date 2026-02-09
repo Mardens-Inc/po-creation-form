@@ -1,8 +1,9 @@
 use rust_decimal::Decimal;
 use serde::Serialize;
 use crate::purchase_orders::fob_type::FOBType;
+use crate::purchase_orders::manifest_parser::POLineItem;
 use crate::purchase_orders::po_status::POStatus;
-use crate::purchase_orders::purchase_orders_data::{POFile, POLineItem, PurchaseOrder};
+use crate::purchase_orders::purchase_orders_data::{POFile,  PurchaseOrder};
 
 #[derive(Debug, Serialize, Clone)]
 pub struct PurchaseOrderResponse {

@@ -1,4 +1,4 @@
-mod manifest_parser;
+pub mod manifest_parser;
 mod purchase_orders_data;
 mod purchase_orders_db;
 mod purchase_orders_endpoint;
