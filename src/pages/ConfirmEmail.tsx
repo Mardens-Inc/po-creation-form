@@ -11,18 +11,6 @@ export function ConfirmEmail()
     const email = searchParams.get("email");
     const token = searchParams.get("token");
 
-    if (!email || !token || hasError)
-    {
-        return (
-            <div className={"h-dvh flex items-center justify-center"}>
-                <div className={"p-6 border border-gray-300 rounded-lg shadow-lg"}>
-                    <h1 className={"flex justify-center gap-2 text-2xl font-bold mb-4"}><Icon icon={"mdi:alert-circle"} className={"text-danger-500 text-4xl"}/> Error Confirming Email!</h1>
-                    <p className={"mb-4"}>There was an error confirming your email. Please try again later.</p>
-                    <p className={"text-sm text-gray-600"}>You can <a href="/" className={"text-blue-500 underline"}>return to home page</a>.</p>
-                </div>
-            </div>
-        );
-    }
 
     useEffect(() =>
     {
@@ -46,7 +34,18 @@ export function ConfirmEmail()
         }).finally(() => setIsLoading(false));
 
     }, [email, token]);
-
+    if (!email || !token || hasError)
+    {
+        return (
+            <div className={"h-dvh flex items-center justify-center"}>
+                <div className={"p-6 border border-gray-300 rounded-lg shadow-lg"}>
+                    <h1 className={"flex justify-center gap-2 text-2xl font-bold mb-4"}><Icon icon={"mdi:alert-circle"} className={"text-danger-500 text-4xl"}/> Error Confirming Email!</h1>
+                    <p className={"mb-4"}>There was an error confirming your email. Please try again later.</p>
+                    <p className={"text-sm text-gray-600"}>You can <a href="/" className={"text-blue-500 underline"}>return to home page</a>.</p>
+                </div>
+            </div>
+        );
+    }
     if (isLoading) return (
         <div className={"h-dvh flex items-center justify-center"}>
             <div className={"p-6 border border-gray-300 rounded-lg shadow-lg"}>
