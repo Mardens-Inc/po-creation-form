@@ -1,19 +1,117 @@
-use crate::auth::auth_endpoint_data::{ConfirmEmailBody, LoginRequestBody, RequestPasswordResetBody, ResetPasswordBody, UserRegistrationBody};
+use crate::auth::auth_endpoint_data::{ConfirmEmailBody, LoginRequestBody, RequestPasswordResetBody, ResetPasswordBody, UpdateUserBody, UserRegistrationBody};
 use crate::auth::auth_middleware::validator;
 use crate::auth::mfa;
 use crate::auth::users_data::{RequestExt, User};
+use crate::auth::{users_db};
 use actix_web::web::Json;
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder, Result};
+use actix_web::{delete, get, post, put, web, HttpRequest, HttpResponse, Responder, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use log::error;
 use serde_json::json;
 
 #[get("/users")]
-pub async fn get_users() -> Result<impl Responder> {
+pub async fn get_users(req: HttpRequest) -> Result<impl Responder> {
+    User::require_admin(&req).await?;
     let users = User::get_users()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
     Ok(HttpResponse::Ok().json(users))
+}
+
+#[put("/users/{id}")]
+pub async fn update_user(req: HttpRequest, path: web::Path<u32>, body: Json<UpdateUserBody>) -> Result<impl Responder> {
+    User::require_admin(&req).await?;
+    let user_id = path.into_inner();
+    let body = body.into_inner();
+
+    let mut user = User::get_user_by_id(user_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?
+        .ok_or_else(|| actix_web::error::ErrorNotFound("User not found"))?;
+
+    if let Some(first_name) = body.first_name {
+        user.first_name = first_name;
+    }
+    if let Some(last_name) = body.last_name {
+        user.last_name = last_name;
+    }
+    if let Some(email) = body.email {
+        user.email = email;
+    }
+    if let Some(role) = body.role {
+        user.role = role;
+    }
+
+    users_db::update_user(user)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok().json(json!({ "message": "User updated successfully" })))
+}
+
+#[delete("/users/{id}")]
+pub async fn delete_user(req: HttpRequest, path: web::Path<u32>) -> Result<impl Responder> {
+    let admin = User::require_admin(&req).await?;
+    let user_id = path.into_inner();
+
+    if admin.id() .map_err(actix_web::error::ErrorInternalServerError)? == user_id {
+        return Err(actix_web::error::ErrorBadRequest("Cannot delete yourself"));
+    }
+
+    // Verify the target user exists
+    User::get_user_by_id(user_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?
+        .ok_or_else(|| actix_web::error::ErrorNotFound("User not found"))?;
+
+    users_db::delete_user(user_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok().json(json!({ "message": "User deleted successfully" })))
+}
+
+#[post("/users/{id}/force-password-reset")]
+pub async fn force_password_reset(req: HttpRequest, path: web::Path<u32>) -> Result<impl Responder> {
+    User::require_admin(&req).await?;
+    let user_id = path.into_inner();
+
+    let mut user = User::get_user_by_id(user_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?
+        .ok_or_else(|| actix_web::error::ErrorNotFound("User not found"))?;
+
+    user.needs_password_reset = true;
+    users_db::update_user(user.clone())
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    // Trigger a password reset email
+    if let Err(e) = User::request_password_reset(&user.email).await {
+        error!("Failed to send password reset email during force reset: {e}");
+    }
+
+    Ok(HttpResponse::Ok().json(json!({ "message": "Password reset forced successfully" })))
+}
+
+#[post("/users/{id}/disable-mfa")]
+pub async fn disable_mfa(req: HttpRequest, path: web::Path<u32>) -> Result<impl Responder> {
+    User::require_admin(&req).await?;
+    let user_id = path.into_inner();
+
+    let mut user = User::get_user_by_id(user_id)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?
+        .ok_or_else(|| actix_web::error::ErrorNotFound("User not found"))?;
+
+    user.mfa_enabled = false;
+    user.mfa_secret = None;
+    user.has_validated_mfa = false;
+    users_db::update_user(user)
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    Ok(HttpResponse::Ok().json(json!({ "message": "MFA disabled successfully" })))
 }
 
 #[post("/login")]
@@ -131,14 +229,22 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     let auth = HttpAuthentication::bearer(validator);
     cfg.service(
         web::scope("/auth")
-            .service(get_users)
             .service(login)
             .service(register_user)
             .service(confirm_email)
             .service(request_password_reset)
             .service(reset_password)
             .configure(mfa::configure)
-            .service(web::scope("").wrap(auth).service(get_current_user))
+            .service(
+                web::scope("")
+                    .wrap(auth)
+                    .service(get_current_user)
+                    .service(get_users)
+                    .service(update_user)
+                    .service(delete_user)
+                    .service(force_password_reset)
+                    .service(disable_mfa),
+            )
             .default_service(web::to(|| async {
                 HttpResponse::NotFound().json(json!({
                     "error": "API endpoint not found".to_string(),

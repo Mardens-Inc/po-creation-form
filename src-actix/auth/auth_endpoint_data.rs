@@ -55,3 +55,11 @@ pub struct ResetPasswordBody{
 	pub token: String,
 	pub password: String
 }
+
+#[derive(serde::Deserialize, Debug, Clone)]
+pub struct UpdateUserBody {
+	pub first_name: Option<String>,
+	pub last_name: Option<String>,
+	pub email: Option<String>,
+	pub role: Option<UserRole>,
+}

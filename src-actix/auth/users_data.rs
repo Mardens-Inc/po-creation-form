@@ -334,6 +334,16 @@ impl User {
             .await?
             .ok_or_else(|| anyhow!("User not found"))
     }
+
+    pub async fn require_admin(req: &actix_web::HttpRequest) -> actix_web::Result<User> {
+        let user = Self::get_user_from_request(req)
+            .await
+            .map_err(actix_web::error::ErrorUnauthorized)?;
+        if !user.role.is_admin() {
+            return Err(actix_web::error::ErrorForbidden("Admin access required"));
+        }
+        Ok(user)
+    }
 }
 
 pub trait RequestExt {
