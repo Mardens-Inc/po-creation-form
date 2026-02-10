@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS users
     last_ip              VARCHAR(255)     DEFAULT NULL,
     created_at           TIMESTAMP        DEFAULT CURRENT_TIMESTAMP NOT NULL,
     last_online          TIMESTAMP        DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    INDEX (email)
 )
