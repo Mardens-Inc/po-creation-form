@@ -109,7 +109,7 @@ export function ResetPassword()
                         Your password has been reset successfully. You can now sign in with your new password.
                     </p>
                     <Button
-                        radius="none"
+                        radius="sm"
                         color="primary"
                         size="lg"
                         className="font-headers font-bold text-lg uppercase"
@@ -156,7 +156,7 @@ export function ResetPassword()
                         type={showPassword ? "text" : "password"}
                         label="New Password"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="At least 8 characters"
                         value={password}
@@ -172,7 +172,7 @@ export function ResetPassword()
                                 isIconOnly
                                 variant="light"
                                 size="sm"
-                                radius="none"
+                                radius="sm"
                                 onPress={() => setShowPassword(!showPassword)}
                             >
                                 <Icon
@@ -196,7 +196,7 @@ export function ResetPassword()
                         type={showConfirmPassword ? "text" : "password"}
                         label="Confirm Password"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="Re-enter your password"
                         value={confirmPassword}
@@ -212,7 +212,7 @@ export function ResetPassword()
                                 isIconOnly
                                 variant="light"
                                 size="sm"
-                                radius="none"
+                                radius="sm"
                                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                                 <Icon
@@ -233,7 +233,7 @@ export function ResetPassword()
 
                     <Button
                         type="submit"
-                        radius="none"
+                        radius="sm"
                         color="primary"
                         size="lg"
                         className="font-headers font-bold text-lg uppercase mt-4"

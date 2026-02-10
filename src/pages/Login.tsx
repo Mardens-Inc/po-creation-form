@@ -133,7 +133,7 @@ export function Login()
                         type="email"
                         label="Email"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="you@mardens.com"
                         value={email}
@@ -158,7 +158,7 @@ export function Login()
                         type={showPassword ? "text" : "password"}
                         label="Password"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="Enter your password"
                         value={password}
@@ -174,7 +174,7 @@ export function Login()
                                 isIconOnly
                                 variant="light"
                                 size="sm"
-                                radius="none"
+                                radius="sm"
                                 onPress={() => setShowPassword(!showPassword)}
                             >
                                 <Icon
@@ -206,7 +206,7 @@ export function Login()
                     {/* Submit Button */}
                     <Button
                         type="submit"
-                        radius="none"
+                        radius="sm"
                         color="primary"
                         size="lg"
                         className="font-headers font-bold text-lg uppercase mt-4"

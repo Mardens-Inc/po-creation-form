@@ -65,7 +65,7 @@ export function MFAVerify()
                     <div className="flex flex-col items-center gap-2">
                         <InputOtp
                             length={6}
-                            radius={"none"}
+                            radius={"sm"}
                             classNames={{
                                 segment: "bg-primary/50 w-20 h-20 text-3xl font-black"
                             }}

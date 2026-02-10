@@ -122,7 +122,7 @@ export function Register()
                         Your account has been created. Please check your email to confirm your account before signing in.
                     </p>
                     <Button
-                        radius="none"
+                        radius="sm"
                         color="primary"
                         size="lg"
                         className="font-headers font-bold text-lg uppercase"
@@ -174,7 +174,7 @@ export function Register()
                             type="text"
                             label="First Name"
                             labelPlacement="outside"
-                            radius="none"
+                            radius="sm"
                             size="lg"
                             placeholder="John"
                             value={firstName}
@@ -196,7 +196,7 @@ export function Register()
                             type="text"
                             label="Last Name"
                             labelPlacement="outside"
-                            radius="none"
+                            radius="sm"
                             size="lg"
                             placeholder="Doe"
                             value={lastName}
@@ -219,7 +219,7 @@ export function Register()
                         type="email"
                         label="Email"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="you@mardens.com"
                         value={email}
@@ -243,7 +243,7 @@ export function Register()
                         name="role"
                         label="Role"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="Select your role"
                         selectedKeys={[role.toString()]}
@@ -260,11 +260,11 @@ export function Register()
                             label: "font-headers font-bold text-sm uppercase",
                             innerWrapper: "font-text text-lg",
                             trigger: "border-2 border-primary/50 hover:border-primary transition-colors",
-                            popoverContent: "rounded-none"
+                            popoverContent: "rounded-small"
                         }}
                         listboxProps={{
                             itemClasses: {
-                                base: "rounded-none"
+                                base: "rounded-small"
                             }
                         }}
                         isDisabled={isSubmitting}
@@ -280,7 +280,7 @@ export function Register()
                         type={showPassword ? "text" : "password"}
                         label="Password"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="At least 8 characters"
                         value={password}
@@ -296,7 +296,7 @@ export function Register()
                                 isIconOnly
                                 variant="light"
                                 size="sm"
-                                radius="none"
+                                radius="sm"
                                 onPress={() => setShowPassword(!showPassword)}
                             >
                                 <Icon
@@ -321,7 +321,7 @@ export function Register()
                         type={showConfirmPassword ? "text" : "password"}
                         label="Confirm Password"
                         labelPlacement="outside"
-                        radius="none"
+                        radius="sm"
                         size="lg"
                         placeholder="Re-enter your password"
                         value={confirmPassword}
@@ -337,7 +337,7 @@ export function Register()
                                 isIconOnly
                                 variant="light"
                                 size="sm"
-                                radius="none"
+                                radius="sm"
                                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                                 <Icon
@@ -359,7 +359,7 @@ export function Register()
                     {/* Submit Button */}
                     <Button
                         type="submit"
-                        radius="none"
+                        radius="sm"
                         color="primary"
                         size="lg"
                         className="font-headers font-bold text-lg uppercase mt-2"
