@@ -16,7 +16,7 @@ interface POFiltersProps
 }
 
 const statusEntries = Object.entries(STATUS_CONFIG).map(([key, config]) => ({
-    key: Number(key) as POStatus,
+    key: String(key) as POStatus,
     label: config.label
 }));
 
