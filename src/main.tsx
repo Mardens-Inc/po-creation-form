@@ -17,6 +17,7 @@ import {MFALinkAndVerify} from "./pages/protected/MFALinkAndVerify.tsx";
 import {MFAVerify} from "./pages/MFAVerify.tsx";
 import {ForgotPassword} from "./pages/ForgotPassword.tsx";
 import {ResetPassword} from "./pages/ResetPassword.tsx";
+import {ManageUsers} from "./pages/protected/ManageUsers.tsx";
 
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -48,6 +49,7 @@ export function MainContentRenderer()
                     <Route path={"/"} element={<Dashboard/>}/>
                     <Route path={"/purchase-orders"} element={<ManagePurchaseOrders/>}/>
                     <Route path={"/vendors"} element={<ManageVendors/>}/>
+                    <Route path={"/users"} element={<ManageUsers />} />
                 </Route>
             </Routes>
         </HeroUIProvider>

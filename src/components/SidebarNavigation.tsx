@@ -7,6 +7,7 @@ import {useVendorCreation} from "./vendors/VendorCreationModal.tsx";
 import {doesUserHaveRequiredRole, RequireRole} from "./RequireRole.tsx";
 import {usePurchaseOrdersContext} from "../providers/PurchaseOrdersProvider.tsx";
 import {useVendorsContext} from "../providers/VendorsProvider.tsx";
+import {useUsersContext} from "../providers/UsersProvider.tsx";
 import {ReactNode} from "react";
 
 function IconWrapper({children, className}: { children: ReactNode, className?: string })
@@ -36,8 +37,9 @@ export function SidebarNavigation()
     const {currentUser} = useAuthentication();
     const {openPOCreationModal} = usePOCreation();
     const {openVendorCreationModal} = useVendorCreation();
-    const {purchaseOrders, getUniqueBuyers} = usePurchaseOrdersContext();
+    const {purchaseOrders} = usePurchaseOrdersContext();
     const {vendors} = useVendorsContext();
+    const {users} = useUsersContext();
     if (!currentUser) return null;
     return (
         <div className={"w-80 h-full bg-navigation text-navigation-foreground overflow-y-scroll border-t-2 border-white/10"}>
@@ -77,7 +79,7 @@ export function SidebarNavigation()
                     <ListboxItem
                         key="manage-users"
                         href={`/users`}
-                        endContent={<ItemCounter count={getUniqueBuyers().length}/>}
+                        endContent={<ItemCounter count={users.length}/>}
                         startContent={
                             <IconWrapper className="bg-warning/10 text-warning">
                                 <Icon icon={"mage:users"} className="text-lg"/>

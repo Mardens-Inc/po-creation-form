@@ -7,8 +7,10 @@ import {TopNavigation} from "./TopNavigation.tsx";
 import {POCreationProvider} from "./po/POCreationModal.tsx";
 import {POEditProvider} from "./po/POEditModal.tsx";
 import {VendorCreationProvider} from "./vendors/VendorCreationModal.tsx";
+import {UserEditProvider} from "./users/UserEditModal.tsx";
 import {PurchaseOrdersProvider, usePurchaseOrdersContext} from "../providers/PurchaseOrdersProvider.tsx";
 import {VendorsProvider} from "../providers/VendorsProvider.tsx";
+import {UsersProvider} from "../providers/UsersProvider.tsx";
 
 export function ProtectedRoute()
 {
@@ -34,11 +36,13 @@ export function ProtectedRoute()
         <ErrorBoundary>
             <PurchaseOrdersProvider>
                 <VendorsProvider>
-                    <POCreationProvider>
-                        <VendorCreationProvider>
-                            <ProtectedRouteContent/>
-                        </VendorCreationProvider>
-                    </POCreationProvider>
+                    <UsersProvider>
+                        <POCreationProvider>
+                            <VendorCreationProvider>
+                                <ProtectedRouteContent/>
+                            </VendorCreationProvider>
+                        </POCreationProvider>
+                    </UsersProvider>
                 </VendorsProvider>
             </PurchaseOrdersProvider>
         </ErrorBoundary>
@@ -52,13 +56,15 @@ function ProtectedRouteContent()
 
     return (
         <POEditProvider onSaved={refetch}>
-            <main className={"flex flex-col min-h-screen"}>
-                <TopNavigation/>
-                <div className={"flex flex-row h-[calc(100dvh-4rem)]"}>
-                    <SidebarNavigation/>
-                    <Outlet/>
-                </div>
-            </main>
+            <UserEditProvider>
+                <main className={"flex flex-col min-h-screen"}>
+                    <TopNavigation/>
+                    <div className={"flex flex-row h-[calc(100dvh-4rem)]"}>
+                        <SidebarNavigation/>
+                        <Outlet/>
+                    </div>
+                </main>
+            </UserEditProvider>
         </POEditProvider>
     );
 }
