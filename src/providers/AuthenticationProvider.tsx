@@ -15,6 +15,8 @@ export type User = {
     first_name?: string;
     last_name?: string;
     role?: UserRole;
+    has_confirmed_email?: boolean;
+    needs_password_reset?: boolean;
     mfa_enabled: boolean;
     has_validated_mfa: boolean;
     requires_mfa_verification: boolean;
