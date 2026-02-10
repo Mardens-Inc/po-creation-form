@@ -4,9 +4,9 @@ import {createContext, ReactNode, useCallback, useContext, useEffect, useState} 
 
 export enum UserRole
 {
-    Admin = 0,
-    Buyer = 1,
-    Warehouse = 2,
+    Admin = "Admin",
+    Buyer = "Buyer",
+    Warehouse = "Warehouse",
 }
 
 export type User = {
@@ -14,7 +14,7 @@ export type User = {
     email: string;
     first_name?: string;
     last_name?: string;
-    role?: "Admin" | "Buyer" | "Warehouse"; // Backend sends "Admin", "Buyer", or "Warehouse"
+    role?: UserRole;
     mfa_enabled: boolean;
     has_validated_mfa: boolean;
     requires_mfa_verification: boolean;
@@ -104,7 +104,7 @@ function getUserFromToken(token: string): User | null
         email: claims.email,
         mfa_enabled: false,
         has_validated_mfa: false,
-        requires_mfa_verification: false,
+        requires_mfa_verification: false
     };
 }
 
