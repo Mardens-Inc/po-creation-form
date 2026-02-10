@@ -297,6 +297,7 @@ export function Register()
                                 variant="light"
                                 size="sm"
                                 radius="sm"
+                                tabIndex={-1}
                                 onPress={() => setShowPassword(!showPassword)}
                             >
                                 <Icon
@@ -338,6 +339,7 @@ export function Register()
                                 variant="light"
                                 size="sm"
                                 radius="sm"
+                                tabIndex={-1}
                                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                                 <Icon

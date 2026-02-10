@@ -173,6 +173,7 @@ export function ResetPassword()
                                 variant="light"
                                 size="sm"
                                 radius="sm"
+                                tabIndex={-1}
                                 onPress={() => setShowPassword(!showPassword)}
                             >
                                 <Icon
@@ -213,6 +214,7 @@ export function ResetPassword()
                                 variant="light"
                                 size="sm"
                                 radius="sm"
+                                tabIndex={-1}
                                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
                                 <Icon

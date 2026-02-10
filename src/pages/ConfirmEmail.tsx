@@ -21,17 +21,16 @@ export function ConfirmEmail()
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({email, token})
-        }).then(res => res.json()).then(data =>
-        {
-            if (data.error)
+        })
+            .then(res =>
             {
+                if (!res.ok) throw new Error("Failed to confirm email");
+            })
+            .catch((error) =>
+            {
+                console.error("Email confirmation failed:", error);
                 setHasError(true);
-            }
-        }).catch((error) =>
-        {
-            console.error("Email confirmation failed:", error);
-            setHasError(true);
-        }).finally(() => setIsLoading(false));
+            }).finally(() => setIsLoading(false));
 
     }, [email, token]);
     if (!email || !token || hasError)

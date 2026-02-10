@@ -175,6 +175,7 @@ export function Login()
                                 variant="light"
                                 size="sm"
                                 radius="sm"
+                                tabIndex={-1}
                                 onPress={() => setShowPassword(!showPassword)}
                             >
                                 <Icon
