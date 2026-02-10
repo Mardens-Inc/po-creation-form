@@ -42,7 +42,7 @@ pub async fn get_request_from_token_with_transaction<'a>(
     email: &str,
 ) -> Result<Option<u32>> {
     let request_id: Option<u32> = sqlx::query_scalar(
-        "SELECT id FROM registration_requests WHERE token = ? and email = ? LIMIT 1",
+        "SELECT user_id FROM registration_requests WHERE token = ? and email = ? LIMIT 1",
     )
     .bind(token)
     .bind(email)
@@ -64,7 +64,7 @@ pub async fn remove_request_with_transaction<'a>(
     transaction: &mut MySqlTransaction<'a>,
     request_id: u32,
 ) -> Result<()> {
-    sqlx::query("DELETE FROM registration_requests WHERE id = ?")
+    sqlx::query("DELETE FROM registration_requests WHERE user_id = ?")
         .bind(request_id)
         .execute(&mut **transaction)
         .await?;
