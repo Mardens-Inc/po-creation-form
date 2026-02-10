@@ -1,6 +1,6 @@
 import {addToast, Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {createContext, ReactNode, useCallback, useContext, useState} from "react";
+import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
 import {User, UserRole} from "../../providers/AuthenticationProvider.tsx";
 import {useUsersContext} from "../../providers/UsersProvider.tsx";
 import {ModalSection} from "../ModalSection.tsx";
@@ -19,29 +19,15 @@ function UserEditModal({isOpen, onClose, user}: UserEditModalProps) {
     const [email, setEmail] = useState("");
     const [role, setRole] = useState<UserRole>(UserRole.Warehouse);
 
-    // Populate form when user changes
-    const populateForm = useCallback((u: User | null) => {
-        if (u) {
-            setFirstName(u.first_name ?? "");
-            setLastName(u.last_name ?? "");
-            setEmail(u.email);
-            setRole(u.role ?? UserRole.Warehouse);
+    // Populate form fields when the user prop changes (i.e. modal opens with a user)
+    useEffect(() => {
+        if (user && isOpen) {
+            setFirstName(user.first_name ?? "");
+            setLastName(user.last_name ?? "");
+            setEmail(user.email);
+            setRole(user.role ?? UserRole.Warehouse);
         }
-    }, []);
-
-    // Use effect-like pattern via key prop or onOpenChange
-    // We'll populate on open
-    const handleOpenChange = useCallback(() => {
-        if (user) {
-            populateForm(user);
-        }
-    }, [user, populateForm]);
-
-    // Populate when modal opens
-    if (isOpen && user) {
-        // This gets called on render when open, but we need to avoid infinite loops
-        // Use a ref-like pattern with state
-    }
+    }, [user, isOpen]);
 
     const handleSubmit = useCallback(async () => {
         if (!user) return;
@@ -76,9 +62,6 @@ function UserEditModal({isOpen, onClose, user}: UserEditModalProps) {
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            onOpenChange={(open) => {
-                if (open) handleOpenChange();
-            }}
             size="2xl"
             scrollBehavior="inside"
             backdrop="blur"
@@ -86,7 +69,7 @@ function UserEditModal({isOpen, onClose, user}: UserEditModalProps) {
             <ModalContent>
                 {(onModalClose) => (
                     <>
-                        <ModalHeader className="font-headers font-black text-xl uppercase flex items-center gap-2">
+                        <ModalHeader className="font-headers font-bold text-xl uppercase flex items-center gap-2">
                             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
                                 <Icon icon="mage:edit" width={20} height={20}/>
                             </div>
