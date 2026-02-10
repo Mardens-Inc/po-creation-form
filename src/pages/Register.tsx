@@ -252,7 +252,7 @@ export function Register()
                             const key = [...keys][0] as string | undefined;
                             if (key !== undefined)
                             {
-                                setRole(parseInt(key) as UserRole);
+                                setRole(key as UserRole);
                             }
                         }}
                         isRequired
