@@ -39,7 +39,7 @@ export function POFilters({isOpen, onClose, filters, setFilter, clearFilters, ha
     const vendors = getUniqueVendors();
 
     return (
-        <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="md" backdrop={"blur"}>
+        <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="md" backdrop={"opaque"}>
             <DrawerContent>
                 <DrawerHeader className="font-headers font-bold text-lg">
                     Filter Purchase Orders

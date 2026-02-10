@@ -19,7 +19,7 @@ const vendorStatuses = [
 export function VendorFilters({isOpen, onClose, filters, setFilter, clearFilters, hasActiveFilters}: VendorFiltersProps)
 {
     return (
-        <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="md" backdrop={"blur"}>
+        <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="md" backdrop={"opaque"}>
             <DrawerContent>
                 <DrawerHeader className="font-headers font-bold text-lg">
                     Filter Vendors
