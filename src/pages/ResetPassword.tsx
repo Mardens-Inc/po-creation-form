@@ -1,4 +1,4 @@
-import {addToast, Button, Form, Image, Input, Link, Spinner} from "@heroui/react";
+import {addToast, Button, Form, Image, Input, Link} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {FormEvent, useState} from "react";
 import {useNavigate, useSearchParams} from "react-router-dom";
