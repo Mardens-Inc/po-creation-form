@@ -22,7 +22,7 @@ export const ShipLocationItem = memo(function ShipLocationItem({location, onChan
             className="flex flex-row items-center gap-2"
         >
             <Input
-                radius="none"
+                radius="sm"
                 size="lg"
                 placeholder="123 Main Street, City, State ZIP"
                 value={location.address}
@@ -38,7 +38,7 @@ export const ShipLocationItem = memo(function ShipLocationItem({location, onChan
                 size="lg"
                 variant="light"
                 color="danger"
-                radius="none"
+                radius="sm"
                 onPress={onRemove}
                 aria-label="Remove location"
             >

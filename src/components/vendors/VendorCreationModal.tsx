@@ -1,12 +1,13 @@
-import {addToast, Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
+import {addToast, Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
-import {PointOfContact, ShipLocation, Vendor} from "./types.ts";
+import {nextContactId, nextLocationId, PointOfContact, ShipLocation, Vendor} from "./types.ts";
 import {VendorInfoSection} from "./VendorInfoSection.tsx";
-import {ContactsSection} from "./ContactsSection.tsx";
-import {ShipLocationsSection} from "./ShipLocationsSection.tsx";
+import {ContactsSection, AddContactButton} from "./ContactsSection.tsx";
+import {ShipLocationsSection, AddLocationButton} from "./ShipLocationsSection.tsx";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendorsContext} from "../../providers/VendorsProvider.tsx";
+import {ModalSection} from "../ModalSection.tsx";
 
 // ============== Modal ==============
 
@@ -97,7 +98,17 @@ export function VendorCreationModal(props: VendorCreationProperties)
 
     }, [vendorName, vendorCode, vendorStatus, contacts, shipLocations, props, getToken, refetch]);
 
+    const addContact = useCallback(() => {
+        setContacts(prev => [...prev, {id: nextContactId(), first_name: "", last_name: "", email: "", phone: ""}]);
+    }, []);
+
+    const addLocation = useCallback(() => {
+        setShipLocations(prev => [...prev, {id: nextLocationId(), address: ""}]);
+    }, []);
+
     const isValid = vendorName.trim().length > 0 && vendorCode.length === 3;
+
+    const isEditMode = props.editingVendor !== null;
 
     return (
         <Modal
@@ -110,32 +121,37 @@ export function VendorCreationModal(props: VendorCreationProperties)
             <ModalContent>
                 {onClose => (
                     <>
-                        <ModalHeader className="font-headers font-black text-xl uppercase">
-                            {props.editingVendor ? "Edit Vendor" : "Create Vendor"}
+                        <ModalHeader className="font-headers font-black text-xl uppercase flex items-center gap-2">
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isEditMode ? "bg-primary/10 text-primary" : "bg-danger/10 text-danger"}`}>
+                                <Icon icon="mage:shop" width={20} height={20}/>
+                            </div>
+                            {isEditMode ? "Edit Vendor" : "Create Vendor"}
                         </ModalHeader>
                         <ModalBody className="gap-6">
-                            <VendorInfoSection
-                                vendorName={vendorName}
-                                onVendorNameChange={setVendorName}
-                                vendorCode={vendorCode}
-                                onVendorCodeChange={setVendorCode}
-                                vendorStatus={vendorStatus}
-                                onVendorStatusChange={setVendorStatus}
-                            />
+                            <ModalSection icon="mage:shop" label="Vendor Info" color="primary" showDivider={false}>
+                                <VendorInfoSection
+                                    vendorName={vendorName}
+                                    onVendorNameChange={setVendorName}
+                                    vendorCode={vendorCode}
+                                    onVendorCodeChange={setVendorCode}
+                                    vendorStatus={vendorStatus}
+                                    onVendorStatusChange={setVendorStatus}
+                                />
+                            </ModalSection>
 
-                            <Divider/>
+                            <ModalSection icon="mdi:contacts-outline" label="Points of Contact" color="success" endContent={<AddContactButton onPress={addContact}/>}>
+                                <ContactsSection
+                                    contacts={contacts}
+                                    onContactsChange={setContacts}
+                                />
+                            </ModalSection>
 
-                            <ContactsSection
-                                contacts={contacts}
-                                onContactsChange={setContacts}
-                            />
-
-                            <Divider/>
-
-                            <ShipLocationsSection
-                                locations={shipLocations}
-                                onLocationsChange={setShipLocations}
-                            />
+                            <ModalSection icon="mdi:map-marker-outline" label="Ship Locations" color="warning" endContent={<AddLocationButton onPress={addLocation}/>}>
+                                <ShipLocationsSection
+                                    locations={shipLocations}
+                                    onLocationsChange={setShipLocations}
+                                />
+                            </ModalSection>
                         </ModalBody>
                         <ModalFooter>
                             <Button variant="light" onPress={onClose}>
@@ -143,7 +159,7 @@ export function VendorCreationModal(props: VendorCreationProperties)
                             </Button>
                             <Button
                                 color="primary"
-                                radius="none"
+                                radius="sm"
                                 endContent={<Icon icon="mdi:check" width={18} height={18}/>}
                                 onPress={handleSubmit}
                                 isDisabled={!isValid}

@@ -6,6 +6,7 @@ import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendors} from "../../hooks/useVendors.ts";
 import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection} from "./po-information";
 import {POStatus} from "../../types/po.ts";
+import {ModalSection} from "../ModalSection.tsx";
 
 // Full PO data from backend
 interface FullPurchaseOrder {
@@ -295,10 +296,13 @@ export function POEditModal(props: POEditModalProps) {
             <ModalContent>
                 {onClose => (
                     <>
-                        <ModalHeader className="font-headers font-black text-xl uppercase">
+                        <ModalHeader className="font-headers font-black text-xl uppercase flex items-center gap-2">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
+                                <Icon icon="mage:box-3d-scan" width={20} height={20}/>
+                            </div>
                             Edit Purchase Order {originalPO && `#${originalPO.po_number}`}
                         </ModalHeader>
-                        <ModalBody className="gap-0">
+                        <ModalBody className="gap-6">
                             {isLoading ? (
                                 <div className="flex items-center justify-center py-20">
                                     <Spinner size="lg"/>
@@ -306,15 +310,15 @@ export function POEditModal(props: POEditModalProps) {
                                 </div>
                             ) : (
                                 <>
-                                    {/* PO Number Section */}
-                                    <PONumberSection
-                                        poNumber={poNumber}
-                                        buyerId={buyerId}
-                                        onPoNumberChange={handlePoNumberChange}
-                                    />
+                                    <ModalSection icon="mdi:pound" label="PO Number" color="primary" showDivider={false}>
+                                        <PONumberSection
+                                            poNumber={poNumber}
+                                            buyerId={buyerId}
+                                            onPoNumberChange={handlePoNumberChange}
+                                        />
+                                    </ModalSection>
 
-                                    {/* Order Details Section */}
-                                    <div className="flex flex-col gap-6 py-6">
+                                    <ModalSection icon="mdi:file-document-outline" label="Order Details" color="primary">
                                         <OrderDetailsSection
                                             vendorName={vendorName}
                                             onVendorNameChange={handleVendorNameChange}
@@ -331,8 +335,9 @@ export function POEditModal(props: POEditModalProps) {
                                             vendors={vendorOptions}
                                             isLoadingVendors={isLoadingVendors}
                                         />
+                                    </ModalSection>
 
-                                        {/* Shipping Information */}
+                                    <ModalSection icon="tabler:truck" label="Shipping" color="success">
                                         <ShippingInfoSection
                                             shipDate={shipDate}
                                             onShipDateChange={handleShipDateChange}
@@ -341,89 +346,88 @@ export function POEditModal(props: POEditModalProps) {
                                             shippingNotes={shippingNotes}
                                             onShippingNotesChange={handleShippingNotesChange}
                                         />
+                                    </ModalSection>
 
-                                        {/* FOB Section */}
+                                    <ModalSection icon="mdi:map-marker-outline" label="FOB" color="warning">
                                         <FOBSection
                                             fobType={fobType}
                                             onFobTypeChange={handleFobTypeChange}
                                             fobPoint={fobPoint}
                                             onFobPointChange={handleFobPointChange}
                                         />
+                                    </ModalSection>
 
-                                        {/* Marden's Contacts */}
+                                    <ModalSection icon="mdi:contacts-outline" label="Marden's Contacts" color="secondary">
                                         <MardensContactsSection/>
+                                    </ModalSection>
 
-                                        {/* Existing Files */}
-                                        {originalPO && originalPO.files.length > 0 && (
-                                            <div className="flex flex-col gap-4 py-6 border-t-2 border-primary/20">
-                                                <p className="font-headers font-bold text-xl uppercase">Existing Files</p>
-                                                <div className="flex flex-col gap-2">
-                                                    {originalPO.files.map(file => (
-                                                        <div key={file.id} className="flex items-center gap-4 p-3 bg-default-100 rounded-lg">
-                                                            <Icon icon="tabler:file-spreadsheet" width={24}/>
-                                                            <div className="flex-1">
-                                                                <p className="font-medium">{file.filename}</p>
-                                                                <p className="text-xs text-default-500">
-                                                                    {file.asset_type === 1 ? "Manifest" : "Asset"}
-                                                                    {file.uploaded_at && ` • Uploaded ${new Date(file.uploaded_at).toLocaleDateString()}`}
-                                                                </p>
-                                                            </div>
+                                    {/* Existing Files */}
+                                    {originalPO && originalPO.files.length > 0 && (
+                                        <ModalSection icon="tabler:file-spreadsheet" label="Existing Files" color="secondary">
+                                            <div className="flex flex-col gap-2">
+                                                {originalPO.files.map(file => (
+                                                    <div key={file.id} className="flex items-center gap-4 p-3 bg-default-100 rounded-lg">
+                                                        <Icon icon="tabler:file-spreadsheet" width={24}/>
+                                                        <div className="flex-1">
+                                                            <p className="font-medium">{file.filename}</p>
+                                                            <p className="text-xs text-default-500">
+                                                                {file.asset_type === 1 ? "Manifest" : "Asset"}
+                                                                {file.uploaded_at && ` • Uploaded ${new Date(file.uploaded_at).toLocaleDateString()}`}
+                                                            </p>
                                                         </div>
-                                                    ))}
-                                                </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        )}
+                                        </ModalSection>
+                                    )}
 
-                                        {/* Upload New Manifest Section */}
+                                    <ModalSection icon="tabler:cloud-upload" label="Upload Manifest" color="danger">
                                         <UploadManifestSection
                                             files={files}
                                             onFilesChange={handleFilesChange}
                                         />
+                                    </ModalSection>
 
-                                        {/* Line Items Summary */}
-                                        {originalPO && originalPO.line_items.length > 0 && (
-                                            <div className="flex flex-col gap-4 py-6 border-t-2 border-primary/20">
-                                                <p className="font-headers font-bold text-xl uppercase">
-                                                    Line Items ({originalPO.line_items.length})
-                                                </p>
-                                                <div className="max-h-64 overflow-y-auto">
-                                                    <table className="w-full text-sm">
-                                                        <thead className="bg-default-100 sticky top-0">
-                                                        <tr>
-                                                            <th className="text-left p-2">Item #</th>
-                                                            <th className="text-left p-2">Description</th>
-                                                            <th className="text-right p-2">Qty</th>
-                                                            <th className="text-right p-2">Cost</th>
-                                                            <th className="text-right p-2">Total</th>
+                                    {/* Line Items Summary */}
+                                    {originalPO && originalPO.line_items.length > 0 && (
+                                        <ModalSection icon="mdi:format-list-numbered" label={`Line Items (${originalPO.line_items.length})`} color="warning">
+                                            <div className="max-h-64 overflow-y-auto">
+                                                <table className="w-full text-sm">
+                                                    <thead className="bg-default-100 sticky top-0">
+                                                    <tr>
+                                                        <th className="text-left p-2">Item #</th>
+                                                        <th className="text-left p-2">Description</th>
+                                                        <th className="text-right p-2">Qty</th>
+                                                        <th className="text-right p-2">Cost</th>
+                                                        <th className="text-right p-2">Total</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {originalPO.line_items.map(item => (
+                                                        <tr key={item.id} className="border-b border-default-200">
+                                                            <td className="p-2 font-mono">{item.item_number}</td>
+                                                            <td className="p-2 truncate max-w-[200px]">{item.description}</td>
+                                                            <td className="p-2 text-right">{item.qty}</td>
+                                                            <td className="p-2 text-right">${item.mardens_cost.toFixed(2)}</td>
+                                                            <td className="p-2 text-right">${(item.qty * item.mardens_cost).toFixed(2)}</td>
                                                         </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        {originalPO.line_items.map(item => (
-                                                            <tr key={item.id} className="border-b border-default-200">
-                                                                <td className="p-2 font-mono">{item.item_number}</td>
-                                                                <td className="p-2 truncate max-w-[200px]">{item.description}</td>
-                                                                <td className="p-2 text-right">{item.qty}</td>
-                                                                <td className="p-2 text-right">${item.mardens_cost.toFixed(2)}</td>
-                                                                <td className="p-2 text-right">${(item.qty * item.mardens_cost).toFixed(2)}</td>
-                                                            </tr>
-                                                        ))}
-                                                        </tbody>
-                                                        <tfoot className="bg-default-100 font-bold">
-                                                        <tr>
-                                                            <td colSpan={4} className="p-2 text-right">Total:</td>
-                                                            <td className="p-2 text-right">
-                                                                ${originalPO.line_items.reduce((sum, item) => sum + item.qty * item.mardens_cost, 0).toFixed(2)}
-                                                            </td>
-                                                        </tr>
-                                                        </tfoot>
-                                                    </table>
-                                                </div>
-                                                <p className="text-xs text-default-500">
-                                                    Upload a new manifest file to replace the existing line items.
-                                                </p>
+                                                    ))}
+                                                    </tbody>
+                                                    <tfoot className="bg-default-100 font-bold">
+                                                    <tr>
+                                                        <td colSpan={4} className="p-2 text-right">Total:</td>
+                                                        <td className="p-2 text-right">
+                                                            ${originalPO.line_items.reduce((sum, item) => sum + item.qty * item.mardens_cost, 0).toFixed(2)}
+                                                        </td>
+                                                    </tr>
+                                                    </tfoot>
+                                                </table>
                                             </div>
-                                        )}
-                                    </div>
+                                            <p className="text-xs text-default-500">
+                                                Upload a new manifest file to replace the existing line items.
+                                            </p>
+                                        </ModalSection>
+                                    )}
                                 </>
                             )}
                         </ModalBody>
@@ -437,7 +441,7 @@ export function POEditModal(props: POEditModalProps) {
                             </Button>
                             <Button
                                 color="primary"
-                                radius="none"
+                                radius="sm"
                                 endContent={!isSubmitting && <Icon icon="mdi:check" width={18} height={18}/>}
                                 onPress={handleSubmit}
                                 isLoading={isSubmitting}

@@ -25,7 +25,7 @@ export const VendorInfoSection = memo(function VendorInfoSection({vendorName, on
                     Vendor Name <span className="text-danger">*</span>
                 </label>
                 <Input
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     placeholder="e.g. Walmart"
                     value={vendorName}
@@ -42,7 +42,7 @@ export const VendorInfoSection = memo(function VendorInfoSection({vendorName, on
                     Vendor Code <span className="text-danger">*</span>
                 </label>
                 <Input
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     placeholder="WMT"
                     value={vendorCode}
@@ -64,7 +64,7 @@ export const VendorInfoSection = memo(function VendorInfoSection({vendorName, on
                     Status <span className="text-danger">*</span>
                 </label>
                 <Select
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     selectedKeys={[vendorStatus]}
                     onSelectionChange={(keys) => {

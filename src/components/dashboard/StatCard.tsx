@@ -2,14 +2,25 @@ import {Card, CardBody} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {motion} from "framer-motion";
 
+type StatColor = "primary" | "warning" | "success" | "secondary" | "danger";
+
+const colorClasses: Record<StatColor, string> = {
+    primary: "bg-primary/10 text-primary",
+    warning: "bg-warning/10 text-warning",
+    success: "bg-success/10 text-success",
+    secondary: "bg-secondary/10 text-secondary",
+    danger: "bg-danger/10 text-danger",
+};
+
 interface StatCardProps {
     title: string;
     value: string;
     icon: string;
     index: number;
+    color?: StatColor;
 }
 
-export function StatCard({title, value, icon, index}: StatCardProps) {
+export function StatCard({title, value, icon, index, color = "primary"}: StatCardProps) {
     return (
         <motion.div
             initial={{opacity: 0, y: 20}}
@@ -18,7 +29,7 @@ export function StatCard({title, value, icon, index}: StatCardProps) {
         >
             <Card shadow="sm">
                 <CardBody className="flex flex-row items-center gap-4 p-4">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+                    <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${colorClasses[color]}`}>
                         <Icon icon={icon} width={28} height={28}/>
                     </div>
                     <div>

@@ -19,8 +19,8 @@ export const FOBSection = memo(function FOBSection(props: FOBSectionProps)
     }, [onFobTypeChange]);
 
     return (
-        <div className={"flex flex-col gap-4 py-4 border-t-2 border-primary/20"}>
-            <p className={"font-headers font-bold text-xl uppercase"}>FOB (Freight On Board)</p>
+        <div className={"flex flex-col gap-4"}>
+
             <div className={"grid grid-cols-1 xl:grid-cols-2 gap-6"}>
                 <div className={"flex flex-col gap-2"}>
                     <label className={"font-headers font-bold text-lg uppercase"}>
@@ -47,7 +47,7 @@ export const FOBSection = memo(function FOBSection(props: FOBSectionProps)
                         FOB Point / Location
                     </label>
                     <Input
-                        radius={"none"}
+                        radius={"sm"}
                         size={"lg"}
                         placeholder="Enter FOB point or location"
                         value={fobPoint}

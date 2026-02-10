@@ -35,7 +35,7 @@ export const ContactItem = memo(function ContactItem({contact, onChange, onRemov
             </Button>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <Input
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     label="First Name"
                     placeholder="John"
@@ -48,7 +48,7 @@ export const ContactItem = memo(function ContactItem({contact, onChange, onRemov
                     }}
                 />
                 <Input
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     label="Last Name"
                     placeholder="Doe"
@@ -63,7 +63,7 @@ export const ContactItem = memo(function ContactItem({contact, onChange, onRemov
             </div>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <Input
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     label="Email"
                     placeholder="john.doe@example.com"
@@ -77,7 +77,7 @@ export const ContactItem = memo(function ContactItem({contact, onChange, onRemov
                     }}
                 />
                 <Input
-                    radius="none"
+                    radius="sm"
                     size="lg"
                     label="Phone"
                     placeholder="(555) 123-4567"

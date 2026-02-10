@@ -29,7 +29,7 @@ export const UploadItem = memo(function UploadItem(props: UploadItemProps)
                     damping: 30,
                     delay: index * 0.05
                 }}
-                className={"flex flex-row hover:bg-primary/20 border-b-2 border-primary rounded-none p-4 items-center justify-between gap-4 transition-background"}
+                className={"flex flex-row hover:bg-primary/20 border-b-2 border-primary rounded-small p-4 items-center justify-between gap-4 transition-background"}
             >
                 <div className={"flex flex-col min-w-0 flex-1"}>
                     <p className={"font-bold truncate"}>{item.filename}</p>
@@ -47,7 +47,7 @@ export const UploadItem = memo(function UploadItem(props: UploadItemProps)
                         size="sm"
                         variant="light"
                         color="danger"
-                        radius="none"
+                        radius="sm"
                         onPress={onRemove}
                         aria-label="Remove file"
                     >

@@ -20,8 +20,8 @@ export const ShippingInfoSection = memo(function ShippingInfoSection(props: Ship
     } = props;
 
     return (
-        <div className={"flex flex-col gap-4 py-4 border-t-2 border-primary/20"}>
-            <p className={"font-headers font-bold text-xl uppercase"}>Shipping Information</p>
+        <div className={"flex flex-col gap-4"}>
+
             <div className={"grid grid-cols-1 xl:grid-cols-2 gap-6"}>
                 {/* Ship Date */}
                 <div className={"flex flex-col gap-2"}>
@@ -29,7 +29,7 @@ export const ShippingInfoSection = memo(function ShippingInfoSection(props: Ship
                         Ship Date
                     </label>
                     <DatePicker
-                        radius={"none"}
+                        radius={"sm"}
                         size={"lg"}
                         placeholderValue={today(getLocalTimeZone()) as any}
                         value={shipDate as any}
@@ -41,18 +41,18 @@ export const ShippingInfoSection = memo(function ShippingInfoSection(props: Ship
                         }}
                         calendarProps={{
                             classNames: {
-                                base: "rounded-none",
+                                base: "rounded-small",
                                 title: "!text-white",
-                                pickerHighlight: "rounded-none bg-primary/30"
+                                pickerHighlight: "rounded-small bg-primary/30"
                             },
                             buttonPickerProps: {
-                                radius: "none",
+                                radius: "sm",
                                 className: "relative select-none order-2 h-8",
                                 color: "primary",
                                 variant: "solid"
                             },
                             navButtonProps: {
-                                radius: "none",
+                                radius: "sm",
                                 className: "relative select-none text-white data-[hover=true]:opacity-hover flex items-center justify-center gap-2 z-10 order-2 h-8",
                                 color: "primary",
                                 variant: "solid"
@@ -67,7 +67,7 @@ export const ShippingInfoSection = memo(function ShippingInfoSection(props: Ship
                         Cancel Date
                     </label>
                     <DatePicker
-                        radius={"none"}
+                        radius={"sm"}
                         size={"lg"}
                         placeholderValue={today(getLocalTimeZone()) as any}
                         value={cancelDate as any}
@@ -79,18 +79,18 @@ export const ShippingInfoSection = memo(function ShippingInfoSection(props: Ship
                         }}
                         calendarProps={{
                             classNames: {
-                                base: "rounded-none",
+                                base: "rounded-small",
                                 title: "!text-white",
-                                pickerHighlight: "rounded-none bg-primary/30"
+                                pickerHighlight: "rounded-small bg-primary/30"
                             },
                             buttonPickerProps: {
-                                radius: "none",
+                                radius: "sm",
                                 className: "relative select-none order-2 h-8",
                                 color: "primary",
                                 variant: "solid"
                             },
                             navButtonProps: {
-                                radius: "none",
+                                radius: "sm",
                                 className: "relative select-none text-white data-[hover=true]:opacity-hover flex items-center justify-center gap-2 z-10 order-2 h-8",
                                 color: "primary",
                                 variant: "solid"
@@ -106,7 +106,7 @@ export const ShippingInfoSection = memo(function ShippingInfoSection(props: Ship
                     Shipping Notes
                 </label>
                 <Textarea
-                    radius={"none"}
+                    radius={"sm"}
                     size={"lg"}
                     placeholder="Additional shipping instructions or notes"
                     value={shippingNotes}

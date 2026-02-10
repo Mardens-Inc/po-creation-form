@@ -47,7 +47,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                         Vendor Name <span className={"text-danger"}>*</span>
                     </label>
                     <Autocomplete
-                        radius={"none"}
+                        radius={"sm"}
                         size={"lg"}
                         placeholder="Select or enter vendor name"
                         allowsCustomValue
@@ -57,8 +57,8 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                         isLoading={isLoadingVendors}
                         classNames={{
                             base: "font-text text-lg",
-                            listboxWrapper: "rounded-none",
-                            popoverContent: "rounded-none"
+                            listboxWrapper: "rounded-small",
+                            popoverContent: "rounded-small"
                         }}
                         inputProps={{
                             classNames: {
@@ -68,7 +68,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                         }}
                         listboxProps={{
                             itemClasses: {
-                                base: "rounded-none"
+                                base: "rounded-small"
                             }
                         }}
                     >
@@ -86,7 +86,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                         Order Date
                     </label>
                     <DatePicker
-                        radius={"none"}
+                        radius={"sm"}
                         size={"lg"}
                         value={orderDate as any}
                         onChange={onOrderDateChange as any}
@@ -97,18 +97,18 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                         }}
                         calendarProps={{
                             classNames: {
-                                base: "rounded-none",
+                                base: "rounded-small",
                                 title: "!text-white",
-                                pickerHighlight: "rounded-none bg-primary/30"
+                                pickerHighlight: "rounded-small bg-primary/30"
                             },
                             buttonPickerProps: {
-                                radius: "none",
+                                radius: "sm",
                                 className: "relative select-none order-2 h-8",
                                 color: "primary",
                                 variant: "solid"
                             },
                             navButtonProps: {
-                                radius: "none",
+                                radius: "sm",
                                 className: "relative select-none text-white data-[hover=true]:opacity-hover flex items-center justify-center gap-2 z-10 order-2 h-8",
                                 color: "primary",
                                 variant: "solid"
@@ -124,7 +124,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     Description <span className={"text-danger"}>*</span>
                 </label>
                 <Textarea
-                    radius={"none"}
+                    radius={"sm"}
                     size={"lg"}
                     placeholder="Brief order description"
                     value={description}
@@ -145,7 +145,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     Terms
                 </label>
                 <Input
-                    radius={"none"}
+                    radius={"sm"}
                     size={"lg"}
                     placeholder="Payment/delivery terms"
                     value={terms}
@@ -163,7 +163,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     Ship-To Address
                 </label>
                 <Autocomplete
-                    radius={"none"}
+                    radius={"sm"}
                     size={"lg"}
                     placeholder="Select or enter delivery destination"
                     allowsCustomValue
@@ -171,8 +171,8 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     onInputChange={onShipToAddressChange}
                     classNames={{
                         base: "font-text text-lg",
-                        listboxWrapper: "rounded-none",
-                        popoverContent: "rounded-none"
+                        listboxWrapper: "rounded-small",
+                        popoverContent: "rounded-small"
                     }}
                     inputProps={{
                         classNames: {
@@ -182,7 +182,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     }}
                     listboxProps={{
                         itemClasses: {
-                            base: "rounded-none"
+                            base: "rounded-small"
                         }
                     }}
                 >
@@ -200,7 +200,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     Notes / Disclaimers
                 </label>
                 <Textarea
-                    radius={"none"}
+                    radius={"sm"}
                     size={"lg"}
                     placeholder="Additional notes or disclaimers"
                     value={notes}

@@ -5,6 +5,7 @@ import {CalendarDate, getLocalTimeZone, today} from "@internationalized/date";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendorsContext} from "../../providers/VendorsProvider.tsx";
 import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection} from "./po-information";
+import {ModalSection} from "../ModalSection.tsx";
 
 type POCreationProperties = {
     isOpen: boolean;
@@ -243,19 +244,22 @@ export function POCreationModal(props: POCreationProperties)
             <ModalContent>
                 {onClose => (
                     <>
-                        <ModalHeader className="font-headers font-black text-xl uppercase">
+                        <ModalHeader className="font-headers font-black text-xl uppercase flex items-center gap-2">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-success/10 text-success">
+                                <Icon icon="mage:plus-square" width={20} height={20}/>
+                            </div>
                             Create Purchase Order
                         </ModalHeader>
-                        <ModalBody className="gap-0">
-                            {/* PO Number Section */}
-                            <PONumberSection
-                                poNumber={poNumber}
-                                buyerId={buyerId}
-                                onPoNumberChange={handlePoNumberChange}
-                            />
+                        <ModalBody className="gap-6">
+                            <ModalSection icon="mdi:pound" label="PO Number" color="primary" showDivider={false}>
+                                <PONumberSection
+                                    poNumber={poNumber}
+                                    buyerId={buyerId}
+                                    onPoNumberChange={handlePoNumberChange}
+                                />
+                            </ModalSection>
 
-                            {/* Order Details Section */}
-                            <div className="flex flex-col gap-6 py-6">
+                            <ModalSection icon="mdi:file-document-outline" label="Order Details" color="primary">
                                 <OrderDetailsSection
                                     vendorName={vendorName}
                                     onVendorNameChange={handleVendorNameChange}
@@ -272,8 +276,9 @@ export function POCreationModal(props: POCreationProperties)
                                     vendors={vendorOptions}
                                     isLoadingVendors={isLoadingVendors}
                                 />
+                            </ModalSection>
 
-                                {/* Shipping Information */}
+                            <ModalSection icon="tabler:truck" label="Shipping" color="success">
                                 <ShippingInfoSection
                                     shipDate={shipDate}
                                     onShipDateChange={handleShipDateChange}
@@ -282,24 +287,27 @@ export function POCreationModal(props: POCreationProperties)
                                     shippingNotes={shippingNotes}
                                     onShippingNotesChange={handleShippingNotesChange}
                                 />
+                            </ModalSection>
 
-                                {/* FOB Section */}
+                            <ModalSection icon="mdi:map-marker-outline" label="FOB" color="warning">
                                 <FOBSection
                                     fobType={fobType}
                                     onFobTypeChange={handleFobTypeChange}
                                     fobPoint={fobPoint}
                                     onFobPointChange={handleFobPointChange}
                                 />
+                            </ModalSection>
 
-                                {/* Marden's Contacts */}
+                            <ModalSection icon="mdi:contacts-outline" label="Marden's Contacts" color="secondary">
                                 <MardensContactsSection/>
+                            </ModalSection>
 
-                                {/* Upload Manifest Section */}
+                            <ModalSection icon="tabler:cloud-upload" label="Upload Manifest" color="danger">
                                 <UploadManifestSection
                                     files={files}
                                     onFilesChange={handleFilesChange}
                                 />
-                            </div>
+                            </ModalSection>
                         </ModalBody>
                         <ModalFooter>
                             <Button
@@ -310,7 +318,7 @@ export function POCreationModal(props: POCreationProperties)
                             </Button>
                             <Button
                                 color="primary"
-                                radius="none"
+                                radius="sm"
                                 endContent={!isSubmitting && <Icon icon="mdi:check" width={18} height={18}/>}
                                 onPress={handleSubmit}
                                 isLoading={isSubmitting}

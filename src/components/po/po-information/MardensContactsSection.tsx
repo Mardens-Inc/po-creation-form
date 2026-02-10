@@ -4,8 +4,8 @@ import {memo} from "react";
 export const MardensContactsSection = memo(function MardensContactsSection()
 {
     return (
-        <div className={"flex flex-col gap-4 py-4 border-t-2 border-primary/20"}>
-            <p className={"font-headers font-bold text-xl uppercase"}>Marden's Contacts</p>
+        <div className={"flex flex-col gap-4"}>
+
             <div className={"grid grid-cols-1 xl:grid-cols-2 gap-6"}>
                 <div className={"flex items-center gap-3 p-4 bg-primary/10 rounded-lg"}>
                     <Icon icon={"tabler:truck"} width={24} height={24} className={"text-primary"}/>

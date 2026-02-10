@@ -93,8 +93,8 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
     }, [files, onFilesChange]);
 
     return (
-        <div className={"flex flex-col gap-4 py-6 border-t-2 border-primary/20"}>
-            <p className={"font-headers font-bold text-xl uppercase"}>Upload Manifest Files</p>
+        <div className={"flex flex-col gap-4"}>
+
             <input
                 ref={fileInputRef}
                 type="file"
@@ -124,7 +124,7 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
             </div>
             <div className={"flex flex-row mx-auto gap-2"}>
                 <Button
-                    radius={"none"}
+                    radius={"sm"}
                     color={"primary"}
                     size={"lg"}
                     startContent={<Icon icon={"tabler:file-upload-filled"}/>}

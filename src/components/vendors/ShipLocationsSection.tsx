@@ -2,7 +2,7 @@ import {Button} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
 import {memo, useCallback} from "react";
 import {AnimatePresence} from "framer-motion";
-import {ShipLocation, nextLocationId} from "./types.ts";
+import {ShipLocation} from "./types.ts";
 import {ShipLocationItem} from "./ShipLocationItem.tsx";
 
 type ShipLocationsSectionProps = {
@@ -10,13 +10,22 @@ type ShipLocationsSectionProps = {
     onLocationsChange: (locations: ShipLocation[]) => void;
 }
 
+export function AddLocationButton({onPress}: { onPress: () => void }) {
+    return (
+        <Button
+            size="sm"
+            color="primary"
+            radius="sm"
+            startContent={<Icon icon="tabler:plus" width={16} height={16}/>}
+            onPress={onPress}
+        >
+            Add Location
+        </Button>
+    );
+}
+
 export const ShipLocationsSection = memo(function ShipLocationsSection({locations, onLocationsChange}: ShipLocationsSectionProps)
 {
-    const addLocation = useCallback(() =>
-    {
-        onLocationsChange([...locations, {id: nextLocationId(), address: ""}]);
-    }, [locations, onLocationsChange]);
-
     const updateLocation = useCallback((id: string, updated: ShipLocation) =>
     {
         onLocationsChange(locations.map(l => l.id === id ? updated : l));
@@ -29,18 +38,6 @@ export const ShipLocationsSection = memo(function ShipLocationsSection({location
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <p className="font-headers font-bold text-xl uppercase">Ship Locations</p>
-                <Button
-                    size="sm"
-                    color="primary"
-                    radius="none"
-                    startContent={<Icon icon="tabler:plus" width={16} height={16}/>}
-                    onPress={addLocation}
-                >
-                    Add Location
-                </Button>
-            </div>
             {locations.length === 0 && (
                 <p className="text-default-400 text-sm italic">No ship locations added yet. Click "Add Location" to add one.</p>
             )}

@@ -173,11 +173,11 @@ export const PONumberSection = memo(function PONumberSection({poNumber, buyerId,
     }, [poNumber, prefix, getSuffix, onPoNumberChange]);
 
     return (
-        <div className={"flex flex-col items-center gap-4 py-6 border-b-2 border-primary/20"}>
-            <p className={"font-accent text-xl uppercase tracking-wide"}>PO Number</p>
+        <div className={"flex flex-col items-center gap-4 py-2"}>
+
             <div className={"flex items-center gap-4 w-full max-w-2xl"}>
                 <Button
-                    radius={"none"}
+                    radius={"sm"}
                     color={"primary"}
                     size={"lg"}
                     isIconOnly
@@ -215,7 +215,7 @@ export const PONumberSection = memo(function PONumberSection({poNumber, buyerId,
                                     inputWrapper: "bg-transparent border-b-4 border-primary shadow-none hover:bg-transparent w-auto min-w-[100px]"
                                 }}
                                 style={{fontSize: `${Math.min(fontSize, 48)}px`}}
-                                radius="none"
+                                radius="sm"
                                 variant="underlined"
                             />
                         </div>
@@ -232,7 +232,7 @@ export const PONumberSection = memo(function PONumberSection({poNumber, buyerId,
                     )}
                 </div>
                 <Button
-                    radius={"none"}
+                    radius={"sm"}
                     color={"primary"}
                     size={"lg"}
                     isIconOnly
