@@ -34,7 +34,7 @@ impl EmailService {
     ) -> Result<()> {
         debug!("Sending confirmation email to {}", email_address);
         let mut context = tera::Context::new();
-        context.insert("email", email_address);
+        context.insert("email", &uri_encode::encode_uri_component(email_address));
         context.insert("token", token);
         context.insert("first_name", first_name);
         let url = if cfg!(debug_assertions) {
@@ -70,9 +70,9 @@ impl EmailService {
     ) -> Result<()> {
         debug!("Sending password reset email to {}", email_address);
         let mut context = tera::Context::new();
-        context.insert("email", email_address);
+        context.insert("email", &uri_encode::encode_uri_component(email_address));
         context.insert("token", token);
-        context.insert("first_name", first_name);
+        context.insert("first_name", &uri_encode::encode_uri_component(first_name));
         let url = if cfg!(debug_assertions) {
             format!("http://localhost:{}", crate::PORT)
         } else {
