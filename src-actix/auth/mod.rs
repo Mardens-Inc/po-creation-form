@@ -1,5 +1,5 @@
 mod users_db;
-mod users_data;
+pub(crate) mod users_data;
 mod user_role;
 mod auth_endpoint;
 mod auth_endpoint_data;
@@ -8,7 +8,7 @@ pub(crate) mod auth_service;
 pub(crate) mod auth_middleware;
 mod registration_db;
 mod password_reset_db;
-mod email_service;
+pub(crate) mod email_service;
 mod mfa;
 
 use sqlx::MySqlTransaction;

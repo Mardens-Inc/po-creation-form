@@ -1,9 +1,12 @@
 use crate::auth::auth_middleware::validator;
+use crate::auth::email_service::EmailService;
 use crate::auth::jwt_data::Claims;
+use crate::auth::users_data::User;
 use crate::events::broadcaster::{Broadcaster, SSEEvent};
 use actix_web::web::Json;
 use actix_web::{delete, get, post, put, web, HttpMessage, HttpRequest, HttpResponse, Responder, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
+use log::error;
 use serde_json::json;
 
 use super::vendors_data::{
@@ -117,6 +120,31 @@ pub async fn create_vendor(
         .commit()
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    // Send notification email to vendor approvers
+    let username = match User::get_user_from_request(&req).await {
+        Ok(user) => format!("{} {}", user.first_name, user.last_name),
+        Err(_) => "Unknown User".to_string(),
+    };
+    match EmailService::new() {
+        Ok(email_service) => {
+            if let Err(e) = email_service
+                .send_vendor_created_email(
+                    &username,
+                    &body.name,
+                    &body.code,
+                    &body.contacts,
+                    &body.ship_locations,
+                )
+                .await
+            {
+                error!("Failed to send vendor created notification email: {}", e);
+            }
+        }
+        Err(e) => {
+            error!("Failed to create email service for vendor notification: {}", e);
+        }
+    }
 
     // Fetch the created vendor with relations
     let vendor = vendors_db::get_vendor_by_id(vendor_id)

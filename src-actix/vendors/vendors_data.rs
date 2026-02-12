@@ -131,7 +131,7 @@ pub struct CreateVendorRequest {
     pub ship_locations: Vec<CreateShipLocationRequest>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CreateContactRequest {
     pub first_name: String,
     pub last_name: String,
@@ -140,7 +140,7 @@ pub struct CreateContactRequest {
     pub phone: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CreateShipLocationRequest {
     pub address: String,
 }

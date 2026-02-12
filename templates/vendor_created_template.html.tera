@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Vendor Creation Request</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            color: #1f2937;
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 10px 0;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .content {
+            margin-bottom: 30px;
+        }
+
+        .info-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .detail-section {
+            background-color: #f9fafb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .detail-section h3 {
+            color: #1f2937;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+        }
+
+        .detail-item {
+            font-size: 14px;
+            color: #374151;
+            margin: 4px 0;
+        }
+
+        .contact-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+
+        .contact-card .name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .contact-card .detail {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 2px 0;
+        }
+
+        .location-item {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin: 6px 0;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .empty-note {
+            font-size: 13px;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <h1 class="title">New Vendor Creation Request</h1>
+        <p class="subtitle">A new vendor has been submitted for approval</p>
+    </div>
+
+    <div class="content">
+        <p class="info-text">
+            PO Tracker User <strong>{{ username }}</strong> has requested that a Vendor is created with the following details:
+        </p>
+
+        <div class="detail-section">
+            <h3>Vendor Details</h3>
+            <p class="detail-item"><strong>Name:</strong> {{ vendor_name }}</p>
+            <p class="detail-item"><strong>Code:</strong> {{ vendor_code }}</p>
+        </div>
+
+        <div class="detail-section">
+            <h3>Contacts</h3>
+            {% if contacts | length > 0 %}
+                {% for contact in contacts %}
+                <div class="contact-card">
+                    <p class="name">{{ contact.first_name }} {{ contact.last_name }}</p>
+                    {% if contact.email %}
+                    <p class="detail">Email: {{ contact.email }}</p>
+                    {% endif %}
+                    {% if contact.phone %}
+                    <p class="detail">Phone: {{ contact.phone }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-note">No contacts provided.</p>
+            {% endif %}
+        </div>
+
+        <div class="detail-section">
+            <h3>Shipping Locations</h3>
+            {% if ship_locations | length > 0 %}
+                {% for location in ship_locations %}
+                <div class="location-item">
+                    {{ location.address }}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-note">No shipping locations provided.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Best regards,<br><strong>Mardens IT Team</strong></p>
+        <p style="margin-top: 15px; font-size: 12px;">
+            This is an automated message from the Mardens PO Tracker system.
+        </p>
+    </div>
+</div>
+</body>
+</html>
