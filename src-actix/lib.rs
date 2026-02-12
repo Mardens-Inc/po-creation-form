@@ -21,8 +21,15 @@ pub static DEBUG: bool = cfg!(debug_assertions);
 const PORT: u16 = 8522;
 
 pub async fn run() -> Result<()> {
-    pretty_env_logger::env_logger::builder()
-        .init();
+    #[cfg(debug_assertions)]
+    {
+        if let Err(e) = std::env::set_current_dir("./target/dev-env") {
+            eprintln!("Failed to change directory to dev-env: {}", e);
+            std::process::exit(1);
+        }
+    }
+
+    pretty_env_logger::env_logger::builder().init();
 
     app_db::initialize_database().await?;
 
