@@ -4,7 +4,7 @@ import {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, u
 import {CalendarDate, getLocalTimeZone, today} from "@internationalized/date";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendorsContext} from "../../providers/VendorsProvider.tsx";
-import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection} from "./po-information";
+import {FOBSection, FOBType, ManifestParseResult, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection, UploadTemplateSection} from "./po-information";
 import {ModalSection} from "../ModalSection.tsx";
 
 type POCreationProperties = {
@@ -69,6 +69,8 @@ export function POCreationModal(props: POCreationProperties)
     const [fobPoint, setFobPoint] = useState("");
     const [notes, setNotes] = useState("");
     const [files, setFiles] = useState<UploadFileItem[]>([]);
+    const [templateFile, setTemplateFile] = useState<UploadFileItem | null>(null);
+    const [isProcessingTemplate, setIsProcessingTemplate] = useState(false);
 
     // Update PO number when buyer ID changes
     useEffect(() =>
@@ -97,6 +99,16 @@ export function POCreationModal(props: POCreationProperties)
     const handleFobTypeChange = useCallback((value: FOBType) => setFobType(value), []);
     const handleFobPointChange = useCallback((value: string) => setFobPoint(value), []);
     const handleFilesChange = useCallback((value: UploadFileItem[]) => setFiles(value), []);
+    const handleTemplateFileChange = useCallback((file: UploadFileItem | null) => setTemplateFile(file), []);
+    const handleProcessingChange = useCallback((processing: boolean) => setIsProcessingTemplate(processing), []);
+    const handleMetadataExtracted = useCallback((result: ManifestParseResult) =>
+    {
+        if (result.po_number) setPoNumber(result.po_number);
+        if (result.terms) setTerms(result.terms);
+        if (result.ship_to_address) setShipToAddress(result.ship_to_address);
+        if (result.ship_from_address) setFobPoint(result.ship_from_address);
+        if (result.notes) setNotes(result.notes);
+    }, []);
 
     const handleSubmit = useCallback(async () =>
     {
@@ -168,10 +180,11 @@ export function POCreationModal(props: POCreationProperties)
             const createdPO = await createResponse.json();
             const poId = createdPO.id;
 
-            // Step 2: Upload manifest files
-            for (const file of files)
+            // Step 2: Upload files (template first, then additional manifest files)
+            const allFiles = templateFile ? [templateFile, ...files] : files;
+            for (const file of allFiles)
             {
-                const assetType = file.asset_type === UploadFileType.Manifest ? 1 : 0;
+                const assetType = file.asset_type === UploadFileType.Manifest ? "Manifest" : "Asset";
                 const uploadUrl = `/api/purchase-orders/${poId}/files?filename=${encodeURIComponent(file.filename)}&asset_type=${assetType}`;
 
                 const fileBuffer = await file.file.arrayBuffer();
@@ -217,6 +230,8 @@ export function POCreationModal(props: POCreationProperties)
             setFobPoint("");
             setNotes("");
             setFiles([]);
+            setTemplateFile(null);
+            setIsProcessingTemplate(false);
 
             props.onClose();
         } catch (error)
@@ -231,7 +246,7 @@ export function POCreationModal(props: POCreationProperties)
         {
             setIsSubmitting(false);
         }
-    }, [getToken, vendorName, orderDate, vendors, poNumber, description, shipDate, cancelDate, shippingNotes, terms, shipToAddress, fobType, fobPoint, notes, files, buyerId, props]);
+    }, [getToken, vendorName, orderDate, vendors, poNumber, description, shipDate, cancelDate, shippingNotes, terms, shipToAddress, fobType, fobPoint, notes, files, templateFile, buyerId, props]);
 
     return (
         <Modal
@@ -258,6 +273,14 @@ export function POCreationModal(props: POCreationProperties)
                                     onPoNumberChange={handlePoNumberChange}
                                 />
                             </ModalSection>
+
+                            <UploadTemplateSection
+                                templateFile={templateFile}
+                                isProcessing={isProcessingTemplate}
+                                onTemplateFileChange={handleTemplateFileChange}
+                                onProcessingChange={handleProcessingChange}
+                                onMetadataExtracted={handleMetadataExtracted}
+                            />
 
                             <ModalSection icon="mdi:file-document-outline" label="Order Details" color="primary">
                                 <OrderDetailsSection
@@ -302,7 +325,7 @@ export function POCreationModal(props: POCreationProperties)
                                 <MardensContactsSection/>
                             </ModalSection>
 
-                            <ModalSection icon="tabler:cloud-upload" label="Upload Manifest" color="danger">
+                            <ModalSection icon="tabler:cloud-upload" label="Upload Assets" color="danger">
                                 <UploadManifestSection
                                     files={files}
                                     onFilesChange={handleFilesChange}

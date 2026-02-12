@@ -36,6 +36,17 @@ export const PO_NUMBER_MAX_LENGTH = 10;
 
 export const manifestExtensions = ["xlsx"];
 
+export interface ManifestParseResult {
+    buyer_name: string;
+    po_number: string;
+    vendor_name: string;
+    terms: string;
+    ship_to_address: string;
+    ship_from_address: string;
+    notes: string;
+    line_items: unknown[];
+}
+
 export const shipToAddressOptions = [
     {key: "address-1", label: "123 Main Street, Waterville, ME 04901"},
     {key: "address-2", label: "456 Oak Avenue, Portland, ME 04101"},

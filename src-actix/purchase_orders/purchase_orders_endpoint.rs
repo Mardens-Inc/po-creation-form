@@ -344,7 +344,7 @@ pub async fn upload_file(
         // Insert parsed line items and calculate total
         let mut total_amount: f64 = 0.0;
         for item in &manifest.line_items {
-            total_amount += item.qty as f64 * item.mardens_cost;
+            total_amount += item.qty as f64 * f64::try_from(item.mardens_price).unwrap_or(0f64);
             purchase_orders_db::insert_line_item_with_transaction(
                 &mut transaction,
                 po_id,
@@ -354,9 +354,9 @@ pub async fn upload_file(
                 &item.case_pack,
                 &item.cases,
                 item.qty,
-                item.mardens_cost,
-                item.mardens_price,
-                item.comp_retail,
+                f64::try_from(item.mardens_cost).unwrap_or(0f64),
+                f64::try_from(item.mardens_price).unwrap_or(0f64),
+                f64::try_from(item.comp_retail).unwrap_or(0f64),
                 &item.department,
                 &item.category,
                 &item.sub_category,

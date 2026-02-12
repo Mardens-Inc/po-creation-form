@@ -6,3 +6,4 @@ export {FOBSection} from "./FOBSection.tsx";
 export {MardensContactsSection} from "./MardensContactsSection.tsx";
 export {UploadManifestSection} from "./UploadManifestSection.tsx";
 export {UploadItem} from "./UploadItem.tsx";
+export {UploadTemplateSection} from "./UploadTemplateSection.tsx";

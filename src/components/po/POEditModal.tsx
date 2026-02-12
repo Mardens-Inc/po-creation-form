@@ -211,7 +211,7 @@ export function POEditModal(props: POEditModalProps) {
 
             // Upload any new manifest files
             for (const file of files) {
-                const assetType = file.asset_type === UploadFileType.Manifest ? 1 : 0;
+                const assetType = file.asset_type === UploadFileType.Manifest ? "Manifest" : "Asset";
                 const uploadUrl = `/api/purchase-orders/${props.poId}/files?filename=${encodeURIComponent(file.filename)}&asset_type=${assetType}`;
 
                 const fileBuffer = await file.file.arrayBuffer();
@@ -352,7 +352,7 @@ export function POEditModal(props: POEditModalProps) {
                                         </ModalSection>
                                     )}
 
-                                    <ModalSection icon="tabler:cloud-upload" label="Upload Manifest" color="danger">
+                                    <ModalSection icon="tabler:cloud-upload" label="Upload Assets" color="danger">
                                         <UploadManifestSection
                                             files={files}
                                             onFilesChange={handleFilesChange}
@@ -379,8 +379,8 @@ export function POEditModal(props: POEditModalProps) {
                                                             <td className="p-2 font-mono">{item.item_number}</td>
                                                             <td className="p-2 truncate max-w-[200px]">{item.description}</td>
                                                             <td className="p-2 text-right">{item.qty}</td>
-                                                            <td className="p-2 text-right">${item.mardens_cost.toFixed(2)}</td>
-                                                            <td className="p-2 text-right">${(item.qty * item.mardens_cost).toFixed(2)}</td>
+                                                            <td className="p-2 text-right">${Number(item.mardens_cost).toFixed(2)}</td>
+                                                            <td className="p-2 text-right">${(Number(item.qty) * Number(item.mardens_cost)).toFixed(2)}</td>
                                                         </tr>
                                                     ))}
                                                     </tbody>
@@ -388,7 +388,7 @@ export function POEditModal(props: POEditModalProps) {
                                                     <tr>
                                                         <td colSpan={4} className="p-2 text-right">Total:</td>
                                                         <td className="p-2 text-right">
-                                                            ${originalPO.line_items.reduce((sum, item) => sum + item.qty * item.mardens_cost, 0).toFixed(2)}
+                                                            ${originalPO.line_items.reduce((sum, item) => sum + Number(item.qty) * Number(item.mardens_cost), 0).toFixed(2)}
                                                         </td>
                                                     </tr>
                                                     </tfoot>

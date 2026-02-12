@@ -34,13 +34,13 @@ export const UploadItem = memo(function UploadItem(props: UploadItemProps)
                 <div className={"flex flex-col min-w-0 flex-1"}>
                     <p className={"font-bold truncate"}>{item.filename}</p>
                     <p className={"italic truncate text-tiny text-default-400"}>
-                        {(item.file.size / 1024).toFixed(1)} KB &middot; {item.file.type || "Excel Spreadsheet"}
+                        {(item.file.size / 1024).toFixed(1)} KB &middot; {item.file.type || "Asset File"}
                     </p>
                 </div>
                 <div className={"flex flex-row gap-2 items-center"}>
                     <Chip size="sm" color="primary" variant="flat">
                         <Icon icon="tabler:file-spreadsheet" className="mr-1" />
-                        PO Template
+                        Asset File
                     </Chip>
                     <Button
                         isIconOnly

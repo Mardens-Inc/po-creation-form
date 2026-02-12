@@ -1,8 +1,8 @@
-import {Button, Chip, cn} from "@heroui/react";
+import {Button, cn} from "@heroui/react";
 import {Icon} from "@iconify-icon/react";
-import {memo, useCallback, useRef, useState} from "react";
+import React, {memo, useCallback, useRef, useState} from "react";
 import {AnimatePresence} from "framer-motion";
-import {UploadFileItem, UploadFileType, manifestExtensions} from "./types.ts";
+import {UploadFileItem, UploadFileType} from "./types.ts";
 import {UploadItem} from "./UploadItem.tsx";
 
 type UploadManifestSectionProps = {
@@ -24,20 +24,11 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
         for (const file of Array.from(incoming))
         {
             if (existingNames.has(file.name)) continue;
-            const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
-
-            // Only allow xlsx files
-            if (!manifestExtensions.includes(extension))
-            {
-                console.warn(`Skipping file "${file.name}" - only .xlsx files are allowed`);
-                continue;
-            }
-
             newItems.push({
                 key: `${file.name}-${Date.now()}`,
                 filename: file.name,
                 file,
-                asset_type: UploadFileType.Manifest
+                asset_type: UploadFileType.Asset
             });
         }
 
@@ -99,7 +90,6 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 className="hidden"
                 onChange={handleInputChange}
             />
@@ -116,11 +106,7 @@ export const UploadManifestSection = memo(function UploadManifestSection(props: 
             >
                 <Icon icon="tabler:cloud-upload" width={40} height={40} className="text-default-400"/>
                 <p className={"font-headers text-xl font-bold"}>Drag & drop files here or click to browse</p>
-                <div className={"flex gap-2 items-center"}>
-                    <span className="text-sm text-default-500">Accepted format:</span>
-                    <Chip size="sm" color={"primary"}>XLSX</Chip>
-                </div>
-                <p className="text-xs text-default-400">Upload a PO Template Excel file (.xlsx) to import line items.</p>
+                <p className="text-xs text-default-400">Upload any additional asset files related to this purchase order.</p>
             </div>
             <div className={"flex flex-row mx-auto gap-2"}>
                 <Button
