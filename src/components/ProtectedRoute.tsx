@@ -37,11 +37,11 @@ export function ProtectedRoute()
             <PurchaseOrdersProvider>
                 <VendorsProvider>
                     <UsersProvider>
-                        <POCreationProvider>
-                            <VendorCreationProvider>
+                        <VendorCreationProvider>
+                            <POCreationProvider>
                                 <ProtectedRouteContent/>
-                            </VendorCreationProvider>
-                        </POCreationProvider>
+                            </POCreationProvider>
+                        </VendorCreationProvider>
                     </UsersProvider>
                 </VendorsProvider>
             </PurchaseOrdersProvider>

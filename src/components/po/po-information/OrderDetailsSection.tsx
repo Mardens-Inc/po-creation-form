@@ -1,7 +1,9 @@
-import {Autocomplete, AutocompleteItem, DatePicker, Input, Textarea} from "@heroui/react";
+import {Autocomplete, AutocompleteItem, Button, DatePicker, Input, Textarea, Tooltip} from "@heroui/react";
 import {CalendarDate} from "@internationalized/date";
 import {memo} from "react";
 import {shipToAddressOptions} from "./types.ts";
+import {Icon} from "@iconify-icon/react";
+import {useVendorCreation} from "../../vendors/VendorCreationModal.tsx";
 
 type VendorOption = {
     key: string;
@@ -37,6 +39,7 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
         vendors = [],
         isLoadingVendors = false
     } = props;
+    const {openVendorCreationModal} = useVendorCreation();
 
     return (
         <>
@@ -46,38 +49,50 @@ export const OrderDetailsSection = memo(function OrderDetailsSection(props: Orde
                     <label className={"font-headers font-bold text-lg uppercase"}>
                         Vendor Name <span className={"text-danger"}>*</span>
                     </label>
-                    <Autocomplete
-                        radius={"sm"}
-                        size={"lg"}
-                        placeholder="Select or enter vendor name"
-                        allowsCustomValue
-                        inputValue={vendorName}
-                        onInputChange={onVendorNameChange}
-                        isRequired
-                        isLoading={isLoadingVendors}
-                        classNames={{
-                            base: "font-text text-lg",
-                            listboxWrapper: "rounded-small",
-                            popoverContent: "rounded-small"
-                        }}
-                        inputProps={{
-                            classNames: {
-                                input: "font-text text-lg",
-                                inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
-                            }
-                        }}
-                        listboxProps={{
-                            itemClasses: {
-                                base: "rounded-small"
-                            }
-                        }}
-                    >
-                        {vendors.map((vendor) => (
-                            <AutocompleteItem key={vendor.key}>
-                                {vendor.label}
-                            </AutocompleteItem>
-                        ))}
-                    </Autocomplete>
+                    <div className={"flex flex-row w-full gap-2 items-center"}>
+                        <Autocomplete
+                            radius={"sm"}
+                            size={"lg"}
+                            placeholder="Select or enter vendor name"
+                            inputValue={vendorName}
+                            onInputChange={onVendorNameChange}
+                            isRequired
+                            isLoading={isLoadingVendors}
+                            classNames={{
+                                base: "font-text text-lg",
+                                listboxWrapper: "rounded-small",
+                                popoverContent: "rounded-small"
+                            }}
+                            inputProps={{
+                                classNames: {
+                                    input: "font-text text-lg",
+                                    inputWrapper: "border-2 border-primary/50 hover:border-primary transition-colors"
+                                }
+                            }}
+                            listboxProps={{
+                                itemClasses: {
+                                    base: "rounded-small"
+                                }
+                            }}
+                        >
+                            {vendors.map((vendor) => (
+                                <AutocompleteItem key={vendor.key}>
+                                    {vendor.label}
+                                </AutocompleteItem>
+                            ))}
+                        </Autocomplete>
+                        <Tooltip content={"Add a new vendor"}>
+                            <Button
+                                isIconOnly
+                                size={"lg"}
+                                radius={"sm"}
+                                color={"primary"}
+                                onPress={openVendorCreationModal}
+                            >
+                                <Icon icon={"mage:plus"} className={"text-white text-xl"}/>
+                            </Button>
+                        </Tooltip>
+                    </div>
                 </div>
 
                 {/* Order Date */}
