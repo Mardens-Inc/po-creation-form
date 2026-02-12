@@ -12,6 +12,7 @@ use vite_actix::start_vite_server;
 mod app_db;
 mod auth;
 mod data;
+pub mod events;
 pub mod purchase_orders;
 mod status_endpoint;
 mod util;
@@ -37,6 +38,8 @@ pub async fn run() -> Result<()> {
     auth::auth_service::init_jwt_secrets();
     auth::auth_service::start_jwt_rotation_scheduler();
 
+    let broadcaster = web::Data::new(events::broadcaster::Broadcaster::new());
+
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin("http://localhost:1420")
@@ -56,6 +59,7 @@ pub async fn run() -> Result<()> {
         App::new()
             .wrap(cors)
             .wrap(middleware::Logger::default())
+            .app_data(broadcaster.clone())
             .app_data(
                 web::JsonConfig::default()
                     .limit(4096)
@@ -74,7 +78,8 @@ pub async fn run() -> Result<()> {
                     .configure(data::configure)
                     .configure(auth::configure)
                     .configure(vendors::configure)
-                    .configure(purchase_orders::configure),
+                    .configure(purchase_orders::configure)
+                    .configure(events::configure),
             )
             .configure_frontend_routes()
     })

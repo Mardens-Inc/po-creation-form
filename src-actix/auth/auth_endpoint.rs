@@ -3,6 +3,7 @@ use crate::auth::auth_middleware::validator;
 use crate::auth::mfa;
 use crate::auth::users_data::{RequestExt, User};
 use crate::auth::{users_db};
+use crate::events::broadcaster::{Broadcaster, SSEEvent};
 use actix_web::web::Json;
 use actix_web::{delete, get, post, put, web, HttpRequest, HttpResponse, Responder, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -19,7 +20,7 @@ pub async fn get_users(req: HttpRequest) -> Result<impl Responder> {
 }
 
 #[put("/users/{id}")]
-pub async fn update_user(req: HttpRequest, path: web::Path<u32>, body: Json<UpdateUserBody>) -> Result<impl Responder> {
+pub async fn update_user(req: HttpRequest, path: web::Path<u32>, body: Json<UpdateUserBody>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     User::require_admin(&req).await?;
     let user_id = path.into_inner();
     let body = body.into_inner();
@@ -46,11 +47,13 @@ pub async fn update_user(req: HttpRequest, path: web::Path<u32>, body: Json<Upda
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
+    broadcaster.send(SSEEvent::Users);
+
     Ok(HttpResponse::Ok().json(json!({ "message": "User updated successfully" })))
 }
 
 #[delete("/users/{id}")]
-pub async fn delete_user(req: HttpRequest, path: web::Path<u32>) -> Result<impl Responder> {
+pub async fn delete_user(req: HttpRequest, path: web::Path<u32>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     let admin = User::require_admin(&req).await?;
     let user_id = path.into_inner();
 
@@ -68,11 +71,13 @@ pub async fn delete_user(req: HttpRequest, path: web::Path<u32>) -> Result<impl 
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
+    broadcaster.send(SSEEvent::Users);
+
     Ok(HttpResponse::Ok().json(json!({ "message": "User deleted successfully" })))
 }
 
 #[post("/users/{id}/force-password-reset")]
-pub async fn force_password_reset(req: HttpRequest, path: web::Path<u32>) -> Result<impl Responder> {
+pub async fn force_password_reset(req: HttpRequest, path: web::Path<u32>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     User::require_admin(&req).await?;
     let user_id = path.into_inner();
 
@@ -91,11 +96,13 @@ pub async fn force_password_reset(req: HttpRequest, path: web::Path<u32>) -> Res
         error!("Failed to send password reset email during force reset: {e}");
     }
 
+    broadcaster.send(SSEEvent::Users);
+
     Ok(HttpResponse::Ok().json(json!({ "message": "Password reset forced successfully" })))
 }
 
 #[post("/users/{id}/disable-mfa")]
-pub async fn disable_mfa(req: HttpRequest, path: web::Path<u32>) -> Result<impl Responder> {
+pub async fn disable_mfa(req: HttpRequest, path: web::Path<u32>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     User::require_admin(&req).await?;
     let user_id = path.into_inner();
 
@@ -110,6 +117,8 @@ pub async fn disable_mfa(req: HttpRequest, path: web::Path<u32>) -> Result<impl 
     users_db::update_user(user)
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    broadcaster.send(SSEEvent::Users);
 
     Ok(HttpResponse::Ok().json(json!({ "message": "MFA disabled successfully" })))
 }

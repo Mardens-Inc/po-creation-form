@@ -5,6 +5,7 @@ use super::purchase_orders_data::{
 use super::purchase_orders_db;
 use crate::auth::auth_middleware::validator;
 use crate::auth::jwt_data::Claims;
+use crate::events::broadcaster::{Broadcaster, SSEEvent};
 use crate::purchase_orders::purchase_order_response::PurchaseOrderResponse;
 use crate::purchase_orders::upload_file_type::UploadFileType;
 use actix_web::web::{Bytes, Json, Query};
@@ -99,6 +100,7 @@ pub async fn get_purchase_order(path: web::Path<u32>) -> Result<impl Responder> 
 pub async fn create_purchase_order(
     req: HttpRequest,
     body: Json<CreatePurchaseOrderRequest>,
+    broadcaster: web::Data<Broadcaster>,
 ) -> Result<impl Responder> {
     let claims = req.extensions().get::<Claims>().cloned();
     let buyer_id = match claims {
@@ -144,7 +146,10 @@ pub async fn create_purchase_order(
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
     match build_po_response(po_id).await? {
-        Some(response) => Ok(HttpResponse::Ok().json(response)),
+        Some(response) => {
+            broadcaster.send(SSEEvent::PurchaseOrders);
+            Ok(HttpResponse::Ok().json(response))
+        }
         None => Ok(HttpResponse::InternalServerError().json(json!({
             "error": "Failed to retrieve created purchase order",
         }))),
@@ -155,6 +160,7 @@ pub async fn create_purchase_order(
 pub async fn update_purchase_order(
     path: web::Path<u32>,
     body: Json<UpdatePurchaseOrderRequest>,
+    broadcaster: web::Data<Broadcaster>,
 ) -> Result<impl Responder> {
     let id = path.into_inner();
     let body = body.into_inner();
@@ -203,7 +209,10 @@ pub async fn update_purchase_order(
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
     match build_po_response(id).await? {
-        Some(response) => Ok(HttpResponse::Ok().json(response)),
+        Some(response) => {
+            broadcaster.send(SSEEvent::PurchaseOrders);
+            Ok(HttpResponse::Ok().json(response))
+        }
         None => Ok(HttpResponse::InternalServerError().json(json!({
             "error": "Failed to retrieve updated purchase order",
         }))),
@@ -211,7 +220,7 @@ pub async fn update_purchase_order(
 }
 
 #[delete("/{id}")]
-pub async fn delete_purchase_order(path: web::Path<u32>) -> Result<impl Responder> {
+pub async fn delete_purchase_order(path: web::Path<u32>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     let id = path.into_inner();
 
     let existing = purchase_orders_db::get_po_by_id(id)
@@ -238,6 +247,8 @@ pub async fn delete_purchase_order(path: web::Path<u32>) -> Result<impl Responde
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
+    broadcaster.send(SSEEvent::PurchaseOrders);
+
     Ok(HttpResponse::Ok().json(json!({
         "message": "Purchase order deleted successfully",
     })))
@@ -251,6 +262,7 @@ pub async fn upload_file(
     path: web::Path<u32>,
     query: Query<FileUploadQuery>,
     body: Bytes,
+    broadcaster: web::Data<Broadcaster>,
 ) -> Result<impl Responder> {
     let claims = req.extensions().get::<Claims>().cloned();
     let uploaded_by = match claims {
@@ -397,7 +409,10 @@ pub async fn upload_file(
 
     // Return the full updated PO response
     match build_po_response(po_id).await? {
-        Some(response) => Ok(HttpResponse::Ok().json(response)),
+        Some(response) => {
+            broadcaster.send(SSEEvent::PurchaseOrders);
+            Ok(HttpResponse::Ok().json(response))
+        }
         None => Ok(HttpResponse::InternalServerError().json(json!({
             "error": "Failed to retrieve updated purchase order",
         }))),
@@ -452,7 +467,7 @@ pub async fn download_file(path: web::Path<(u32, u32)>) -> Result<impl Responder
 }
 
 #[delete("/{po_id}/files/{file_id}")]
-pub async fn delete_file_endpoint(path: web::Path<(u32, u32)>) -> Result<impl Responder> {
+pub async fn delete_file_endpoint(path: web::Path<(u32, u32)>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     let (po_id, file_id) = path.into_inner();
 
     let file = purchase_orders_db::get_file_by_id(file_id)
@@ -468,6 +483,8 @@ pub async fn delete_file_endpoint(path: web::Path<(u32, u32)>) -> Result<impl Re
             purchase_orders_db::delete_file(file_id)
                 .await
                 .map_err(actix_web::error::ErrorInternalServerError)?;
+
+            broadcaster.send(SSEEvent::PurchaseOrders);
 
             Ok(HttpResponse::Ok().json(json!({
                 "message": "File deleted successfully",

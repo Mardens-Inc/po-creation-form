@@ -1,5 +1,6 @@
 use crate::auth::auth_middleware::validator;
 use crate::auth::jwt_data::Claims;
+use crate::events::broadcaster::{Broadcaster, SSEEvent};
 use actix_web::web::Json;
 use actix_web::{delete, get, post, put, web, HttpMessage, HttpRequest, HttpResponse, Responder, Result};
 use actix_web_httpauth::middleware::HttpAuthentication;
@@ -58,6 +59,7 @@ pub async fn get_vendor(path: web::Path<u32>) -> Result<impl Responder> {
 pub async fn create_vendor(
     req: HttpRequest,
     body: Json<CreateVendorRequest>,
+    broadcaster: web::Data<Broadcaster>,
 ) -> Result<impl Responder> {
     let claims = req.extensions().get::<Claims>().cloned();
     let created_by = match claims {
@@ -128,11 +130,14 @@ pub async fn create_vendor(
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
     match vendor {
-        Some(vendor) => Ok(HttpResponse::Ok().json(VendorWithRelations::from_vendor(
-            vendor,
-            contacts,
-            ship_locations,
-        ))),
+        Some(vendor) => {
+            broadcaster.send(SSEEvent::Vendors);
+            Ok(HttpResponse::Ok().json(VendorWithRelations::from_vendor(
+                vendor,
+                contacts,
+                ship_locations,
+            )))
+        }
         None => Ok(HttpResponse::InternalServerError().json(json!({
             "error": "Failed to retrieve created vendor",
         }))),
@@ -143,6 +148,7 @@ pub async fn create_vendor(
 pub async fn update_vendor(
     path: web::Path<u32>,
     body: Json<UpdateVendorRequest>,
+    broadcaster: web::Data<Broadcaster>,
 ) -> Result<impl Responder> {
     let id = path.into_inner();
     let body = body.into_inner();
@@ -227,11 +233,14 @@ pub async fn update_vendor(
         .map_err(actix_web::error::ErrorInternalServerError)?;
 
     match vendor {
-        Some(vendor) => Ok(HttpResponse::Ok().json(VendorWithRelations::from_vendor(
-            vendor,
-            contacts,
-            ship_locations,
-        ))),
+        Some(vendor) => {
+            broadcaster.send(SSEEvent::Vendors);
+            Ok(HttpResponse::Ok().json(VendorWithRelations::from_vendor(
+                vendor,
+                contacts,
+                ship_locations,
+            )))
+        }
         None => Ok(HttpResponse::InternalServerError().json(json!({
             "error": "Failed to retrieve updated vendor",
         }))),
@@ -239,7 +248,7 @@ pub async fn update_vendor(
 }
 
 #[delete("/{id}")]
-pub async fn delete_vendor(path: web::Path<u32>) -> Result<impl Responder> {
+pub async fn delete_vendor(path: web::Path<u32>, broadcaster: web::Data<Broadcaster>) -> Result<impl Responder> {
     let id = path.into_inner();
 
     let existing = vendors_db::get_vendor_by_id(id)
@@ -254,6 +263,8 @@ pub async fn delete_vendor(path: web::Path<u32>) -> Result<impl Responder> {
     vendors_db::delete_vendor(id)
         .await
         .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    broadcaster.send(SSEEvent::Vendors);
 
     Ok(HttpResponse::Ok().json(json!({
         "message": "Vendor deleted successfully",

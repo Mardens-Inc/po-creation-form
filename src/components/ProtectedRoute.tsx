@@ -9,8 +9,9 @@ import {POEditProvider} from "./po/POEditModal.tsx";
 import {VendorCreationProvider} from "./vendors/VendorCreationModal.tsx";
 import {UserEditProvider} from "./users/UserEditModal.tsx";
 import {PurchaseOrdersProvider, usePurchaseOrdersContext} from "../providers/PurchaseOrdersProvider.tsx";
-import {VendorsProvider} from "../providers/VendorsProvider.tsx";
-import {UsersProvider} from "../providers/UsersProvider.tsx";
+import {VendorsProvider, useVendorsContext} from "../providers/VendorsProvider.tsx";
+import {UsersProvider, useUsersContext} from "../providers/UsersProvider.tsx";
+import {useRealtimeUpdates} from "../hooks/useRealtimeUpdates.ts";
 
 export function ProtectedRoute()
 {
@@ -52,10 +53,19 @@ export function ProtectedRoute()
 // Separate component to access PurchaseOrdersContext for the onSaved callback
 function ProtectedRouteContent()
 {
-    const {refetch} = usePurchaseOrdersContext();
+    const {getToken} = useAuthentication();
+    const {refetch: refetchPOs} = usePurchaseOrdersContext();
+    const {refetch: refetchVendors} = useVendorsContext();
+    const {refetch: refetchUsers} = useUsersContext();
+
+    useRealtimeUpdates(getToken(), {
+        vendors: refetchVendors,
+        purchaseOrders: refetchPOs,
+        users: refetchUsers,
+    });
 
     return (
-        <POEditProvider onSaved={refetch}>
+        <POEditProvider onSaved={refetchPOs}>
             <UserEditProvider>
                 <main className={"flex flex-col min-h-screen"}>
                     <TopNavigation/>
