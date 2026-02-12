@@ -3,8 +3,8 @@ import {Icon} from "@iconify-icon/react";
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from "react";
 import {nextContactId, nextLocationId, PointOfContact, ShipLocation, Vendor} from "./types.ts";
 import {VendorInfoSection} from "./VendorInfoSection.tsx";
-import {ContactsSection, AddContactButton} from "./ContactsSection.tsx";
-import {ShipLocationsSection, AddLocationButton} from "./ShipLocationsSection.tsx";
+import {AddContactButton, ContactsSection} from "./ContactsSection.tsx";
+import {AddLocationButton, ShipLocationsSection} from "./ShipLocationsSection.tsx";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendorsContext} from "../../providers/VendorsProvider.tsx";
 import {ModalSection} from "../ModalSection.tsx";
@@ -26,16 +26,21 @@ export function VendorCreationModal(props: VendorCreationProperties)
     const [shipLocations, setShipLocations] = useState<ShipLocation[]>([]);
     const {getToken} = useAuthentication();
     const {refetch} = useVendorsContext();
+    const [isSending, setIsSending] = useState(false);
+
 
     // Populate fields when editing a vendor
-    useEffect(() => {
-        if (props.editingVendor) {
+    useEffect(() =>
+    {
+        if (props.editingVendor)
+        {
             setVendorName(props.editingVendor.name);
             setVendorCode(props.editingVendor.code);
             setVendorStatus(props.editingVendor.status);
             setContacts(props.editingVendor.contacts);
             setShipLocations(props.editingVendor.ship_locations);
-        } else {
+        } else
+        {
             // Reset fields for create mode
             setVendorName("");
             setVendorCode("");
@@ -47,6 +52,7 @@ export function VendorCreationModal(props: VendorCreationProperties)
 
     const handleSubmit = useCallback(async () =>
     {
+        setIsSending(true);
         const isEditMode = props.editingVendor !== null;
         const url = isEditMode ? `/api/vendors/${props.editingVendor!.id}` : "/api/vendors";
         const method = isEditMode ? "PUT" : "POST";
@@ -94,15 +100,20 @@ export function VendorCreationModal(props: VendorCreationProperties)
                 description: errorMessage,
                 color: "danger"
             });
+        } finally
+        {
+            setIsSending(false);
         }
 
     }, [vendorName, vendorCode, vendorStatus, contacts, shipLocations, props, getToken, refetch]);
 
-    const addContact = useCallback(() => {
+    const addContact = useCallback(() =>
+    {
         setContacts(prev => [...prev, {id: nextContactId(), first_name: "", last_name: "", email: "", phone: ""}]);
     }, []);
 
-    const addLocation = useCallback(() => {
+    const addLocation = useCallback(() =>
+    {
         setShipLocations(prev => [...prev, {id: nextLocationId(), address: ""}]);
     }, []);
 
@@ -163,6 +174,7 @@ export function VendorCreationModal(props: VendorCreationProperties)
                                 endContent={<Icon icon="mdi:check" width={18} height={18}/>}
                                 onPress={handleSubmit}
                                 isDisabled={!isValid}
+                                isLoading={isSending}
                             >
                                 {props.editingVendor ? "Update Vendor" : "Create Vendor"}
                             </Button>
@@ -189,12 +201,14 @@ export function VendorCreationProvider({children}: { children: ReactNode })
     const [isOpen, setIsOpen] = useState(false);
     const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
 
-    const openVendorCreationModal = useCallback(() => {
+    const openVendorCreationModal = useCallback(() =>
+    {
         setEditingVendor(null);
         setIsOpen(true);
     }, []);
 
-    const openVendorEditModal = useCallback((vendor: Vendor) => {
+    const openVendorEditModal = useCallback((vendor: Vendor) =>
+    {
         setEditingVendor(vendor);
         setIsOpen(true);
     }, []);
