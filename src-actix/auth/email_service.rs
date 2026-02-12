@@ -48,20 +48,19 @@ impl EmailService {
         context.insert("url", &url);
         let body = tera::Tera::one_off(CONFIRM_EMAIL_TEMPLATE, &context, true)?;
         let email = lettre::Message::builder()
-			.from(SMTP_USERNAME.parse()?)
-			.to(email_address.parse()?)
-			.subject("Confirm your email address")
-			.header(ContentType::TEXT_HTML)
-			.body(body)
-			.map_err(|e| {
-					error!("Failed to build email message: {}", e);
-					anyhow::Error::from(e)
-				})?;
-        self.transport.send(&email)
-                      .map_err(|e| {
-	                      error!("Failed to send email to recipient");
-	                      anyhow::Error::from(e)
-                      })?;
+            .from(SMTP_USERNAME.parse()?)
+            .to(email_address.parse()?)
+            .subject("Confirm your email address")
+            .header(ContentType::TEXT_HTML)
+            .body(body)
+            .map_err(|e| {
+                error!("Failed to build email message: {}", e);
+                anyhow::Error::from(e)
+            })?;
+        self.transport.send(&email).map_err(|e| {
+            error!("Failed to send email to recipient");
+            anyhow::Error::from(e)
+        })?;
         Ok(())
     }
 
@@ -93,25 +92,32 @@ impl EmailService {
                 error!("Failed to build reset password email message: {}", e);
                 anyhow::Error::from(e)
             })?;
-        self.transport.send(&email)
-            .map_err(|e| {
-                error!("Failed to send reset password email to recipient");
-                anyhow::Error::from(e)
-            })?;
+        self.transport.send(&email).map_err(|e| {
+            error!("Failed to send reset password email to recipient");
+            anyhow::Error::from(e)
+        })?;
         Ok(())
     }
 
-    pub async fn send_vendor_created_email(
+    pub async fn send_vendor_notification_email(
         &self,
-        username: &str,
+        subject: &str,
+        subtitle: &str,
+        action_text: &str,
         vendor_name: &str,
         vendor_code: &str,
         contacts: &[impl Serialize],
         ship_locations: &[impl Serialize],
     ) -> Result<()> {
-        debug!("Sending vendor created email to vendor.approvers@mardens.com");
+        #[cfg(debug_assertions)]
+        let vendor_email = "drew.chase@mardens.com";
+        #[cfg(not(debug_assertions))]
+        let vendor_email = "vendor.approvers@mardens.com";
+        debug!("Sending vendor notification email to {}", vendor_email);
         let mut context = tera::Context::new();
-        context.insert("username", username);
+        context.insert("subject", subject);
+        context.insert("subtitle", subtitle);
+        context.insert("action_text", action_text);
         context.insert("vendor_name", vendor_name);
         context.insert("vendor_code", vendor_code);
         context.insert("contacts", contacts);
@@ -119,20 +125,18 @@ impl EmailService {
         let body = tera::Tera::one_off(VENDOR_CREATED_TEMPLATE, &context, true)?;
         let email = lettre::Message::builder()
             .from(SMTP_USERNAME.parse()?)
-            .to("drew.chase@mardens.com".parse()?)
-//            .to("vendor.approvers@mardens.com".parse()?)
-            .subject("New Vendor Creation Request")
+            .to(vendor_email.parse()?)
+            .subject(subject)
             .header(ContentType::TEXT_HTML)
             .body(body)
             .map_err(|e| {
-                error!("Failed to build vendor created email message: {}", e);
+                error!("Failed to build vendor notification email message: {}", e);
                 anyhow::Error::from(e)
             })?;
-        self.transport.send(&email)
-            .map_err(|e| {
-                error!("Failed to send vendor created email");
-                anyhow::Error::from(e)
-            })?;
+        self.transport.send(&email).map_err(|e| {
+            error!("Failed to send vendor notification email");
+            anyhow::Error::from(e)
+        })?;
         Ok(())
     }
 }

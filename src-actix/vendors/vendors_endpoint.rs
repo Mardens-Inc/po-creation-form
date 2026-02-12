@@ -128,9 +128,15 @@ pub async fn create_vendor(
     };
     match EmailService::new() {
         Ok(email_service) => {
+            let action_text = format!(
+                "PO Tracker User <strong>{}</strong> has requested that a Vendor is created with the following details:",
+                username
+            );
             if let Err(e) = email_service
-                .send_vendor_created_email(
-                    &username,
+                .send_vendor_notification_email(
+                    "New Vendor Creation Request",
+                    "A new vendor has been submitted for approval",
+                    &action_text,
                     &body.name,
                     &body.code,
                     &body.contacts,
@@ -174,6 +180,7 @@ pub async fn create_vendor(
 
 #[put("/{id}")]
 pub async fn update_vendor(
+    req: HttpRequest,
     path: web::Path<u32>,
     body: Json<UpdateVendorRequest>,
     broadcaster: web::Data<Broadcaster>,
@@ -262,6 +269,37 @@ pub async fn update_vendor(
 
     match vendor {
         Some(vendor) => {
+            // Send notification email to vendor approvers
+            let username = match User::get_user_from_request(&req).await {
+                Ok(user) => format!("{} {}", user.first_name, user.last_name),
+                Err(_) => "Unknown User".to_string(),
+            };
+            match EmailService::new() {
+                Ok(email_service) => {
+                    let action_text = format!(
+                        "PO Tracker User <strong>{}</strong> has requested to edit a Vendor with the following updated details:",
+                        username
+                    );
+                    if let Err(e) = email_service
+                        .send_vendor_notification_email(
+                            "Vendor Edit Request",
+                            "A vendor has been edited and submitted for approval",
+                            &action_text,
+                            &vendor.name,
+                            &vendor.code,
+                            &contacts,
+                            &ship_locations,
+                        )
+                        .await
+                    {
+                        error!("Failed to send vendor edited notification email: {}", e);
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to create email service for vendor notification: {}", e);
+                }
+            }
+
             broadcaster.send(SSEEvent::Vendors);
             Ok(HttpResponse::Ok().json(VendorWithRelations::from_vendor(
                 vendor,

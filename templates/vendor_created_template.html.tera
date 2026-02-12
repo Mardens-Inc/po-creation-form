@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Vendor Creation Request</title>
+    <title>{{ subject }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -117,13 +117,13 @@
 <body>
 <div class="email-container">
     <div class="header">
-        <h1 class="title">New Vendor Creation Request</h1>
-        <p class="subtitle">A new vendor has been submitted for approval</p>
+        <h1 class="title">{{ subject }}</h1>
+        <p class="subtitle">{{ subtitle }}</p>
     </div>
 
     <div class="content">
         <p class="info-text">
-            PO Tracker User <strong>{{ username }}</strong> has requested that a Vendor is created with the following details:
+            {{ action_text | safe }}
         </p>
 
         <div class="detail-section">
