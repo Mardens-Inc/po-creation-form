@@ -18,6 +18,35 @@ export interface PurchaseOrder {
     created_at: string;
 }
 
+export interface POFile {
+    id: number;
+    po_id: number;
+    filename: string;
+    asset_type: number;
+    disk_path: string;
+    uploaded_at: string | null;
+    uploaded_by: number;
+}
+
+export interface POLineItem {
+    id: number;
+    po_id: number;
+    item_number: string;
+    upc: string;
+    description: string;
+    case_pack: string;
+    cases: string;
+    qty: number;
+    mardens_cost: number;
+    mardens_price: number;
+    comp_retail: number;
+    department: string;
+    category: string;
+    sub_category: string;
+    season: string;
+    buyer_notes: string | null;
+}
+
 export interface MonthlyPOData {
     month: string;
     count: number;

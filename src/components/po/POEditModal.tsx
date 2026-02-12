@@ -5,7 +5,7 @@ import {CalendarDate, parseDate} from "@internationalized/date";
 import {useAuthentication} from "../../providers/AuthenticationProvider.tsx";
 import {useVendors} from "../../hooks/useVendors.ts";
 import {FOBSection, FOBType, MardensContactsSection, OrderDetailsSection, PONumberSection, ShippingInfoSection, UploadFileItem, UploadFileType, UploadManifestSection} from "./po-information";
-import {POStatus} from "../../types/po.ts";
+import {POFile, POLineItem, POStatus} from "../../types/po.ts";
 import {ModalSection} from "../ModalSection.tsx";
 
 // Full PO data from backend
@@ -31,35 +31,6 @@ interface FullPurchaseOrder {
     buyer_name: string;
     files: POFile[];
     line_items: POLineItem[];
-}
-
-interface POFile {
-    id: number;
-    po_id: number;
-    filename: string;
-    asset_type: number;
-    disk_path: string;
-    uploaded_at: string | null;
-    uploaded_by: number;
-}
-
-interface POLineItem {
-    id: number;
-    po_id: number;
-    item_number: string;
-    upc: string;
-    description: string;
-    case_pack: string;
-    cases: string;
-    qty: number;
-    mardens_cost: number;
-    mardens_price: number;
-    comp_retail: number;
-    department: string;
-    category: string;
-    sub_category: string;
-    season: string;
-    buyer_notes: string | null;
 }
 
 type POEditModalProps = {
